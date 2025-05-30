@@ -7,14 +7,16 @@ WORKDIR /app
 # Копируем файлы package.json и package-lock.json
 COPY package*.json ./
 
-# Копируем все файлы проекта
-COPY . .
+# Создаем необходимые директории и файлы
+COPY server/scripts/init-db.js ./server/scripts/
+COPY server/logger.js ./server/
+COPY server/db.js ./server/
 
 # Устанавливаем зависимости
-RUN npm install --legacy-peer-deps --production
+RUN npm install --omit=dev
 
-# Создаем необходимые директории
-RUN mkdir -p server/scripts
+# Копируем остальные файлы проекта
+COPY . .
 
 # Устанавливаем переменные окружения
 ENV NODE_ENV=production

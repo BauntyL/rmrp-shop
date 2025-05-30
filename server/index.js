@@ -5,7 +5,8 @@ const path = require('path');
 const fs = require('fs');
 const MemoryStore = require('memorystore')(session);
 const bcrypt = require('bcrypt');
-const { getUserByUsername } = require('./storage');
+const { getUserByUsername } = require('../storage')
+;
 const { initDb } = require("./db");
 
 const app = express();

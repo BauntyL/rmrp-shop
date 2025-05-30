@@ -11,6 +11,7 @@ const logger = require('./logger');
 const { setupAuth } = require('./auth');
 const routes = require('./routes');
 const { pool, checkConnection } = require('./db');
+const fs = require('fs');
 
 const app = express();
 
@@ -22,7 +23,10 @@ logger.info('Starting server with configuration', {
 });
 
 // Основные middleware
-app.use(helmet()); // Безопасные заголовки HTTP
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false
+}));
 app.use(cors(config.cors));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -98,12 +102,33 @@ app.get('/api/health', async (req, res) => {
 logger.info('Mounting API routes at /api');
 app.use('/api', routes);
 
-// Обслуживание статических файлов из папки client/dist
-app.use(express.static(path.join(__dirname, '../client/dist')));
+// Обслуживание статических файлов
+const clientDistPath = path.join(__dirname, '../client/dist');
+logger.info('Serving static files from:', clientDistPath);
+
+// Проверяем наличие директории
+if (!fs.existsSync(clientDistPath)) {
+  logger.error('Client dist directory not found:', clientDistPath);
+  fs.mkdirSync(clientDistPath, { recursive: true });
+}
+
+// Обслуживание статических файлов
+app.use(express.static(clientDistPath, {
+  index: false, // Отключаем автоматическую отдачу index.html
+  maxAge: '1h' // Кэширование на 1 час
+}));
 
 // Все остальные GET-запросы отправляют index.html
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  const indexPath = path.join(clientDistPath, 'index.html');
+  
+  if (fs.existsSync(indexPath)) {
+    logger.info('Serving SPA index.html for path:', req.path);
+    res.sendFile(indexPath);
+  } else {
+    logger.error('index.html not found in:', indexPath);
+    res.status(404).send('Application is not built properly. Please check the deployment logs.');
+  }
 });
 
 // Обработка ошибок
@@ -126,6 +151,7 @@ app.use((err, req, res, next) => {
 app.listen(config.port, () => {
   logger.info('Server started', { 
     apiPath: '/api',
+    staticPath: clientDistPath,
     port: config.port,
     timestamp: new Date().toISOString()
   });

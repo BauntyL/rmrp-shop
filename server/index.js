@@ -1,17 +1,25 @@
-const express = require('express');
-const session = require('express-session');
-const pgSession = require('connect-pg-simple')(session);
-const passport = require('passport');
-const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const path = require('path');
-const config = require('./config');
-const logger = require('./logger');
-const { setupAuth } = require('./auth');
-const routes = require('./routes');
-const { pool, checkConnection } = require('./db');
-const fs = require('fs');
+import express from 'express';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import pg from 'pg';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import session from 'express-session';
+import pgSession from 'connect-pg-simple';
+import passport from 'passport';
+import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import path from 'path';
+import config from './config';
+import logger from './logger';
+import { setupAuth } from './auth';
+import routes from './routes';
+import { pool, checkConnection } from './db';
+import fs from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 

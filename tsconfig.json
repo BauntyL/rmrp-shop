@@ -2,22 +2,17 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "node",
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "rootDir": "./",
     "strict": true,
     "skipLibCheck": true,
-    "outDir": "dist",
-    "rootDir": ".",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    },
-    "typeRoots": ["./node_modules/@types"],
+    "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowJs": true,
     "checkJs": false
   },
   "include": ["server/**/*"],
-  "exclude": ["node_modules", "client", "dist"]
+  "exclude": ["node_modules", "dist", "client"]
 }

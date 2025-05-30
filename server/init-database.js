@@ -29,8 +29,10 @@ async function createCar(carData) {
   } = carData;
 
   const result = await pool.query(
-    `INSERT INTO cars (name, description, price, category, server, "createdBy", "imageUrl") 
-     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+    `INSERT INTO cars (
+      name, description, price, category, server, created_by, image_url, status
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'approved')
+    RETURNING *`,
     [name, description, price, category, server, createdBy, imageUrl]
   );
   return result.rows[0];
@@ -56,17 +58,31 @@ async function initDatabase() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS cars (
         id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id),
-        brand VARCHAR(100) NOT NULL,
-        model VARCHAR(100) NOT NULL,
-        year INTEGER NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        brand VARCHAR(100),
+        model VARCHAR(100),
+        year INTEGER,
         price INTEGER NOT NULL,
         description TEXT,
+        category VARCHAR(50),
+        server VARCHAR(50),
+        max_speed INTEGER,
+        acceleration VARCHAR(10),
+        drive VARCHAR(50),
+        transmission VARCHAR(50),
+        fuel_type VARCHAR(50),
+        phone VARCHAR(20),
+        telegram VARCHAR(50),
+        discord VARCHAR(50),
+        image_url TEXT,
         images JSONB,
+        is_premium BOOLEAN DEFAULT false,
         status VARCHAR(20) NOT NULL DEFAULT 'pending',
+        created_by INTEGER REFERENCES users(id),
+        reviewed_by INTEGER REFERENCES users(id),
+        reviewed_at TIMESTAMP,
         created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-        moderated_at TIMESTAMP,
-        moderator_id INTEGER REFERENCES users(id)
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
       )
     `);
 
@@ -142,7 +158,7 @@ async function initDatabase() {
     // Создание индексов
     await pool.query(`
       CREATE INDEX IF NOT EXISTS cars_status_idx ON cars(status);
-      CREATE INDEX IF NOT EXISTS cars_user_id_idx ON cars(user_id);
+      CREATE INDEX IF NOT EXISTS cars_created_by_idx ON cars(created_by);
       CREATE INDEX IF NOT EXISTS notifications_user_id_idx ON notifications(user_id);
     `);
 

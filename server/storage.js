@@ -1,22 +1,57 @@
+const { pool } = require('./db');
+
 // Функции для работы с карточками автомобилей
 async function createCarListing(carData) {
-  const { user_id, brand, model, year, price, description, images, status } = carData;
+  const {
+    name,
+    brand,
+    model,
+    year,
+    price,
+    description,
+    category,
+    server,
+    max_speed,
+    acceleration,
+    drive,
+    transmission,
+    fuel_type,
+    phone,
+    telegram,
+    discord,
+    image_url,
+    images,
+    is_premium,
+    created_by,
+    status = 'pending'
+  } = carData;
   
-  const result = await db.query(
-    `INSERT INTO cars (user_id, brand, model, year, price, description, images, status, created_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
-     RETURNING *`,
-    [user_id, brand, model, year, price, description, JSON.stringify(images), status]
+  const result = await pool.query(
+    `INSERT INTO cars (
+      name, brand, model, year, price, description,
+      category, server, max_speed, acceleration, drive,
+      transmission, fuel_type, phone, telegram, discord,
+      image_url, images, is_premium, created_by, status
+    ) VALUES (
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11,
+      $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
+    ) RETURNING *`,
+    [
+      name, brand, model, year, price, description,
+      category, server, max_speed, acceleration, drive,
+      transmission, fuel_type, phone, telegram, discord,
+      image_url, JSON.stringify(images), is_premium, created_by, status
+    ]
   );
 
   return result.rows[0];
 }
 
 async function getPendingCarListings() {
-  const result = await db.query(
+  const result = await pool.query(
     `SELECT c.*, u.username as owner_name
      FROM cars c
-     JOIN users u ON c.user_id = u.id
+     JOIN users u ON c.created_by = u.id
      WHERE c.status = 'pending'
      ORDER BY c.created_at DESC`
   );
@@ -24,23 +59,26 @@ async function getPendingCarListings() {
   return result.rows;
 }
 
-async function updateCarListingStatus(carId, status) {
-  const result = await db.query(
+async function updateCarListingStatus(carId, status, reviewerId) {
+  const result = await pool.query(
     `UPDATE cars
-     SET status = $1, moderated_at = NOW()
-     WHERE id = $2
+     SET status = $1, 
+         reviewed_by = $2,
+         reviewed_at = NOW(),
+         updated_at = NOW()
+     WHERE id = $3
      RETURNING *`,
-    [status, carId]
+    [status, reviewerId, carId]
   );
 
   return result;
 }
 
 async function getApprovedCarListings(limit, offset, sortQuery) {
-  const result = await db.query(
+  const result = await pool.query(
     `SELECT c.*, u.username as owner_name
      FROM cars c
-     JOIN users u ON c.user_id = u.id
+     JOIN users u ON c.created_by = u.id
      WHERE c.status = 'approved'
      ${sortQuery}
      LIMIT $1 OFFSET $2`,
@@ -51,7 +89,7 @@ async function getApprovedCarListings(limit, offset, sortQuery) {
 }
 
 async function getApprovedCarListingsCount() {
-  return await db.query(
+  return await pool.query(
     `SELECT COUNT(*) FROM cars WHERE status = 'approved'`
   );
 }

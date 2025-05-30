@@ -1,0 +1,81 @@
+// Функции для работы с карточками автомобилей
+async function createCarListing(carData) {
+  const { user_id, brand, model, year, price, description, images, status } = carData;
+  
+  const result = await db.query(
+    `INSERT INTO cars (user_id, brand, model, year, price, description, images, status, created_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+     RETURNING *`,
+    [user_id, brand, model, year, price, description, JSON.stringify(images), status]
+  );
+
+  return result.rows[0];
+}
+
+async function getPendingCarListings() {
+  const result = await db.query(
+    `SELECT c.*, u.username as owner_name
+     FROM cars c
+     JOIN users u ON c.user_id = u.id
+     WHERE c.status = 'pending'
+     ORDER BY c.created_at DESC`
+  );
+
+  return result.rows;
+}
+
+async function updateCarListingStatus(carId, status) {
+  const result = await db.query(
+    `UPDATE cars
+     SET status = $1, moderated_at = NOW()
+     WHERE id = $2
+     RETURNING *`,
+    [status, carId]
+  );
+
+  return result;
+}
+
+async function getApprovedCarListings(limit, offset, sortQuery) {
+  const result = await db.query(
+    `SELECT c.*, u.username as owner_name
+     FROM cars c
+     JOIN users u ON c.user_id = u.id
+     WHERE c.status = 'approved'
+     ${sortQuery}
+     LIMIT $1 OFFSET $2`,
+    [limit, offset]
+  );
+
+  return result;
+}
+
+async function getApprovedCarListingsCount() {
+  return await db.query(
+    `SELECT COUNT(*) FROM cars WHERE status = 'approved'`
+  );
+}
+
+async function createNotification(notificationData) {
+  const { user_id, title, message, type } = notificationData;
+  
+  const result = await db.query(
+    `INSERT INTO notifications (user_id, title, message, type, created_at)
+     VALUES ($1, $2, $3, $4, NOW())
+     RETURNING *`,
+    [user_id, title, message, type]
+  );
+
+  return result.rows[0];
+}
+
+// Экспортируем новые функции
+module.exports = {
+  // ... existing exports ...
+  createCarListing,
+  getPendingCarListings,
+  updateCarListingStatus,
+  getApprovedCarListings,
+  getApprovedCarListingsCount,
+  createNotification
+}; 

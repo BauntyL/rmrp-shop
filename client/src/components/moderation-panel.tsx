@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -12,10 +13,14 @@ import {
   Phone,
   MessageCircle
 } from "lucide-react";
+import { NotificationModal } from './ui/notification-modal';
 
 export function ModerationPanel() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [pendingCars, setPendingCars] = useState([]);
+  const [notification, setNotification] = useState({ show: false, title: '', message: '', type: 'info' });
+  const [loading, setLoading] = useState(true);
 
   const { data: pendingApplications = [], isLoading } = useQuery({
     queryKey: ["/api/applications/pending"],
@@ -57,14 +62,59 @@ export function ModerationPanel() {
     },
   });
 
-  const handleModeration = (application: any, status: 'approved' | 'rejected') => {
-    const confirmMessage = status === 'approved' 
-      ? `Одобрить заявку на "${application.name}"?` 
-      : `Отклонить заявку на "${application.name}"?`;
-    
-    if (window.confirm(confirmMessage)) {
-      moderateApplicationMutation.mutate({ id: application.id, status });
+  useEffect(() => {
+    fetchPendingCars();
+  }, []);
+
+  const fetchPendingCars = async () => {
+    try {
+      const response = await fetch('/api/cars/pending', {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setPendingCars(data);
+      }
+    } catch (error) {
+      showNotification('Ошибка', 'Не удалось загрузить автомобили на модерацию', 'error');
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleModeration = async (carId, status) => {
+    try {
+      const response = await fetch(`/api/cars/${carId}/moderate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ status })
+      });
+
+      if (response.ok) {
+        showNotification(
+          'Успешно',
+          status === 'approved' ? 'Автомобиль одобрен и добавлен в каталог' : 'Автомобиль отклонен',
+          'success'
+        );
+        await fetchPendingCars();
+      } else {
+        throw new Error('Ошибка модерации');
+      }
+    } catch (error) {
+      showNotification('Ошибка', 'Не удалось выполнить модерацию', 'error');
+    }
+  };
+
+  const showNotification = (title, message, type) => {
+    setNotification({
+      show: true,
+      title,
+      message,
+      type
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -81,21 +131,8 @@ export function ModerationPanel() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-white">Модерация заявок</h1>
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-slate-800 rounded-lg p-6 animate-pulse">
-              <div className="h-6 bg-slate-700 rounded mb-2 w-1/3"></div>
-              <div className="h-4 bg-slate-700 rounded mb-4 w-2/3"></div>
-              <div className="h-8 bg-slate-700 rounded w-24"></div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+  if (loading) {
+    return <div className="flex justify-center items-center h-full">Загрузка...</div>;
   }
 
   return (
@@ -214,7 +251,7 @@ export function ModerationPanel() {
               <CardFooter className="p-6 pt-0">
                 <div className="flex gap-3 w-full">
                   <Button
-                    onClick={() => handleModeration(application, 'approved')}
+                    onClick={() => handleModeration(application.id, 'approved')}
                     disabled={moderateApplicationMutation.isPending}
                     className="flex-1 bg-green-600 hover:bg-green-700"
                   >
@@ -223,7 +260,7 @@ export function ModerationPanel() {
                   </Button>
                   
                   <Button
-                    onClick={() => handleModeration(application, 'rejected')}
+                    onClick={() => handleModeration(application.id, 'rejected')}
                     disabled={moderateApplicationMutation.isPending}
                     className="flex-1 bg-red-600 hover:bg-red-700"
                   >
@@ -236,6 +273,14 @@ export function ModerationPanel() {
           ))}
         </div>
       )}
+
+      <NotificationModal
+        isOpen={notification.show}
+        onClose={() => setNotification({ ...notification, show: false })}
+        title={notification.title}
+        message={notification.message}
+        type={notification.type}
+      />
     </div>
   );
 }

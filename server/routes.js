@@ -611,4 +611,125 @@ router.get('/admin/stats', requireAuth, requireRole(['moderator', 'admin']), asy
   }
 });
 
+// Маршруты для работы с автомобилями
+router.post('/api/cars', async (req, res) => {
+  try {
+    const { brand, model, year, price, description, images } = req.body;
+    
+    // Проверяем авторизацию
+    if (!req.session.userId) {
+      return res.status(401).json({ error: 'Необходима авторизация' });
+    }
+
+    // Создаем новую карточку автомобиля
+    const car = await storage.createCarListing({
+      user_id: req.session.userId,
+      brand,
+      model,
+      year,
+      price,
+      description,
+      images,
+      status: 'pending'
+    });
+
+    res.json(car);
+  } catch (error) {
+    console.error('Ошибка при создании карточки:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+// Получение карточек на модерацию
+router.get('/api/cars/pending', async (req, res) => {
+  try {
+    // Проверяем права модератора
+    if (!req.session.userId || req.session.userRole !== 'admin') {
+      return res.status(403).json({ error: 'Недостаточно прав' });
+    }
+
+    const cars = await storage.getPendingCarListings();
+
+    res.json(cars);
+  } catch (error) {
+    console.error('Ошибка при получении карточек:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+// Модерация карточки
+router.post('/api/cars/:id/moderate', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    // Проверяем права модератора
+    if (!req.session.userId || req.session.userRole !== 'admin') {
+      return res.status(403).json({ error: 'Недостаточно прав' });
+    }
+
+    // Проверяем корректность статуса
+    if (!['approved', 'rejected'].includes(status)) {
+      return res.status(400).json({ error: 'Некорректный статус' });
+    }
+
+    const car = await storage.updateCarListingStatus(id, status);
+
+    if (car.rows.length === 0) {
+      return res.status(404).json({ error: 'Карточка не найдена' });
+    }
+
+    // Отправляем уведомление владельцу
+    await storage.createNotification({
+      user_id: car.rows[0].user_id,
+      title: status === 'approved' ? 'Объявление одобрено' : 'Объявление отклонено',
+      message: status === 'approved'
+        ? 'Ваше объявление прошло модерацию и опубликовано в каталоге'
+        : 'Ваше объявление не прошло модерацию',
+      type: status === 'approved' ? 'success' : 'error'
+    });
+
+    res.json(car.rows[0]);
+  } catch (error) {
+    console.error('Ошибка при модерации:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+// Получение одобренных карточек для каталога
+router.get('/api/cars', async (req, res) => {
+  try {
+    const { page = 1, limit = 12, sort = 'newest' } = req.query;
+    const offset = (page - 1) * limit;
+
+    let sortQuery = '';
+    switch (sort) {
+      case 'price_asc':
+        sortQuery = 'ORDER BY price ASC';
+        break;
+      case 'price_desc':
+        sortQuery = 'ORDER BY price DESC';
+        break;
+      case 'oldest':
+        sortQuery = 'ORDER BY created_at ASC';
+        break;
+      default:
+        sortQuery = 'ORDER BY created_at DESC';
+    }
+
+    const cars = await storage.getApprovedCarListings(limit, offset, sortQuery);
+
+    const total = await storage.getApprovedCarListingsCount();
+
+    res.json({
+      cars: cars.rows,
+      total: parseInt(total.rows[0].count),
+      pages: Math.ceil(total.rows[0].count / limit)
+    });
+  } catch (error) {
+    console.error('Ошибка при получении каталога:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
 module.exports = router;

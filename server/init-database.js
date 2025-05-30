@@ -56,14 +56,17 @@ async function initDatabase() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS cars (
         id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        description TEXT,
+        user_id INTEGER REFERENCES users(id),
+        brand VARCHAR(100) NOT NULL,
+        model VARCHAR(100) NOT NULL,
+        year INTEGER NOT NULL,
         price INTEGER NOT NULL,
-        category VARCHAR(100) NOT NULL,
-        server VARCHAR(100) NOT NULL,
-        "createdBy" INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        "imageUrl" TEXT DEFAULT 'https://via.placeholder.com/400x300?text=Car',
-        "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        description TEXT,
+        images JSONB,
+        status VARCHAR(20) NOT NULL DEFAULT 'pending',
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        moderated_at TIMESTAMP,
+        moderator_id INTEGER REFERENCES users(id)
       )
     `);
 
@@ -121,6 +124,26 @@ async function initDatabase() {
 
     await pool.query(`
       CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire")
+    `);
+
+    // Создание таблицы уведомлений
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        title VARCHAR(200) NOT NULL,
+        message TEXT NOT NULL,
+        type VARCHAR(20) NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        read_at TIMESTAMP
+      )
+    `);
+
+    // Создание индексов
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS cars_status_idx ON cars(status);
+      CREATE INDEX IF NOT EXISTS cars_user_id_idx ON cars(user_id);
+      CREATE INDEX IF NOT EXISTS notifications_user_id_idx ON notifications(user_id);
     `);
 
     console.log('✅ Database tables initialized');

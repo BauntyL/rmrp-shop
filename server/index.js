@@ -5,6 +5,7 @@ const passport = require('passport');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 const config = require('./config');
 const logger = require('./logger');
 const { setupAuth } = require('./auth');
@@ -96,6 +97,14 @@ app.get('/api/health', async (req, res) => {
 // Маршруты API
 logger.info('Mounting API routes at /api');
 app.use('/api', routes);
+
+// Обслуживание статических файлов из папки client/dist
+app.use(express.static(path.join(__dirname, '../client/dist')));
+
+// Все остальные GET-запросы отправляют index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+});
 
 // Обработка ошибок
 app.use((err, req, res, next) => {

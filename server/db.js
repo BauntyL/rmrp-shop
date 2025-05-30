@@ -9,7 +9,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 // Проверка, что переменная DATABASE_URL загружена
 console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Loaded' : 'Not found');
 
-// Создаем пул соединений
+// Создаем пул соединений с увеличенными таймаутами
 const pool = new Pool({
   connectionString: config.database.url,
   ssl: {
@@ -17,28 +17,42 @@ const pool = new Pool({
   },
   max: 20, // максимальное количество клиентов в пуле
   idleTimeoutMillis: 30000, // время простоя клиента
-  connectionTimeoutMillis: 5000, // увеличенное время ожидания соединения
+  connectionTimeoutMillis: 10000, // увеличенное время ожидания соединения
+  query_timeout: 10000 // таймаут запроса
 });
 
 // Обработка ошибок пула
 pool.on('error', (err, client) => {
-  logger.error('Unexpected error on idle client', { error: err.message });
+  logger.error('Unexpected error on idle client', { 
+    error: err.message,
+    stack: err.stack
+  });
 });
 
 // Проверка соединения
 async function checkConnection() {
   try {
-    const client = await pool.connect();
-    const result = await client.query('SELECT NOW()');
-    client.release();
+    logger.info('Attempting to connect to database...', {
+      connectionString: config.database.url.split('@')[1] // Логируем только хост, без credentials
+    });
     
-    logger.info('Database connection successful', {
+    const client = await pool.connect();
+    logger.info('Successfully connected to the pool');
+    
+    const result = await client.query('SELECT NOW()');
+    logger.info('Query executed successfully', {
       timestamp: result.rows[0].now
     });
     
+    client.release();
+    logger.info('Client released');
+    
     return true;
   } catch (error) {
-    logger.error('Database connection failed', { error: error.message });
+    logger.error('Database connection failed', { 
+      error: error.message,
+      stack: error.stack
+    });
     throw error;
   }
 }
@@ -60,7 +74,8 @@ async function query(text, params) {
   } catch (error) {
     logger.error('Query error', {
       text,
-      error: error.message
+      error: error.message,
+      stack: error.stack
     });
     throw error;
   }

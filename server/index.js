@@ -16,7 +16,7 @@ const app = express();
 // Логирование конфигурации
 logger.info('Starting server with configuration', {
   nodeEnv: process.env.NODE_ENV,
-  port: process.env.PORT || 3000,
+  port: config.port,
   databaseUrl: process.env.DATABASE_URL ? 'configured' : 'missing'
 });
 
@@ -63,6 +63,8 @@ app.use((req, res, next) => {
 // Проверка здоровья системы
 app.get('/api/health', async (req, res) => {
   try {
+    logger.info('Health check started');
+    
     // Проверяем подключение к базе данных
     await checkConnection();
     
@@ -72,11 +74,21 @@ app.get('/api/health', async (req, res) => {
       database: 'connected'
     });
   } catch (error) {
-    logger.error('Health check failed', { error: error.message });
+    logger.error('Health check failed', { 
+      error: error.message,
+      stack: error.stack,
+      code: error.code,
+      detail: error.detail
+    });
+    
     res.status(500).json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
-      error: 'Database connection failed'
+      error: 'Database connection failed',
+      details: {
+        message: error.message,
+        code: error.code
+      }
     });
   }
 });
@@ -102,11 +114,10 @@ app.use((err, req, res, next) => {
 });
 
 // Запуск сервера
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  logger.info(`Server started`, { 
-    port: PORT,
-    nodeEnv: process.env.NODE_ENV,
-    apiPath: '/api'
+app.listen(config.port, () => {
+  logger.info('Server started', { 
+    apiPath: '/api',
+    port: config.port,
+    timestamp: new Date().toISOString()
   });
 });

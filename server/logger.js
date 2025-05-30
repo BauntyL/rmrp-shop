@@ -1,27 +1,21 @@
 const winston = require('winston');
-const config = require('./config');
 
+// Создаем логгер с базовой конфигурацией
 const logger = winston.createLogger({
-  level: config.logging.level,
+  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.json()
   ),
   transports: [
-    new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'combined.log' })
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple()
+      )
+    })
   ]
 });
-
-// В режиме разработки также выводим в консоль
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple()
-    )
-  }));
-}
 
 // Безопасное логирование без чувствительных данных
 const sanitizeData = (data) => {

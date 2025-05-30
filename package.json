@@ -8,7 +8,7 @@
     "dev": "nodemon server/index.js",
     "test": "jest",
     "build": "echo 'No build step required'",
-    "postinstall": "node server/scripts/init-db.js"
+    "init-db": "node server/scripts/init-db.js"
   },
   "engines": {
     "node": ">=18.0.0"

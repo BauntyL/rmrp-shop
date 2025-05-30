@@ -4,19 +4,11 @@ FROM node:18-slim
 # Устанавливаем рабочую директорию в контейнере
 WORKDIR /app
 
-# Копируем файлы package.json и package-lock.json
-COPY package*.json ./
-
-# Создаем необходимые директории и файлы
-COPY server/scripts/init-db.js ./server/scripts/
-COPY server/logger.js ./server/
-COPY server/db.js ./server/
-
-# Устанавливаем зависимости
-RUN npm install --omit=dev
-
-# Копируем остальные файлы проекта
+# Копируем все файлы проекта
 COPY . .
+
+# Устанавливаем только production зависимости
+RUN npm ci --only=production
 
 # Устанавливаем переменные окружения
 ENV NODE_ENV=production

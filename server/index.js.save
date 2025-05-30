@@ -1,0 +1,263 @@
+const express = require('express');
+const cors = require('cors');
+const session = require('express-session');
+const path = require('path');
+const fs = require('fs');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(express.json());
+
+// Обработка preflight запросов
+app.options('*', cors({
+  origin: 'http://rmrp-shop.ru',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// CORS настройки
+app.use(cors({
+  origin: 'http://rmrp-shop.ru',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Session configuration
+app.use(session({
+  secret: 'your-secret-key-here',
+  resave: false,
+  saveUninitialized: false,
+  rolling: true,
+  cookie: {
+    secure: false,
+    httpOnly: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 дней
+    sameSite: 'lax'
+  }
+}));
+
+// Загрузка данных
+let users = [];
+let cars = [];
+let messages = [];
+
+try {
+  const usersData = fs.readFileSync(path.join(__dirname, '../shared/users.json'), 'utf8');
+  users = JSON.parse(usersData);
+} catch (error) {
+  console.log('Файл users.json не найден, создаем пустой массив');
+}
+
+try {
+  const carsData = fs.readFileSync(path.join(__dirname, '../shared/cars.json'), 'utf8');
+  cars = JSON.parse(carsData);
+} catch (error) {
+  console.log('Файл cars.json не найден, создаем пустой массив');
+}
+
+try {
+  const messagesData = fs.readFileSync(path.join(__dirname, '../shared/messages.json'), 'utf8');
+  messages = JSON.parse(messagesData);
+} catch (error) {
+  console.log('Файл messages.json не найден, создаем пустой массив');
+}
+
+// Функция для сохранения данных
+const saveData = (filename, data) => {
+  try {
+    fs.writeFileSync(path.join(__dirname, `../shared/${filename}`), JSON.stringify(data, null, 2));
+  } catch (error) {
+    console.error(`Ошибка сохранения ${filename}:`, error);
+  }
+};
+
+// API Routes
+
+// Регистрация
+app.post('/api/auth/register', (req, res) => {
+  const { username, email, password } = req.body;
+  
+  const existingUser = users.find(u => u.email === email || u.username === username);
+  if (existingUser) {
+    return res.status(400).json({ error: 'Пользователь уже существует' });
+  }
+  
+  const user = {
+    id: users.length + 1,
+    username,
+    email,
+    password,
+    role: 'user',
+    createdAt: new Date().toISOString()
+  };
+  
+  users.push(user);
+  saveData('users.json', users);
+  
+  req.session.userId = user.id;
+  req.session.user = { id: user.id, username: user.username, email: user.email, role: user.role };
+  
+  res.json({ user: req.session.user });
+});
+
+// Входapp.post('/api/auth/login', (req, res) => {
+  const { email, password } = req.body;
+  
+  const user = users.find(u => u.email === email && u.password === password);
+  if (!user) {
+    return res.status(401).json({ error: 'Неверные данные' });
+  }
+  
+  req.session.userId = user.id;
+  req.session.user = { id: user.id, username: user.username, email: user.email, role: user.role };
+  
+  res.json({ user: req.session.user });
+});
+
+// Выход
+app.post('/api/auth/logout', (req, res) => {
+  req.session.destroy();
+  res.json({ success: true });
+});
+
+// Проверка аутентификации
+app.get('/api/auth/me', (req, res) => {
+  if (req.session.user) {
+    res.json({ user: req.session.user });
+  } else {
+    res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+});
+
+// Машины
+app.get('/api/cars', (req, res) => {
+  res.json(cars);
+});
+
+app.post('/api/cars', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+  
+  const car = {
+    id: cars.length + 1,
+    ...req.body,
+    sellerId: req.session.user.id,
+    sellerName: req.session.user.username,
+    createdAt: new Date().toISOString(),
+    status: 'pending'
+  };
+  
+  cars.push(car);
+  saveData('cars.json', cars);
+  res.json(car);
+});
+
+app.put('/api/cars/:id', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+  
+  const carId = parseInt(req.params.id);
+  const carIndex = cars.findIndex(c => c.id === carId);
+  
+  if (carIndex === -1) {
+    return res.status(404).json({ error: 'Машина не найдена' });
+  }
+  
+  const car = cars[carIndex];
+  if (car.sellerId !== req.session.user.id && req.session.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Нет прав' });
+  }
+  
+  cars[carIndex] = { ...car, ...req.body };
+  saveData('cars.json', cars);
+  res.json(cars[carIndex]);
+});
+
+app.delete('/api/cars/:id', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+  
+  const carId = parseInt(req.params.id);
+  const carIndex = cars.findIndex(c => c.id === carId);
+  
+  if (carIndex === -1) {
+    return res.status(404).json({ error: 'Машина не найдена' });
+  }
+  
+  const car = cars[carIndex];
+  if (car.sellerId !== req.session.user.id && req.session.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Нет прав' });
+  }
+  
+  cars.splice(carIndex, 1);
+  saveData('cars.json', cars);
+  res.json({ success: true });
+});
+
+// Сообщения
+app.get('/api/messages', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+  
+  const userMessages = messages.filter(m => 
+    m.senderId === req.session.user.id || m.receiverId === req.session.user.id
+  );
+  
+  res.json(userMessages);
+});
+
+app.post('/api/messages', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+  
+  const message = {
+    id: messages.length + 1,
+    ...req.body,
+    senderId: req.session.user.id,
+    senderName: req.session.user.username,
+    createdAt: new Date().toISOString(),
+    status: 'pending'
+  };
+  
+  messages.push(message);
+  saveData('messages.json', messages);
+  res.json(message);
+});
+
+app.put('/api/messages/:id/status', (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Нет прав' });
+  }
+  
+  const messageId = parseInt(req.params.id);
+  const messageIndex = messages.findIndex(m => m.id === messageId);
+  
+  if (messageIndex === -1) {
+    return res.status(404).json({ error: 'Сообщение не найдено' });
+  }
+  
+  messages[messageIndex].status = req.body.status;
+  saveData('messages.json', messages);
+  res.json(messages[messageIndex]);
+});
+
+// Статические файлы (ИСПРАВЛЕННЫЕ ПУТИ)
+app.use(express.static(path.join(__dirname, '../public')));
+
+// SPA fallback (ИСПРАВЛЕННЫЙ ПУТЬ)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+app.listen(PORT, () => {
+  console.log(`Сервер запущен на порту ${PORT}`);
+});

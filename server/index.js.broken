@@ -1,0 +1,2412 @@
+const express = require('express');
+const cors = require('cors');
+const session = require('express-session');
+const path = require('path');
+const fs = require('fs');
+const MemoryStore = require('memorystore')(session);
+const bcrypt = require("bcrypt");
+const { getUserByUsername } = require("./storage");
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+// Middleware
+app.use(express.json());
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+// Обработка preflight запросов
+app.options('*', cors({
+  origin: 'http://rmrp-shop.ru',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+// CORS настройки
+app.use(cors({
+  origin: 'http://rmrp-shop.ru',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+// Session configuration - ИСПРАВЛЕННАЯ ВЕРСИЯ ДЛЯ MASTERHOST
+app.use(session({
+  store: new MemoryStore({
+    checkPeriod: 86400000 // очистка каждые 24 часа
+  }),
+  secret: process.env.SESSION_SECRET || 'rmrp-shop-secret-key-production-2024-very-long-secure-key',
+  resave: false,
+  saveUninitialized: false,
+  rolling: false,
+  cookie: {
+    secure: false, // HTTP для MasterHost
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 часа
+    sameSite: 'lax'
+  }
+}));
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+// Загрузка данных
+let users = [];
+let cars = [];
+let messages = [];
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+try {
+  const usersData = fs.readFileSync(path.join(__dirname, '../shared/users.json'), 'utf8');
+  users = JSON.parse(usersData);
+} catch (error) {
+  console.log('Файл users.json не найден, создаем пустой массив');
+}
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+try {
+  const carsData = fs.readFileSync(path.join(__dirname, '../shared/cars.json'), 'utf8');
+  cars = JSON.parse(carsData);
+} catch (error) {
+  console.log('Файл cars.json не найден, создаем пустой массив');
+}
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+try {
+  const messagesData = fs.readFileSync(path.join(__dirname, '../shared/messages.json'), 'utf8');
+  messages = JSON.parse(messagesData);
+} catch (error) {
+  console.log('Файл messages.json не найден, создаем пустой массив');
+}
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+// Функция для сохранения данных
+const saveData = (filename, data) => {
+  try {
+    fs.writeFileSync(path.join(__dirname, `../shared/${filename}`), JSON.stringify(data, null, 2));
+  } catch (error) {
+    console.error(`Ошибка сохранения ${filename}:`, error);
+  }
+};
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+// API Routes
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+// Регистрация - ИСПРАВЛЕННАЯ
+app.post('/api/auth/register', (req, res) => {
+  const { username, password } = req.body; // убираем email
+  
+  console.log('=== REGISTER DEBUG ===');
+  console.log('Регистрация:', { username, password });
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  const existingUser = users.find(u => u.username === username);
+  if (existingUser) {
+    return res.status(400).json({ error: 'Пользователь уже существует' });
+  }
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  const user = {
+    id: users.length + 1,
+    username,
+    password,
+    role: 'user',
+    createdAt: new Date().toISOString()
+  };
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  users.push(user);
+  saveData('users.json', users);
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  req.session.userId = user.id;
+  req.session.user = { id: user.id, username: user.username, role: user.role };
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  console.log('Пользователь создан:', user);
+  console.log('Сессия установлена:', req.session.user);
+  console.log('=====================');
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  res.json({ user: req.session.user });
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+// Вход - ИСПРАВЛЕННЫЙ
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+// Выход
+app.post('/api/auth/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Ошибка при выходе:', err);
+      return res.status(500).json({ error: 'Ошибка при выходе' });
+    }
+    res.json({ success: true });
+  });
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+// Проверка аутентификации
+app.get('/api/auth/me', (req, res) => {
+  console.log('=== AUTH CHECK ===');
+  console.log('Session:', req.session);
+  console.log('User from session:', req.session.user);
+  console.log('==================');
+  
+  if (req.session.user) {
+    res.json({ user: req.session.user });
+  } else {
+    res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+// Машины
+app.get('/api/cars', (req, res) => {
+  res.json(cars);
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+app.post('/api/cars', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  const car = {
+    id: cars.length + 1,
+    ...req.body,
+    sellerId: req.session.user.id,
+    sellerName: req.session.user.username,
+    createdAt: new Date().toISOString(),
+    status: 'pending'
+  };
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  cars.push(car);
+  saveData('cars.json', cars);
+  res.json(car);
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+app.put('/api/cars/:id', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  const carId = parseInt(req.params.id);
+  const carIndex = cars.findIndex(c => c.id === carId);
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  if (carIndex === -1) {
+    return res.status(404).json({ error: 'Машина не найдена' });
+  }
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  const car = cars[carIndex];
+  if (car.sellerId !== req.session.user.id && req.session.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Нет прав' });
+  }
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  cars[carIndex] = { ...car, ...req.body };
+  saveData('cars.json', cars);
+  res.json(cars[carIndex]);
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+app.delete('/api/cars/:id', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  const carId = parseInt(req.params.id);
+  const carIndex = cars.findIndex(c => c.id === carId);
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  if (carIndex === -1) {
+    return res.status(404).json({ error: 'Машина не найдена' });
+  }
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  const car = cars[carIndex];
+  if (car.sellerId !== req.session.user.id && req.session.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Нет прав' });
+  }
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  cars.splice(carIndex, 1);
+  saveData('cars.json', cars);
+  res.json({ success: true });
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+// Сообщения
+app.get('/api/messages', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  const userMessages = messages.filter(m =>
+    m.senderId === req.session.user.id || m.receiverId === req.session.user.id
+  );
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  res.json(userMessages);
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+app.post('/api/messages', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  const message = {
+    id: messages.length + 1,
+    ...req.body,
+    senderId: req.session.user.id,
+    senderName: req.session.user.username,
+    createdAt: new Date().toISOString(),
+    status: 'pending'
+  };
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  messages.push(message);
+  saveData('messages.json', messages);
+  res.json(message);
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+app.put('/api/messages/:id/status', (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Нет прав' });
+  }
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  const messageId = parseInt(req.params.id);
+  const messageIndex = messages.findIndex(m => m.id === messageId);
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  if (messageIndex === -1) {
+    return res.status(404).json({ error: 'Сообщение не найдено' });
+  }
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  messages[messageIndex].status = req.body.status;
+  saveData('messages.json', messages);
+  res.json(messages[messageIndex]);
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+// Заявки
+app.get('/api/applications', (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Нет прав' });
+  }
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  const pendingCars = cars.filter(car => car.status === 'pending');
+  res.json(pendingCars);
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+app.post('/api/applications', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  const application = {
+    id: cars.length + 1,
+    ...req.body,
+    sellerId: req.session.user.id,
+    sellerName: req.session.user.username,
+    createdAt: new Date().toISOString(),
+    status: 'pending'
+  };
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+  cars.push(application);
+  saveData('cars.json', cars);
+  res.json(application);
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+// Статические файлы
+app.use(express.static(path.join(__dirname, '../public')));
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+// SPA fallback
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+app.listen(PORT, () => {
+  console.log(`Сервер запущен на порту ${PORT}`);
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username });
+
+  try {
+    // Загружаем пользователя из БД
+    const user = await getUserByUsername(username);
+    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
+
+    if (!user) {
+      console.log('Пользователь не найден в БД!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    // Проверяем пароль
+    const isValidPassword = user.password.startsWith('$2b$') 
+      ? await bcrypt.compare(password, user.password)
+      : password === user.password;
+
+    if (!isValidPassword) {
+      console.log('Неверный пароль!');
+      return res.status(401).json({ error: 'Неверные данные' });
+    }
+
+    req.session.userId = user.id;
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+
+    console.log('Сессия установлена:', req.session.user);
+    console.log('===================');
+
+    res.json({ user: req.session.user });
+  } catch (error) {
+    console.error('Ошибка при входе:', error);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+  }
+});
+// Временный роут для создания админа
+app.get('/make-admin/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    const result = await client.query(
+      'UPDATE users SET role = $1 WHERE username = $2 RETURNING *',
+      ['admin', username]
+    );
+    
+    if (result.rows.length > 0) {
+      res.json({ success: true, user: result.rows[0] });
+    } else {
+      res.json({ success: false, error: 'User not found' });
+    }
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});

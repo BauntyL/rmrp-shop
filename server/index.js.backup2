@@ -1,0 +1,347 @@
+const express = require('express');
+const cors = require('cors');
+const session = require('express-session');
+const path = require('path');
+const fs = require('fs');
+const MemoryStore = require('memorystore')(session);
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(express.json());
+
+// Обработка preflight запросов
+app.options('*', cors({
+  origin: 'http://rmrp-shop.ru',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// CORS настройки
+app.use(cors({
+  origin: 'http://rmrp-shop.ru',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Session configuration - ИСПРАВЛЕННАЯ ВЕРСИЯ ДЛЯ MASTERHOST
+app.use(session({
+  store: new MemoryStore({
+    checkPeriod: 86400000 // очистка каждые 24 часа
+  }),
+  secret: process.env.SESSION_SECRET || 'rmrp-shop-secret-key-production-2024-very-long-secure-key',
+  resave: false,
+  saveUninitialized: false,
+  rolling: false,
+  cookie: {
+    secure: false, // HTTP для MasterHost
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 часа
+    sameSite: 'lax'
+  }
+}));
+
+// Загрузка данных
+let users = [];
+let cars = [];
+let messages = [];
+
+try {
+  const usersData = fs.readFileSync(path.join(__dirname, '../shared/users.json'), 'utf8');
+  users = JSON.parse(usersData);
+} catch (error) {
+  console.log('Файл users.json не найден, создаем пустой массив');
+}
+
+try {
+  const carsData = fs.readFileSync(path.join(__dirname, '../shared/cars.json'), 'utf8');
+  cars = JSON.parse(carsData);
+} catch (error) {
+  console.log('Файл cars.json не найден, создаем пустой массив');
+}
+
+try {
+  const messagesData = fs.readFileSync(path.join(__dirname, '../shared/messages.json'), 'utf8');
+  messages = JSON.parse(messagesData);
+} catch (error) {
+  console.log('Файл messages.json не найден, создаем пустой массив');
+}
+
+// Функция для сохранения данных
+const saveData = (filename, data) => {
+  try {
+    fs.writeFileSync(path.join(__dirname, `../shared/${filename}`), JSON.stringify(data, null, 2));
+  } catch (error) {
+    console.error(`Ошибка сохранения ${filename}:`, error);
+  }
+};
+
+// API Routes
+
+// Регистрация - ИСПРАВЛЕННАЯ
+app.post('/api/auth/register', (req, res) => {
+  const { username, password } = req.body; // убираем email
+  
+  console.log('=== REGISTER DEBUG ===');
+  console.log('Регистрация:', { username, password });
+
+  const existingUser = users.find(u => u.username === username);
+  if (existingUser) {
+    return res.status(400).json({ error: 'Пользователь уже существует' });
+  }
+
+  const user = {
+    id: users.length + 1,
+    username,
+    password,
+    role: 'user',
+    createdAt: new Date().toISOString()
+  };
+
+  users.push(user);
+  saveData('users.json', users);
+
+  req.session.userId = user.id;
+  req.session.user = { id: user.id, username: user.username, role: user.role };
+
+  console.log('Пользователь создан:', user);
+  console.log('Сессия установлена:', req.session.user);
+  console.log('=====================');
+
+  res.json({ user: req.session.user });
+});
+
+// Вход - ИСПРАВЛЕННЫЙ
+app.post('/api/auth/login', (req, res) => {
+  const { username, password } = req.body;
+  
+  console.log('=== LOGIN DEBUG ===');
+  console.log('Попытка входа:', { username, password });
+  console.log('Всего пользователей:', users.length);
+  console.log('Список пользователей:', users.map(u => ({ 
+    id: u.id, 
+    username: u.username, 
+    password: u.password 
+  })));
+
+  const user = users.find(u => u.username === username && u.password === password);
+  console.log('Найденный пользователь:', user);
+  
+  if (!user) {
+    console.log('Пользователь не найден!');
+    return res.status(401).json({ error: 'Неверные данные' });
+  }
+
+  req.session.userId = user.id;
+  req.session.user = { id: user.id, username: user.username, role: user.role };
+  
+  console.log('Сессия установлена:', req.session.user);
+  console.log('===================');
+
+  res.json({ user: req.session.user });
+});
+
+// Выход
+app.post('/api/auth/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Ошибка при выходе:', err);
+      return res.status(500).json({ error: 'Ошибка при выходе' });
+    }
+    res.json({ success: true });
+  });
+});
+
+// Проверка аутентификации
+app.get('/api/auth/me', (req, res) => {
+  console.log('=== AUTH CHECK ===');
+  console.log('Session:', req.session);
+  console.log('User from session:', req.session.user);
+  console.log('==================');
+  
+  if (req.session.user) {
+    res.json({ user: req.session.user });
+  } else {
+    res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+});
+
+// Машины
+app.get('/api/cars', (req, res) => {
+  res.json(cars);
+});
+
+app.post('/api/cars', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+
+  const car = {
+    id: cars.length + 1,
+    ...req.body,
+    sellerId: req.session.user.id,
+    sellerName: req.session.user.username,
+    createdAt: new Date().toISOString(),
+    status: 'pending'
+  };
+
+  cars.push(car);
+  saveData('cars.json', cars);
+  res.json(car);
+});
+
+app.put('/api/cars/:id', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+
+  const carId = parseInt(req.params.id);
+  const carIndex = cars.findIndex(c => c.id === carId);
+
+  if (carIndex === -1) {
+    return res.status(404).json({ error: 'Машина не найдена' });
+  }
+
+  const car = cars[carIndex];
+  if (car.sellerId !== req.session.user.id && req.session.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Нет прав' });
+  }
+
+  cars[carIndex] = { ...car, ...req.body };
+  saveData('cars.json', cars);
+  res.json(cars[carIndex]);
+});
+
+app.delete('/api/cars/:id', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+
+  const carId = parseInt(req.params.id);
+  const carIndex = cars.findIndex(c => c.id === carId);
+
+  if (carIndex === -1) {
+    return res.status(404).json({ error: 'Машина не найдена' });
+  }
+
+  const car = cars[carIndex];
+  if (car.sellerId !== req.session.user.id && req.session.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Нет прав' });
+  }
+
+  cars.splice(carIndex, 1);
+  saveData('cars.json', cars);
+  res.json({ success: true });
+});
+
+// Сообщения
+app.get('/api/messages', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+
+  const userMessages = messages.filter(m =>
+    m.senderId === req.session.user.id || m.receiverId === req.session.user.id
+  );
+
+  res.json(userMessages);
+});
+
+app.post('/api/messages', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+
+  const message = {
+    id: messages.length + 1,
+    ...req.body,
+    senderId: req.session.user.id,
+    senderName: req.session.user.username,
+    createdAt: new Date().toISOString(),
+    status: 'pending'
+  };
+
+  messages.push(message);
+  saveData('messages.json', messages);
+  res.json(message);
+});
+
+app.put('/api/messages/:id/status', (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Нет прав' });
+  }
+
+  const messageId = parseInt(req.params.id);
+  const messageIndex = messages.findIndex(m => m.id === messageId);
+
+  if (messageIndex === -1) {
+    return res.status(404).json({ error: 'Сообщение не найдено' });
+  }
+
+  messages[messageIndex].status = req.body.status;
+  saveData('messages.json', messages);
+  res.json(messages[messageIndex]);
+});
+
+// Заявки
+app.get('/api/applications', (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Нет прав' });
+  }
+
+  const pendingCars = cars.filter(car => car.status === 'pending');
+  res.json(pendingCars);
+});
+
+app.post('/api/applications', (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Не аутентифицирован' });
+  }
+
+  const application = {
+    id: cars.length + 1,
+    ...req.body,
+    sellerId: req.session.user.id,
+    sellerName: req.session.user.username,
+    createdAt: new Date().toISOString(),
+    status: 'pending'
+  };
+
+  cars.push(application);
+  saveData('cars.json', cars);
+  res.json(application);
+});
+
+// Статические файлы
+app.use(express.static(path.join(__dirname, '../public')));
+
+// SPA fallback
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+app.listen(PORT, () => {
+  console.log(`Сервер запущен на порту ${PORT}`);
+});
+
+// Временный роут для создания админа
+app.get('/make-admin/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    const result = await client.query(
+      'UPDATE users SET role = $1 WHERE username = $2 RETURNING *',
+      ['admin', username]
+    );
+    
+    if (result.rows.length > 0) {
+      res.json({ success: true, user: result.rows[0] });
+    } else {
+      res.json({ success: false, error: 'User not found' });
+    }
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});

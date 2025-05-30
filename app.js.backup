@@ -1,0 +1,9 @@
+// app.js - главная точка входа для MasterHost
+const path = require('path');
+
+// Установка переменных окружения
+process.env.NODE_ENV = process.env.NODE_ENV || 'production';
+process.env.PORT = process.env.PORT || 3000;
+
+// Запуск собранного приложения
+require('./dist/server/index.js');

@@ -1,79 +1,94 @@
-const express = require('express');
-const passport = require('passport');
-const bcrypt = require('bcrypt');
-const { validatePasswordMiddleware } = require('../auth');
-const storage = require('../storage');
-const config = require('../config');
-const logger = require('../logger');
+import express from 'express';
+import passport from 'passport';
+import bcrypt from 'bcrypt';
+import { validatePasswordMiddleware } from '../auth';
+import storage from '../storage';
+import config from '../config';
+import logger from '../logger';
+import jwt from 'jsonwebtoken';
+import UserModel from '../models/user';
 
 const router = express.Router();
 
-router.post('/login', (req, res, next) => {
-  passport.authenticate('local', (err, user, info) => {
-    if (err) {
-      logger.error('Login error', { error: err.message });
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-    
-    if (!user) {
-      return res.status(401).json({ error: info.message });
-    }
-    
-    req.logIn(user, (err) => {
-      if (err) {
-        logger.error('Session error', { error: err.message });
-        return res.status(500).json({ error: 'Session error' });
-      }
-      
-      logger.info('User logged in', { username: user.username });
-      res.json({ user });
-    });
-  })(req, res, next);
-});
-
-router.post('/register', validatePasswordMiddleware, async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
-    const { username, password } = req.body;
-    
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password required' });
+    const { fullName, password } = req.body;
+
+    if (!fullName || !password) {
+      return res.status(400).json({ error: 'Full name and password are required' });
     }
-    
-    // Валидация имени пользователя
-    if (username.length < config.validation.username.minLength || 
-        username.length > config.validation.username.maxLength) {
-      return res.status(400).json({ 
-        error: 'Invalid username length',
-        details: config.validation.username
-      });
+
+    const user = await UserModel.findByFullName(fullName);
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
-    
-    const existingUser = await storage.getUserByUsername(username);
-    if (existingUser) {
-      return res.status(400).json({ error: 'Username already taken' });
+
+    const validPassword = await bcrypt.compare(password, user.password_hash);
+    if (!validPassword) {
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
-    
-    const hashedPassword = await bcrypt.hash(password, config.security.bcryptRounds);
-    
-    const user = await storage.createUser({
-      username,
-      password: hashedPassword,
-      role: 'user'
-    });
-    
-    logger.info('User registered', { username });
-    
-    // Автоматический вход после регистрации
-    req.logIn(user, (err) => {
-      if (err) {
-        logger.error('Auto-login error', { error: err.message });
-        return res.status(500).json({ error: 'Session error' });
-      }
-      res.status(201).json({ user });
+
+    const token = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET || 'your-super-secret-jwt-key',
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      user: {
+        id: user.id,
+        fullName: user.full_name
+      },
+      token
     });
   } catch (error) {
-    logger.error('Registration error', { error: error.message });
-    res.status(500).json({ error: 'Registration failed' });
+    console.error('Login error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+router.post('/register', async (req, res) => {
+  try {
+    const { fullName, password } = req.body;
+    
+    if (!fullName || !password) {
+      return res.status(400).json({ error: 'Full name and password are required' });
+    }
+
+    const nameParts = fullName.trim().split(' ');
+    if (nameParts.length !== 2) {
+      return res.status(400).json({ error: 'Full name must be in format "First Last"' });
+    }
+
+    const existingUser = await UserModel.findByFullName(fullName);
+    if (existingUser) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = await UserModel.create(fullName, hashedPassword);
+
+    const token = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET || 'your-super-secret-jwt-key',
+      { expiresIn: '24h' }
+    );
+
+    res.json({
+      user,
+      token
+    });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
@@ -107,4 +122,4 @@ router.get('/me', (req, res) => {
   }
 });
 
-module.exports = router; 
+export default router; 

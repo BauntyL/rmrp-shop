@@ -273,7 +273,7 @@ async function getUserFavorites(userId) {
         u.username as "ownerUsername"
       FROM favorites f
       JOIN cars c ON f."carId" = c.id
-      LEFT JOIN users u ON c."createdBy" = u.id
+      LEFT JOIN users u ON c.created_by = u.id
       WHERE f."userId" = $1
       ORDER BY f."createdAt" DESC
     `, [userId]);

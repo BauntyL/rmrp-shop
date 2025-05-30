@@ -4,11 +4,20 @@ FROM node:18-slim
 # Устанавливаем рабочую директорию в контейнере
 WORKDIR /app
 
-# Копируем все файлы проекта
+# Копируем package.json и package-lock.json
+COPY package*.json ./
+
+# Устанавливаем все зависимости (включая devDependencies для сборки)
+RUN npm install
+
+# Копируем исходный код
 COPY . .
 
-# Устанавливаем только production зависимости
-RUN npm ci --only=production
+# Собираем приложение
+RUN npm run build
+
+# Удаляем devDependencies
+RUN npm prune --production
 
 # Устанавливаем переменные окружения
 ENV NODE_ENV=production

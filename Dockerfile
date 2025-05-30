@@ -5,7 +5,7 @@ FROM node:18-slim
 WORKDIR /app
 
 # Копируем package.json и package-lock.json для установки зависимостей
-COPY package.json package-lock.json ./
+COPY package*.json ./
 
 # Устанавливаем зависимости
 RUN npm install --legacy-peer-deps
@@ -13,11 +13,11 @@ RUN npm install --legacy-peer-deps
 # Копируем весь код приложения в контейнер
 COPY . .
 
-# Сборка приложения (если нужно)
+# Сборка клиентской части
 RUN npm run build
 
 # Открываем порт, на котором будет работать приложение
 EXPOSE 3000
 
 # Команда для запуска приложения
-CMD ["node", "app.js"]
+CMD ["npm", "start"]

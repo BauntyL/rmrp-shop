@@ -14,12 +14,17 @@ type AuthContextType = {
   error: Error | null;
   loginMutation: UseMutationResult<SelectUser, Error, LoginData>;
   logoutMutation: UseMutationResult<void, Error, void>;
-  registerMutation: UseMutationResult<SelectUser, Error, InsertUser>;
+  registerMutation: UseMutationResult<SelectUser, Error, RegisterData>;
   showTermsModal: boolean;
   acceptTerms: () => void;
 };
 
-type LoginData = Pick<InsertUser, "username" | "password">;
+type LoginData = {
+  fullName: string;
+  password: string;
+};
+
+type RegisterData = LoginData;
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -49,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = await response.json();
         const userData = data?.user || data;
 
-        if (userData && userData.id && userData.username) {
+        if (userData && userData.id && userData.fullName) {
           return userData;
         }
         return null;
@@ -109,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
       toast({
         title: "Успешная авторизация",
-        description: `Добро пожаловать, ${userData.username}!`,
+        description: `Добро пожаловать, ${userData.fullName}!`,
       });
     },
     onError: (error: Error) => {
@@ -122,7 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const registerMutation = useMutation({
-    mutationFn: async (credentials: InsertUser) => {
+    mutationFn: async (credentials: RegisterData) => {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -148,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       queryClient.setQueryData(["/api/auth/me"], userData);
       toast({
         title: "Успешная регистрация",
-        description: `Добро пожаловать в АвтоКаталог, ${userData.username}!`,
+        description: `Добро пожаловать в АвтоКаталог, ${userData.fullName}!`,
       });
     },
     onError: (error: Error) => {

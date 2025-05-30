@@ -73,15 +73,15 @@ const PasswordStrengthIndicator = ({ password }: { password: string }) => {
 };
 
 const loginSchema = z.object({
-  username: z.string().min(1, "Введите имя пользователя"),
+  fullName: z.string().min(1, "Введите полное имя"),
   password: z.string().min(1, "Введите пароль"),
   rememberMe: z.boolean().optional(),
 });
 
 const registerSchema = z.object({
-  username: z.string()
-    .min(3, "Имя пользователя должно содержать минимум 3 символа")
-    .max(50, "Имя пользователя не должно превышать 50 символов")
+  fullName: z.string()
+    .min(3, "Полное имя должно содержать минимум 3 символа")
+    .max(50, "Полное имя не должно превышать 50 символов")
     .regex(/^[a-zA-Zа-яА-Я]+ [a-zA-Zа-яА-Я]+$/, "Используйте строго формат: Имя Фамилия (только буквы и один пробел)"),
   password: z.string()
     .min(8, "Пароль должен содержать минимум 8 символов")
@@ -108,8 +108,8 @@ export default function AuthPage() {
     }
   };
 
-  const saveCredentials = (username: string, password: string) => {
-    localStorage.setItem("rememberedCredentials", JSON.stringify({ username, password }));
+  const saveCredentials = (fullName: string, password: string) => {
+    localStorage.setItem("rememberedCredentials", JSON.stringify({ fullName, password }));
   };
 
   const clearSavedCredentials = () => {
@@ -121,7 +121,7 @@ export default function AuthPage() {
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: savedCredentials?.username || "",
+      fullName: savedCredentials?.fullName || "",
       password: savedCredentials?.password || "",
       rememberMe: !!savedCredentials,
     },
@@ -130,7 +130,7 @@ export default function AuthPage() {
   const registerForm = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      username: "",
+      fullName: "",
       password: "",
     },
   });
@@ -143,14 +143,14 @@ export default function AuthPage() {
   const onLoginSubmit = (data: LoginFormData) => {
     // Сохраняем или очищаем данные в зависимости от выбора пользователя
     if (data.rememberMe) {
-      saveCredentials(data.username, data.password);
+      saveCredentials(data.fullName, data.password);
     } else {
       clearSavedCredentials();
     }
     
-    // Отправляем только username и password на сервер
+    // Отправляем только fullName и password на сервер
     loginMutation.mutate({
-      username: data.username,
+      fullName: data.fullName,
       password: data.password
     });
   };
@@ -197,15 +197,15 @@ export default function AuthPage() {
                     <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
                       <FormField
                         control={loginForm.control}
-                        name="username"
+                        name="fullName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-300">Имя пользователя</FormLabel>
+                            <FormLabel className="text-white">Полное имя</FormLabel>
                             <FormControl>
-                              <Input
+                              <Input 
+                                placeholder="Иван Иванов" 
                                 {...field}
-                                placeholder="Введите имя пользователя"
-                                className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+                                className="bg-slate-700 border-slate-600 text-white"
                               />
                             </FormControl>
                             <FormMessage />
@@ -217,47 +217,40 @@ export default function AuthPage() {
                         name="password"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-300">Пароль</FormLabel>
+                            <FormLabel className="text-white">Пароль</FormLabel>
                             <FormControl>
-                              <Input
+                              <Input 
+                                type="password" 
+                                placeholder="••••••••" 
                                 {...field}
-                                type="password"
-                                placeholder="Введите пароль"
-                                className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+                                className="bg-slate-700 border-slate-600 text-white"
                               />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      
                       <FormField
                         control={loginForm.control}
                         name="rememberMe"
                         render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                             <FormControl>
                               <Checkbox
                                 checked={field.value}
                                 onCheckedChange={field.onChange}
-                                className="border-slate-600 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                                className="data-[state=checked]:bg-primary"
                               />
                             </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel className="text-slate-300 text-sm font-normal cursor-pointer">
-                                Запомнить данные для входа
-                              </FormLabel>
-                              <p className="text-xs text-slate-500">
-                                Данные будут сохранены в браузере для удобства
-                              </p>
-                            </div>
+                            <FormLabel className="text-white font-normal">
+                              Запомнить меня
+                            </FormLabel>
                           </FormItem>
                         )}
                       />
-                      
-                      <Button
-                        type="submit"
-                        className="w-full bg-primary hover:bg-primary/90"
+                      <Button 
+                        type="submit" 
+                        className="w-full"
                         disabled={loginMutation.isPending}
                       >
                         {loginMutation.isPending ? "Вход..." : "Войти"}
@@ -271,20 +264,17 @@ export default function AuthPage() {
                     <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
                       <FormField
                         control={registerForm.control}
-                        name="username"
+                        name="fullName"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-300">Имя пользователя</FormLabel>
+                            <FormLabel className="text-white">Полное имя</FormLabel>
                             <FormControl>
-                              <Input
+                              <Input 
+                                placeholder="Иван Иванов" 
                                 {...field}
-                                placeholder="Например: Баунти Миллер"
-                                className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+                                className="bg-slate-700 border-slate-600 text-white"
                               />
                             </FormControl>
-                            <p className="text-xs text-slate-400 mt-1">
-                              Пример: Иван Иванов
-                            </p>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -294,23 +284,27 @@ export default function AuthPage() {
                         name="password"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-slate-300">Пароль</FormLabel>
+                            <FormLabel className="text-white">Пароль</FormLabel>
                             <FormControl>
-                              <Input
+                              <Input 
+                                type="password" 
+                                placeholder="••••••••" 
                                 {...field}
-                                type="password"
-                                placeholder="Введите пароль"
-                                className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+                                className="bg-slate-700 border-slate-600 text-white"
+                                onChange={(e) => {
+                                  field.onChange(e);
+                                  registerForm.trigger("password");
+                                }}
                               />
                             </FormControl>
-                            <PasswordStrengthIndicator password={field.value || ""} />
                             <FormMessage />
+                            <PasswordStrengthIndicator password={field.value} />
                           </FormItem>
                         )}
                       />
-                      <Button
-                        type="submit"
-                        className="w-full bg-primary hover:bg-primary/90"
+                      <Button 
+                        type="submit" 
+                        className="w-full"
                         disabled={registerMutation.isPending}
                       >
                         {registerMutation.isPending ? "Регистрация..." : "Зарегистрироваться"}

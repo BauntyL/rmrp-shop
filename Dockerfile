@@ -4,20 +4,24 @@ FROM node:18-slim
 # Устанавливаем рабочую директорию в контейнере
 WORKDIR /app
 
-# Копируем package.json и package-lock.json для установки зависимостей
+# Копируем файлы package.json и package-lock.json
 COPY package*.json ./
 
-# Устанавливаем зависимости
-RUN npm install --legacy-peer-deps
-
-# Копируем весь код приложения в контейнер
+# Копируем все файлы проекта
 COPY . .
 
-# Сборка клиентской части
-RUN npm run build
+# Устанавливаем зависимости
+RUN npm install --legacy-peer-deps --production
 
-# Открываем порт, на котором будет работать приложение
+# Создаем необходимые директории
+RUN mkdir -p server/scripts
+
+# Устанавливаем переменные окружения
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Открываем порт
 EXPOSE 3000
 
-# Команда для запуска приложения
+# Запускаем приложение
 CMD ["npm", "start"]

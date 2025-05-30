@@ -25,11 +25,13 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "pg": "^8.11.3",
-    "winston": "^3.11.0"
+    "winston": "^3.11.0",
+    "glob": "^10.3.10",
+    "rimraf": "^5.0.5",
+    "superagent": "^9.0.1"
   },
   "devDependencies": {
     "jest": "^29.7.0",
-    "nodemon": "^3.0.2",
-    "supertest": "^6.3.3"
+    "nodemon": "^3.0.2"
   }
 }

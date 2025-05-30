@@ -36,7 +36,7 @@ function requireRole(roles) {
 }
 
 // Аутентификация
-router.post('/login', async (req, res) => {
+router.post('/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
     console.log('🔑 Login attempt for:', username);
@@ -89,7 +89,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-router.post('/register', async (req, res) => {
+router.post('/auth/register', async (req, res) => {
   try {
     const { username, password } = req.body;
     console.log('📝 Registration attempt for:', username);
@@ -135,7 +135,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-router.post('/logout', (req, res) => {
+router.post('/auth/logout', (req, res) => {
   const username = req.session?.user?.username || 'Unknown';
   req.session.destroy((err) => {
     if (err) {
@@ -147,7 +147,7 @@ router.post('/logout', (req, res) => {
   });
 });
 
-router.get('/user', (req, res) => {
+router.get('/auth/me', (req, res) => {
   console.log('👤 User info requested');
   
   if (req.session && req.session.user) {

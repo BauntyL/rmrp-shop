@@ -1,6 +1,7 @@
 const path = require('path');
 const { Pool } = require('pg');
 const logger = require('./logger');
+const config = require('./config');
 
 // Исправляем путь к .env - он должен быть в корневой папке проекта
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
@@ -10,13 +11,13 @@ console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Loaded' : 'Not found');
 
 // Создаем пул соединений
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' 
-    ? { rejectUnauthorized: false }
-    : false,
+  connectionString: config.database.url,
+  ssl: {
+    rejectUnauthorized: false
+  },
   max: 20, // максимальное количество клиентов в пуле
   idleTimeoutMillis: 30000, // время простоя клиента
-  connectionTimeoutMillis: 2000, // время ожидания соединения
+  connectionTimeoutMillis: 5000, // увеличенное время ожидания соединения
 });
 
 // Обработка ошибок пула

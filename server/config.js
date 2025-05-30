@@ -1,25 +1,33 @@
-const config = {
-  security: {
-    bcryptRounds: 10,
-    sessionSecret: process.env.SESSION_SECRET || 'your-secret-key-change-in-production',
-    sessionCookie: {
-      secure: process.env.NODE_ENV === 'production',
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+require('dotenv').config();
+
+module.exports = {
+  database: {
+    url: process.env.DATABASE_URL || 'postgresql://postgres:OKVGVKtirMjvUDZUPQEBpkMAjosxhyQd@tramway.proxy.rlwy.net:41435/railway',
+    ssl: {
+      rejectUnauthorized: false
     }
   },
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: process.env.NODE_ENV === 'production' ? 'https://rmrp-shop.up.railway.app' : 'http://localhost:3000',
     credentials: true
   },
   rateLimit: {
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100 // limit each IP to 100 requests per windowMs
+    windowMs: 15 * 60 * 1000, // 15 минут
+    max: 100 // 100 запросов с одного IP
+  },
+  security: {
+    sessionSecret: process.env.SESSION_SECRET || 'your-secret-key',
+    sessionCookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000 // 24 часа
+    },
+    bcryptRounds: 10
   },
   validation: {
     username: {
       minLength: 3,
-      maxLength: 30
+      maxLength: 50
     },
     password: {
       minLength: 8,
@@ -29,6 +37,4 @@ const config = {
   logging: {
     level: process.env.NODE_ENV === 'production' ? 'info' : 'debug'
   }
-};
-
-module.exports = config; 
+}; 

@@ -4,6 +4,8 @@ const cors = require('cors');
 const session = require('express-session');
 const passport = require('passport');
 const setupAuth = require('./auth');
+const pgSession = require('connect-pg-simple')(session);
+const { pool } = require('./db');
 
 // Загружаем переменные окружения из .env файла в корневой папке
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
@@ -22,8 +24,13 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Настройка сессий
+// Настройка сессий с использованием PostgreSQL
 app.use(session({
+  store: new pgSession({
+    pool,
+    tableName: 'session',
+    createTableIfMissing: true
+  }),
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: false,

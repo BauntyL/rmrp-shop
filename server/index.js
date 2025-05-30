@@ -13,6 +13,13 @@ const { pool } = require('./db');
 
 const app = express();
 
+// Логирование конфигурации
+logger.info('Starting server with configuration', {
+  nodeEnv: process.env.NODE_ENV,
+  port: process.env.PORT || 3001,
+  databaseUrl: process.env.DATABASE_URL ? 'configured' : 'missing'
+});
+
 // Основные middleware
 app.use(helmet()); // Безопасные заголовки HTTP
 app.use(cors(config.cors));
@@ -40,24 +47,30 @@ app.use(passport.initialize());
 app.use(passport.session());
 setupAuth(passport);
 
-// Логирование запросов
+// Логирование всех запросов
 app.use((req, res, next) => {
   logger.info('Incoming request', {
     method: req.method,
     path: req.path,
-    ip: req.ip
+    originalUrl: req.originalUrl,
+    baseUrl: req.baseUrl,
+    ip: req.ip,
+    headers: req.headers
   });
   next();
 });
 
 // Маршруты API
+logger.info('Mounting API routes at /api');
 app.use('/api', routes);
 
 // Обработка ошибок
 app.use((err, req, res, next) => {
   logger.error('Unhandled error', { 
     error: err.message,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    path: req.path,
+    method: req.method
   });
   
   res.status(err.status || 500).json({
@@ -70,5 +83,9 @@ app.use((err, req, res, next) => {
 // Запуск сервера
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  logger.info(`Server started`, { port: PORT });
+  logger.info(`Server started`, { 
+    port: PORT,
+    nodeEnv: process.env.NODE_ENV,
+    apiPath: '/api'
+  });
 });

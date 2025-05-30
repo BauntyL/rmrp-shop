@@ -1,21 +1,14 @@
 import express from 'express';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import pg from 'pg';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import session from 'express-session';
-import pgSession from 'connect-pg-simple';
-import passport from 'passport';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
 import config from './config';
 import logger from './logger';
-import { setupAuth } from './auth';
 import routes from './routes';
-import { pool, checkConnection } from './db';
+import { checkConnection } from './db';
 import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -35,30 +28,22 @@ app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false
 }));
-app.use(cors(config.cors));
+
+// Настройка CORS
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://rmrp-shop.up.railway.app']
+    : ['http://localhost:3000', 'http://localhost:5173'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Rate limiting
 app.use(rateLimit(config.rateLimit));
-
-// Настройка сессий в PostgreSQL
-app.use(session({
-  store: new pgSession({
-    pool,
-    tableName: 'session',
-    createTableIfMissing: true
-  }),
-  secret: config.security.sessionSecret,
-  resave: false,
-  saveUninitialized: false,
-  cookie: config.security.sessionCookie
-}));
-
-// Настройка паспорта
-app.use(passport.initialize());
-app.use(passport.session());
-setupAuth(passport);
 
 // Логирование всех запросов
 app.use((req, res, next) => {

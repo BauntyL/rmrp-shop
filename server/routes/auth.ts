@@ -1,9 +1,13 @@
 import express from 'express';
 import { UserModel } from '../models/user.js';
+import { generateToken } from '../middleware/auth.js';
 import jwt from 'jsonwebtoken';
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+interface JwtPayload {
+  userId: number;
+}
 
 // Регистрация
 router.post('/register', async (req, res) => {
@@ -38,11 +42,7 @@ router.post('/register', async (req, res) => {
     const user = await UserModel.createUser({ full_name: fullName, password });
     
     // Создаем JWT токен
-    const token = jwt.sign(
-      { id: user.id, full_name: user.full_name },
-      JWT_SECRET,
-      { expiresIn: '24h' }
-    );
+    const token = generateToken(user.id);
 
     res.status(201).json({
       success: true,
@@ -103,11 +103,7 @@ router.post('/login', async (req, res) => {
         }
 
         // Создаем JWT токен
-        const token = jwt.sign(
-          { id: user.id, full_name: user.full_name },
-          JWT_SECRET,
-          { expiresIn: '24h' }
-        );
+        const token = generateToken(user.id);
 
         res.json({
           success: true,
@@ -133,6 +129,45 @@ router.post('/login', async (req, res) => {
       error: process.env.NODE_ENV === 'development' ? 
         error instanceof Error ? error.message : 'Unknown error' 
         : undefined
+    });
+  }
+});
+
+// Проверка текущего пользователя
+router.get('/me', async (req, res) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'Требуется авторизация'
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-super-secret-jwt-key') as JwtPayload;
+    const user = await UserModel.findById(decoded.userId);
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Пользователь не найден'
+      });
+    }
+
+    res.json({
+      success: true,
+      user: {
+        id: user.id,
+        fullName: user.full_name
+      }
+    });
+  } catch (error) {
+    console.error('Ошибка при проверке пользователя:', error);
+    res.status(401).json({
+      success: false,
+      message: 'Недействительный токен'
     });
   }
 });

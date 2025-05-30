@@ -1,5 +1,6 @@
 const path = require('path');
 const { Pool } = require('pg');
+const logger = require('./logger');
 
 // Исправляем путь к .env - он должен быть в корневой папке проекта
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
@@ -12,8 +13,57 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' 
     ? { rejectUnauthorized: false }
-    : false
+    : false,
+  max: 20, // максимальное количество клиентов в пуле
+  idleTimeoutMillis: 30000, // время простоя клиента
+  connectionTimeoutMillis: 2000, // время ожидания соединения
 });
+
+// Обработка ошибок пула
+pool.on('error', (err, client) => {
+  logger.error('Unexpected error on idle client', { error: err.message });
+});
+
+// Проверка соединения
+async function checkConnection() {
+  try {
+    const client = await pool.connect();
+    const result = await client.query('SELECT NOW()');
+    client.release();
+    
+    logger.info('Database connection successful', {
+      timestamp: result.rows[0].now
+    });
+    
+    return true;
+  } catch (error) {
+    logger.error('Database connection failed', { error: error.message });
+    throw error;
+  }
+}
+
+// Функция для выполнения запроса с автоматическим освобождением клиента
+async function query(text, params) {
+  const start = Date.now();
+  try {
+    const result = await pool.query(text, params);
+    const duration = Date.now() - start;
+    
+    logger.debug('Executed query', {
+      text,
+      duration,
+      rows: result.rowCount
+    });
+    
+    return result;
+  } catch (error) {
+    logger.error('Query error', {
+      text,
+      error: error.message
+    });
+    throw error;
+  }
+}
 
 async function initDb() {
   try {
@@ -81,6 +131,8 @@ async function createDefaultAdmin() {
 
 module.exports = {
   pool,
+  query,
+  checkConnection,
   initDb,
   initializeTables,
   createDefaultAdmin

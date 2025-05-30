@@ -1,6 +1,6 @@
 const express = require('express');
 const session = require('express-session');
-const FileStore = require('session-file-store')(session);
+const pgSession = require('connect-pg-simple')(session);
 const passport = require('passport');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -9,6 +9,7 @@ const config = require('./config');
 const logger = require('./logger');
 const { setupAuth } = require('./auth');
 const routes = require('./routes');
+const { pool } = require('./db');
 
 const app = express();
 
@@ -21,12 +22,12 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Rate limiting
 app.use(rateLimit(config.rateLimit));
 
-// Настройка сессий
+// Настройка сессий в PostgreSQL
 app.use(session({
-  store: new FileStore({
-    path: './sessions',
-    ttl: 86400, // 1 день
-    reapInterval: 3600 // Очистка старых сессий каждый час
+  store: new pgSession({
+    pool,
+    tableName: 'session',
+    createTableIfMissing: true
   }),
   secret: config.security.sessionSecret,
   resave: false,
@@ -67,7 +68,7 @@ app.use((err, req, res, next) => {
 });
 
 // Запуск сервера
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   logger.info(`Server started`, { port: PORT });
 });

@@ -12,7 +12,7 @@ async function testAuth() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: 'test@example.com',
+        fullName: 'Иван Иванов',
         password: 'test123',
       }),
     });
@@ -28,7 +28,7 @@ async function testAuth() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: 'test@example.com',
+        fullName: 'Иван Иванов',
         password: 'test123',
       }),
     });

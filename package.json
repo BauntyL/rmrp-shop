@@ -35,6 +35,15 @@
   },
   "devDependencies": {
     "jest": "^29.7.0",
-    "nodemon": "^3.0.2"
+    "nodemon": "^3.0.2",
+    "typescript": "^5.3.3"
+  },
+  "resolutions": {
+    "glob": "^10.3.10",
+    "rimraf": "^5.0.5",
+    "npmlog": "^7.0.1",
+    "gauge": "^4.0.4",
+    "are-we-there-yet": "^4.0.0",
+    "inflight": "^2.0.0"
   }
 }

@@ -19,11 +19,7 @@ function setupAuth(passport) {
           return done(null, false, { message: 'Неверное имя пользователя или пароль' });
         }
 
-        // Временные пароли для админов
-        const isValidPassword = 
-          (username === "477-554" && password === "Qwerty123!") ||
-          (username === "Баунти Миллер" && password === "123456789") ||
-          (await bcrypt.compare(password, user.password));
+        const isValidPassword = await bcrypt.compare(password, user.password);
 
         if (!isValidPassword) {
           console.log(`❌ Invalid password for user: ${username}`);
@@ -49,8 +45,11 @@ function setupAuth(passport) {
   passport.deserializeUser(async (id, done) => {
     try {
       console.log(`🔧 Deserializing user ID: ${id}`);
-      const user = await storage.getUserById(id);  // ← ТЕПЕРЬ ФУНКЦИЯ СУЩЕСТВУЕТ
-      console.log(`✅ User deserialized: ${user?.username || 'not found'}`);
+      const user = await storage.getUserById(id);
+      if (!user) {
+        return done(null, false);
+      }
+      console.log(`✅ User deserialized: ${user.username}`);
       done(null, user);
     } catch (error) {
       console.error('❌ Deserialization error:', error);

@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const storage = require('./storage-fixed');
+const { validatePassword } = require('./utils');
 
 const router = express.Router();
 
@@ -95,6 +96,15 @@ router.post('/register', async (req, res) => {
     
     if (!username || !password) {
       return res.status(400).json({ error: 'Username and password required' });
+    }
+    
+    // Валидация пароля
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      return res.status(400).json({ 
+        error: 'Invalid password',
+        details: passwordValidation.errors
+      });
     }
     
     const existingUser = await storage.getUserByUsername(username);

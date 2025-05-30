@@ -1,0 +1,8 @@
+{
+  "name": "rmrp-shop-server",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "create-admin": "node create-admin.js"
+  }
+} 

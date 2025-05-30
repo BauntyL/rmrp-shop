@@ -8,5 +8,7 @@
     "build": "npm install --include=dev && vite build && node copy-static.js"
   },
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {
+    "vite": "^4.0.0"
+  }
 }

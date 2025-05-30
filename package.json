@@ -1,13 +1,14 @@
 {
   "name": "rest-express",
   "version": "1.0.0",
-  "main": "server/index.js",
+  "main": "dist/server/index.js",
+  "type": "module",
   "scripts": {
-    "dev": "nodemon server/index.js",
+    "dev": "nodemon server/index.ts",
     "dev:client": "cd client && npm run dev",
-    "build": "cd client && npm run build",
-    "build:full": "cd client && npm install && npm run build",
-    "start": "node server/index.js",
+    "build": "tsc && cd client && npm run build",
+    "build:full": "npm install && tsc && cd client && npm install && npm run build",
+    "start": "node dist/server/index.js",
     "install:client": "cd client && npm install"
   },
   "dependencies": {
@@ -24,6 +25,7 @@
     "bcrypt": "^6.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "compression": "^1.8.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
@@ -44,6 +46,9 @@
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.16",
+    "@types/compression": "^1.8.0",
+    "@types/express": "^5.0.2",
+    "@types/node": "^22.15.27",
     "@types/react": "^18.2.21",
     "@types/react-dom": "^18.2.7",
     "@vitejs/plugin-react": "^4.2.1",

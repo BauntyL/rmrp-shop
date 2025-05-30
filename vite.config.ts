@@ -1,31 +1,12 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import path from "path";
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import viteTsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
-  plugins: [react()],
-  root: "./client",
+  root: 'client',
   build: {
-    outDir: "../dist/public",
+    outDir: '../dist/client',
     emptyOutDir: true,
   },
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./client/src"),
-      "@shared": path.resolve(__dirname, "./shared"),
-    },
-  },
-  server: {
-    proxy: {
-      "/api": "http://localhost:3000",
-    },
-  },
-  css: {
-    postcss: {
-      plugins: [
-        require('tailwindcss'),
-        require('autoprefixer'),
-      ],
-    },
-  },
+  plugins: [react(), viteTsconfigPaths()],
 });

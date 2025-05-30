@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "RMRP Shop Application",
   "main": "server/index.js",
+  "type": "module",
   "scripts": {
-    "start": "node server/index.js",
-    "dev": "nodemon server/index.js",
+    "start": "node --experimental-specifier-resolution=node dist/server/index.js",
+    "dev": "nodemon --experimental-specifier-resolution=node server/index.ts",
     "test": "jest",
     "build": "npm run build:client && npm run build:server",
     "build:client": "cd client && npm install && npm run build",

@@ -22,6 +22,9 @@ app.use(express.static(path.join(rootDir, 'client/dist'), {
   etag: true,
 }));
 
+// Маршрут для healthcheck (Railway) – возвращает 200 OK
+app.get('/api/health', (req, res) => res.status(200).send('ok'));
+
 // Все остальные GET-запросы перенаправляем на index.html
 app.get('*', (req: Request, res: Response) => {
   res.sendFile(path.join(rootDir, 'client/dist/index.html'));

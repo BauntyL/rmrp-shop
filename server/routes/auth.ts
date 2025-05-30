@@ -51,46 +51,65 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    
+    console.log('Попытка входа для:', email);
 
     // Ищем пользователя
-    const user = await UserModel.findByEmail(email);
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Неверный email или пароль'
-      });
-    }
-
-    // Проверяем пароль
-    const isValidPassword = await UserModel.validatePassword(user, password);
-    if (!isValidPassword) {
-      return res.status(401).json({
-        success: false,
-        message: 'Неверный email или пароль'
-      });
-    }
-
-    // Создаем JWT токен
-    const token = jwt.sign(
-      { id: user.id, email: user.email },
-      JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    res.json({
-      success: true,
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name
+    try {
+      const user = await UserModel.findByEmail(email);
+      console.log('Результат поиска пользователя:', user ? 'найден' : 'не найден');
+      
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Неверный email или пароль'
+        });
       }
-    });
+
+      // Проверяем пароль
+      try {
+        const isValidPassword = await UserModel.validatePassword(user, password);
+        console.log('Результат проверки пароля:', isValidPassword);
+        
+        if (!isValidPassword) {
+          return res.status(401).json({
+            success: false,
+            message: 'Неверный email или пароль'
+          });
+        }
+
+        // Создаем JWT токен
+        const token = jwt.sign(
+          { id: user.id, email: user.email },
+          JWT_SECRET,
+          { expiresIn: '24h' }
+        );
+
+        res.json({
+          success: true,
+          token,
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name
+          }
+        });
+      } catch (passwordError) {
+        console.error('Ошибка при проверке пароля:', passwordError);
+        throw passwordError;
+      }
+    } catch (dbError) {
+      console.error('Ошибка при поиске пользователя в БД:', dbError);
+      throw dbError;
+    }
   } catch (error) {
-    console.error('Ошибка при входе:', error);
+    console.error('Общая ошибка при входе:', error);
     res.status(500).json({
       success: false,
-      message: 'Ошибка при попытке входа'
+      message: 'Ошибка при попытке входа',
+      error: process.env.NODE_ENV === 'development' ? 
+        error instanceof Error ? error.message : 'Unknown error' 
+        : undefined
     });
   }
 });

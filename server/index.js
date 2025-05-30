@@ -1,128 +1,44 @@
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
-const session = require('express-session');
-const path = require('path');
-const fs = require('fs');
-const MemoryStore = require('memorystore')(session);
-const bcrypt = require('bcrypt');
-const { getUserByUsername } = require('../storage')
-;
+
+// Загружаем переменные окружения из .env файла в корневой папке
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+
 const { initDb } = require("./db");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
 // Middleware
+app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Обработка preflight запросов
-app.options('*', cors({
-  origin: 'http://rmrp-shop.ru',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// Статические файлы (если есть)
+app.use(express.static(path.join(__dirname, '../dist')));
 
-// CORS
-app.use(cors({
-  origin: 'http://rmrp-shop.ru',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// Базовый роут для проверки
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', message: 'Server is running' });
+});
 
-// Настройка сессий
-app.use(session({
-  cookie: {
-    maxAge: 86400000,
-    httpOnly: true,
-    secure: false,
-    sameSite: 'lax'
-  },
-  store: new MemoryStore({
-    checkPeriod: 86400000
-  }),
-  secret: 'your-secret-key-here',
-  resave: false,
-  saveUninitialized: false,
-  name: 'connect.sid'
-}));
-
-// Статические файлы
-app.use(express.static(path.join(__dirname, '../build')));
-
-// API Routes
-
-// Вход пользователя
-app.post('/api/auth/login', async (req, res) => {
-  const { username, password } = req.body;
-
-  console.log('=== LOGIN DEBUG ===');
-  console.log('Попытка входа:', { username });
-
+// Запуск приложения
+(async () => {
   try {
-    // Загружаем пользователя из БД
-    const user = await getUserByUsername(username);
-    console.log('Найденный пользователь из БД:', user ? { id: user.id, username: user.username, role: user.role } : null);
-
-    if (!user) {
-      console.log('Пользователь не найден в БД!');
-      return res.status(401).json({ error: 'Неверные данные' });
-    }
-
-    // Проверяем пароль
-    const isValidPassword = user.password.startsWith('$2b$') 
-      ? await bcrypt.compare(password, user.password)
-      : password === user.password;
-
-    if (!isValidPassword) {
-      console.log('Неверный пароль!');
-      return res.status(401).json({ error: 'Неверные данные' });
-    }
-
-    req.session.userId = user.id;
-    req.session.user = { id: user.id, username: user.username, role: user.role };
-
-    console.log('Сессия установлена:', req.session.user);
-    console.log('===================');
-
-    res.json({ user: req.session.user });
+    console.log('🚀 Starting server...');
+    
+    // Инициализация базы данных
+    await initDb();
+    console.log('✅ Database connected and initialized!');
+    
+    // Запуск сервера
+    app.listen(port, () => {
+      console.log(`🌟 Server is running on http://localhost:${port}`);
+      console.log(`📊 Health check: http://localhost:${port}/api/health`);
+    });
   } catch (error) {
-    console.error('Ошибка при входе:', error);
-    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+    console.error('❌ Failed to initialize the server:', error);
+    process.exit(1);
   }
-});
-
-// Выход
-app.post('/api/auth/logout', (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).json({ error: 'Ошибка при выходе' });
-    }
-    res.clearCookie('connect.sid');
-    res.json({ message: 'Выход выполнен' });
-  });
-});
-
-// Проверка статуса
-app.get('/api/auth/status', (req, res) => {
-  if (req.session && req.session.user) {
-    res.json({ user: req.session.user });
-  } else {
-    res.status(401).json({ error: 'Не авторизован' });
-  }
-});
-
-// Обработка всех остальных маршрутов - отдаем React приложение
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../build', 'index.html'));
-});
-
-// Запуск сервера
-// Инициализация базы данных
-initDb();
-app.listen(PORT, () => {
-  console.log(`Сервер запущен на порту ${PORT}`);
-});
-
-module.exports = app;
+})();

@@ -1,4 +1,4 @@
-const { getClient } = require('./db');
+const { getClient } = require('./server/db');
 
 // Заявки на автомобили
 async function createApplication(applicationData) {

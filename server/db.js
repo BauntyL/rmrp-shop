@@ -1,12 +1,21 @@
+const path = require('path');
 const { Client } = require('pg');
+
+// Исправляем путь к .env - он должен быть в корневой папке проекта
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+
+// Проверка, что переменная DATABASE_URL загружена
+console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Loaded' : 'Not found');
 
 let client;
 
 async function initDb() {
   try {
     const connectionString = process.env.DATABASE_URL;
-    
+
     if (!connectionString) {
+      console.error('❌ DATABASE_URL environment variable is not set');
+      console.error('Make sure .env file exists in the root directory');
       throw new Error('DATABASE_URL environment variable is not set');
     }
 
@@ -22,6 +31,9 @@ async function initDb() {
 
     // Initialize tables
     await initializeTables();
+    
+    // Create default admin
+    await createDefaultAdmin();
 
     return client;
   } catch (error) {
@@ -45,84 +57,7 @@ async function initializeTables() {
       )
     `);
 
-    // ✅ НЕ ПЕРЕСОЗДАЕМ! ТОЛЬКО СОЗДАЕМ ЕСЛИ НЕ СУЩЕСТВУЕТ
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS car_applications (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        price INTEGER NOT NULL,
-        description TEXT,
-        category VARCHAR(100),
-        server VARCHAR(100),
-        "maxSpeed" INTEGER,
-        acceleration VARCHAR(50),
-        drive VARCHAR(50),
-        "serverId" VARCHAR(100),
-        phone VARCHAR(50),
-        telegram VARCHAR(100),
-        discord VARCHAR(100),
-        "imageUrl" TEXT,
-        "isPremium" BOOLEAN DEFAULT FALSE,
-        status VARCHAR(50) DEFAULT 'pending',
-        "createdBy" INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        "reviewedBy" INTEGER REFERENCES users(id),
-        "reviewedAt" TIMESTAMP,
-        "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
-    // ✅ НЕ ПЕРЕСОЗДАЕМ! ТОЛЬКО СОЗДАЕМ ЕСЛИ НЕ СУЩЕСТВУЕТ
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS car_listings (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        price INTEGER NOT NULL,
-        description TEXT,
-        category VARCHAR(100),
-        server VARCHAR(100),
-        "maxSpeed" INTEGER,
-        acceleration VARCHAR(50),
-        drive VARCHAR(50),
-        "isPremium" BOOLEAN DEFAULT FALSE,
-        phone VARCHAR(50),
-        telegram VARCHAR(100),
-        discord VARCHAR(100),
-        "imageUrl" TEXT,
-        owner_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        application_id INTEGER REFERENCES car_applications(id),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
-    // ✅ НЕ ПЕРЕСОЗДАЕМ! ТОЛЬКО СОЗДАЕМ ЕСЛИ НЕ СУЩЕСТВУЕТ
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS messages (
-        id SERIAL PRIMARY KEY,
-        "senderId" INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        "receiverId" INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        "carId" INTEGER REFERENCES car_listings(id) ON DELETE CASCADE,
-        content TEXT NOT NULL,
-        "isRead" BOOLEAN DEFAULT FALSE,
-        "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
-    // ✅ НЕ ПЕРЕСОЗДАЕМ! ТОЛЬКО СОЗДАЕМ ЕСЛИ НЕ СУЩЕСТВУЕТ
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS favorites (
-        id SERIAL PRIMARY KEY,
-        "userId" INTEGER REFERENCES users(id) ON DELETE CASCADE,
-        "carId" INTEGER REFERENCES car_listings(id) ON DELETE CASCADE,
-        "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE("userId", "carId")
-      )
-    `);
-
-    console.log("✅ Database tables initialized successfully (preserved existing data)");
-    
-    // СОЗДАЕМ АДМИНА ЕСЛИ НЕТ
-    await createDefaultAdmin();
-    
+    console.log("✅ Database tables initialized successfully");
   } catch (error) {
     console.error("❌ Database initialization error:", error);
     throw error;

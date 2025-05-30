@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon server.js",
-    "build": "npm install --include=dev && vite build && cp -r server dist/ && cp -r shared dist/ && cp storage.js dist/ && cp server/db.js dist/ && cp server/index.js dist/server/index.js && cp package.json dist/ && cp package-lock.json dist/"
+    "build": "npm install --include=dev && vite build && node copy-static.js"
   },
   "dependencies": {},
   "devDependencies": {}

@@ -1,19 +1,43 @@
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
+const session = require('express-session');
+const passport = require('passport');
+const setupAuth = require('./auth');
 
 // Загружаем переменные окружения из .env файла в корневой папке
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 const { initDb } = require("./db");
+const routes = require('./routes');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Настройка сессий
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 часа
+  }
+}));
+
+// Инициализация Passport
+app.use(passport.initialize());
+app.use(passport.session());
+setupAuth(passport);
 
 // Статические файлы из папки client/dist
 app.use(express.static(path.join(__dirname, '../client/dist')));
@@ -23,9 +47,8 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
 });
 
-// Добавьте здесь другие API роуты
-// app.use('/api/users', userRoutes);
-// app.use('/api/auth', authRoutes);
+// Подключаем все API роуты
+app.use('/api', routes);
 
 // Fallback для React Router - должен быть ПОСЛЕДНИМ
 app.get('*', (req, res) => {

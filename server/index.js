@@ -15,12 +15,32 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Статические файлы (если есть)
-app.use(express.static(path.join(__dirname, '../dist')));
+// Статические файлы из папки client/dist
+app.use(express.static(path.join(__dirname, '../client/dist')));
 
-// Базовый роут для проверки
+// API роуты
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running' });
+});
+
+// Добавьте здесь другие API роуты
+// app.use('/api/users', userRoutes);
+// app.use('/api/auth', authRoutes);
+
+// Fallback для React Router - должен быть ПОСЛЕДНИМ
+app.get('*', (req, res) => {
+  // Проверяем, что это не API запрос
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  
+  // Отправляем index.html из папки client/dist
+  res.sendFile(path.join(__dirname, '../client/dist/index.html'), (err) => {
+    if (err) {
+      console.log('Error serving index.html:', err);
+      res.status(500).send('Error loading page');
+    }
+  });
 });
 
 // Запуск приложения

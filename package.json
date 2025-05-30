@@ -2,11 +2,11 @@
   "name": "rest-express",
   "version": "1.0.0",
   "main": "server/index.js",
-"scripts": {
-  "dev": "nodemon server/index.js",
-  "build": "npm install --include=dev && vite build && node copy-static.cjs",
-  "start": "node server/index.js"
-},
+  "scripts": {
+    "dev": "nodemon server/index.js",
+    "build": "npm install --include=dev && vite build && node copy-static.cjs",
+    "start": "node server/index.js"
+  },
   "dependencies": {
     "@hookform/resolvers": "^3.1.1",
     "@radix-ui/react-checkbox": "^1.0.5",

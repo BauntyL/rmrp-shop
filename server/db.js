@@ -1,5 +1,5 @@
 const path = require('path');
-const { Client } = require('pg');
+const { Pool } = require('pg');
 
 // Исправляем путь к .env - он должен быть в корневой папке проекта
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
@@ -7,35 +7,23 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 // Проверка, что переменная DATABASE_URL загружена
 console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Loaded' : 'Not found');
 
-let client;
+// Создаем пул соединений
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' 
+    ? { rejectUnauthorized: false }
+    : false
+});
 
 async function initDb() {
   try {
-    const connectionString = process.env.DATABASE_URL;
-
-    if (!connectionString) {
-      console.error('❌ DATABASE_URL environment variable is not set');
-      console.error('Make sure .env file exists in the root directory');
-      throw new Error('DATABASE_URL environment variable is not set');
-    }
-
     console.log('🔄 Connecting to database...');
     
-    client = new Client({
-      connectionString,
-      ssl: { rejectUnauthorized: false }
-    });
-
-    await client.connect();
+    // Проверяем соединение
+    await pool.query('SELECT NOW()');
     console.log('✅ Database connected successfully');
 
-    // Initialize tables
-    await initializeTables();
-    
-    // Create default admin
-    await createDefaultAdmin();
-
-    return client;
+    return pool;
   } catch (error) {
     console.error('❌ Database connection failed:', error);
     throw error;
@@ -47,7 +35,7 @@ async function initializeTables() {
     console.log("🔧 Initializing database tables...");
     
     // СОЗДАЕМ ТАБЛИЦУ ПОЛЬЗОВАТЕЛЕЙ
-    await client.query(`
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         username VARCHAR(255) UNIQUE NOT NULL,
@@ -66,7 +54,7 @@ async function initializeTables() {
 
 async function createDefaultAdmin() {
   try {
-    const adminCheck = await client.query(
+    const adminCheck = await pool.query(
       'SELECT * FROM users WHERE role = $1',
       ['admin']
     );
@@ -77,7 +65,7 @@ async function createDefaultAdmin() {
       const bcrypt = require('bcrypt');
       const hashedPassword = await bcrypt.hash('Lqlcpyvb555!999#81', 10);
       
-      await client.query(
+      await pool.query(
         'INSERT INTO users (username, password, role) VALUES ($1, $2, $3)',
         ['Баунти Миллер', hashedPassword, 'admin']
       );
@@ -91,14 +79,9 @@ async function createDefaultAdmin() {
   }
 }
 
-function getClient() {
-  if (!client) {
-    throw new Error('Database not initialized. Call initDb() first.');
-  }
-  return client;
-}
-
 module.exports = {
+  pool,
   initDb,
-  getClient
+  initializeTables,
+  createDefaultAdmin
 };

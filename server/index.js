@@ -16,11 +16,24 @@ const routes = require('./routes');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware
+const ALLOWED_ORIGINS = process.env.NODE_ENV === 'production'
+  ? ['https://autocatalog-production.up.railway.app', 'https://rmrp-shop.ru']
+  : ['http://localhost:5173'];
+
+// CORS настройки
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
-  credentials: true
+  origin: function(origin, callback) {
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -34,16 +47,31 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: false,
+  proxy: true, // Доверяем прокси (Railway)
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV === 'production', // HTTPS в production
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 часа
+    maxAge: 24 * 60 * 60 * 1000, // 24 часа
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    path: '/',
+    domain: process.env.NODE_ENV === 'production' 
+      ? '.up.railway.app'  // Домен для Railway
+      : undefined
   }
 }));
 
-// Инициализация Passport
+// Логирование всех запросов
+app.use((req, res, next) => {
+  console.log(`📝 ${req.method} ${req.url}`);
+  console.log('🍪 Session ID:', req.sessionID);
+  console.log('👤 User:', req.session?.user?.username);
+  next();
+});
+
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Инициализация аутентификации
 setupAuth(passport);
 
 // Статические файлы из папки client/dist
@@ -73,22 +101,23 @@ app.get('*', (req, res) => {
   });
 });
 
-// Запуск приложения
-(async () => {
+// Инициализация базы данных и запуск сервера
+async function startServer() {
   try {
     console.log('🚀 Starting server...');
     
-    // Инициализация базы данных
+    console.log('🔄 Connecting to database...');
     await initDb();
     console.log('✅ Database connected and initialized!');
     
-    // Запуск сервера
     app.listen(port, () => {
       console.log(`🌟 Server is running on http://localhost:${port}`);
       console.log(`📊 Health check: http://localhost:${port}/api/health`);
     });
   } catch (error) {
-    console.error('❌ Failed to initialize the server:', error);
+    console.error('❌ Failed to start server:', error);
     process.exit(1);
   }
-})();
+}
+
+startServer();

@@ -1,5 +1,5 @@
-import bcrypt from "bcrypt";
-import { pool } from "./db.js";
+const bcrypt = require("bcrypt");
+const { pool } = require("./db");
 
 // Функция для хеширования пароля
 async function hashPassword(password) {
@@ -37,7 +37,7 @@ async function createCar(carData) {
 }
 
 // Основная функция инициализации базы данных
-export async function initDatabase() {
+async function initDatabase() {
   console.log('🔧 Initializing database tables...');
 
   try {
@@ -107,6 +107,20 @@ export async function initDatabase() {
         "isRead" BOOLEAN DEFAULT FALSE,
         "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
+    `);
+
+    // Создание таблицы сессий
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS "session" (
+        "sid" varchar NOT NULL COLLATE "default",
+        "sess" json NOT NULL,
+        "expire" timestamp(6) NOT NULL,
+        CONSTRAINT "session_pkey" PRIMARY KEY ("sid")
+      )
+    `);
+
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire")
     `);
 
     console.log('✅ Database tables initialized');
@@ -207,3 +221,14 @@ export async function initDatabase() {
     throw error;
   }
 }
+
+// Запускаем инициализацию если файл запущен напрямую
+if (require.main === module) {
+  initDatabase().catch(console.error);
+}
+
+module.exports = {
+  initDatabase,
+  createUser,
+  createCar
+};

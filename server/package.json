@@ -1,23 +1,32 @@
 {
   "name": "rmrp-shop-server",
   "version": "1.0.0",
-  "type": "commonjs",
+  "description": "RMRP Shop Server",
+  "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "create-admin": "node create-admin.js"
+    "test": "jest",
+    "db:init": "node db/init-db.js",
+    "db:reset": "node db/reset-db.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.1",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
-    "express-session": "^1.18.0",
+    "express-rate-limit": "^7.1.5",
+    "express-session": "^1.17.3",
+    "helmet": "^7.1.0",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
-    "pg": "^8.11.3"
+    "pg": "^8.11.3",
+    "session-file-store": "^1.5.0",
+    "winston": "^3.11.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.3"
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
+    "supertest": "^6.3.3"
   }
-} 
+}

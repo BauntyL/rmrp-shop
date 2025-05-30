@@ -1,5 +1,7 @@
 const path = require('path');
 const { Pool } = require('pg');
+const logger = require('./logger');
+const config = require('./config');
 
 // Исправляем путь к .env - он должен быть в корневой папке проекта
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
@@ -7,13 +9,77 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 // Проверка, что переменная DATABASE_URL загружена
 console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'Loaded' : 'Not found');
 
-// Создаем пул соединений
+// Создаем пул соединений с увеличенными таймаутами
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' 
-    ? { rejectUnauthorized: false }
-    : false
+  connectionString: config.database.url,
+  ssl: {
+    rejectUnauthorized: false
+  },
+  max: 20, // максимальное количество клиентов в пуле
+  idleTimeoutMillis: 30000, // время простоя клиента
+  connectionTimeoutMillis: 10000, // увеличенное время ожидания соединения
+  query_timeout: 10000 // таймаут запроса
 });
+
+// Обработка ошибок пула
+pool.on('error', (err, client) => {
+  logger.error('Unexpected error on idle client', { 
+    error: err.message,
+    stack: err.stack
+  });
+});
+
+// Проверка соединения
+async function checkConnection() {
+  try {
+    logger.info('Attempting to connect to database...', {
+      connectionString: config.database.url.split('@')[1] // Логируем только хост, без credentials
+    });
+    
+    const client = await pool.connect();
+    logger.info('Successfully connected to the pool');
+    
+    const result = await client.query('SELECT NOW()');
+    logger.info('Query executed successfully', {
+      timestamp: result.rows[0].now
+    });
+    
+    client.release();
+    logger.info('Client released');
+    
+    return true;
+  } catch (error) {
+    logger.error('Database connection failed', { 
+      error: error.message,
+      stack: error.stack
+    });
+    throw error;
+  }
+}
+
+// Функция для выполнения запроса с автоматическим освобождением клиента
+async function query(text, params) {
+  const start = Date.now();
+  try {
+    const result = await pool.query(text, params);
+    const duration = Date.now() - start;
+    
+    logger.debug('Executed query', {
+      text,
+      duration,
+      rows: result.rowCount
+    });
+    
+    return result;
+  } catch (error) {
+    logger.error('Query error', {
+      text,
+      error: error.message,
+      stack: error.stack
+    });
+    throw error;
+  }
+}
 
 async function initDb() {
   try {
@@ -81,6 +147,8 @@ async function createDefaultAdmin() {
 
 module.exports = {
   pool,
+  query,
+  checkConnection,
   initDb,
   initializeTables,
   createDefaultAdmin

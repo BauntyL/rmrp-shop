@@ -1,123 +1,158 @@
-const path = require('path');
 const express = require('express');
-const cors = require('cors');
 const session = require('express-session');
-const passport = require('passport');
-const setupAuth = require('./auth');
 const pgSession = require('connect-pg-simple')(session);
-const { pool } = require('./db');
-
-// Загружаем переменные окружения из .env файла в корневой папке
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
-
-const { initDb } = require("./db");
+const passport = require('passport');
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const path = require('path');
+const config = require('./config');
+const logger = require('./logger');
+const { setupAuth } = require('./auth');
 const routes = require('./routes');
+const { pool, checkConnection } = require('./db');
+const fs = require('fs');
 
 const app = express();
-const port = process.env.PORT || 3000;
 
-const ALLOWED_ORIGINS = process.env.NODE_ENV === 'production'
-  ? ['https://autocatalog-production.up.railway.app', 'https://rmrp-shop.ru']
-  : ['http://localhost:5173'];
+// Логирование конфигурации
+logger.info('Starting server with configuration', {
+  nodeEnv: process.env.NODE_ENV,
+  port: config.port,
+  databaseUrl: process.env.DATABASE_URL ? 'configured' : 'missing'
+});
 
-// CORS настройки
-app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+// Основные middleware
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false
 }));
+app.use(cors(config.cors));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Rate limiting
+app.use(rateLimit(config.rateLimit));
 
-// Настройка сессий с использованием PostgreSQL
+// Настройка сессий в PostgreSQL
 app.use(session({
   store: new pgSession({
     pool,
     tableName: 'session',
     createTableIfMissing: true
   }),
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  secret: config.security.sessionSecret,
   resave: false,
   saveUninitialized: false,
-  proxy: true, // Доверяем прокси (Railway)
-  cookie: {
-    secure: process.env.NODE_ENV === 'production', // HTTPS в production
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000, // 24 часа
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    path: '/',
-    domain: process.env.NODE_ENV === 'production' 
-      ? '.up.railway.app'  // Домен для Railway
-      : undefined
-  }
+  cookie: config.security.sessionCookie
 }));
+
+// Настройка паспорта
+app.use(passport.initialize());
+app.use(passport.session());
+setupAuth(passport);
 
 // Логирование всех запросов
 app.use((req, res, next) => {
-  console.log(`📝 ${req.method} ${req.url}`);
-  console.log('🍪 Session ID:', req.sessionID);
-  console.log('👤 User:', req.session?.user?.username);
+  logger.info('Incoming request', {
+    method: req.method,
+    path: req.path,
+    originalUrl: req.originalUrl,
+    baseUrl: req.baseUrl,
+    ip: req.ip,
+    headers: req.headers
+  });
   next();
 });
 
-app.use(passport.initialize());
-app.use(passport.session());
-
-// Инициализация аутентификации
-setupAuth(passport);
-
-// Статические файлы из папки client/dist
-app.use(express.static(path.join(__dirname, '../client/dist')));
-
-// API роуты
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Server is running' });
+// Проверка здоровья системы
+app.get('/api/health', async (req, res) => {
+  try {
+    logger.info('Health check started');
+    
+    // Проверяем подключение к базе данных
+    await checkConnection();
+    
+    res.json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      database: 'connected'
+    });
+  } catch (error) {
+    logger.error('Health check failed', { 
+      error: error.message,
+      stack: error.stack,
+      code: error.code,
+      detail: error.detail
+    });
+    
+    res.status(500).json({
+      status: 'unhealthy',
+      timestamp: new Date().toISOString(),
+      error: 'Database connection failed',
+      details: {
+        message: error.message,
+        code: error.code
+      }
+    });
+  }
 });
 
-// Подключаем все API роуты
+// Маршруты API
+logger.info('Mounting API routes at /api');
 app.use('/api', routes);
 
-// Fallback для React Router - должен быть ПОСЛЕДНИМ
+// Обслуживание статических файлов
+const clientDistPath = path.join(__dirname, '../client/dist');
+logger.info('Serving static files from:', clientDistPath);
+
+// Проверяем наличие директории
+if (!fs.existsSync(clientDistPath)) {
+  logger.error('Client dist directory not found:', clientDistPath);
+  fs.mkdirSync(clientDistPath, { recursive: true });
+}
+
+// Обслуживание статических файлов
+app.use(express.static(clientDistPath, {
+  index: false, // Отключаем автоматическую отдачу index.html
+  maxAge: '1h' // Кэширование на 1 час
+}));
+
+// Все остальные GET-запросы отправляют index.html
 app.get('*', (req, res) => {
-  // Проверяем, что это не API запрос
-  if (req.path.startsWith('/api/')) {
-    return res.status(404).json({ error: 'API endpoint not found' });
-  }
+  const indexPath = path.join(clientDistPath, 'index.html');
   
-  // Отправляем index.html из папки client/dist
-  res.sendFile(path.join(__dirname, '../client/dist/index.html'), (err) => {
-    if (err) {
-      console.log('Error serving index.html:', err);
-      res.status(500).send('Error loading page');
-    }
+  if (fs.existsSync(indexPath)) {
+    logger.info('Serving SPA index.html for path:', req.path);
+    res.sendFile(indexPath);
+  } else {
+    logger.error('index.html not found in:', indexPath);
+    res.status(404).send('Application is not built properly. Please check the deployment logs.');
+  }
+});
+
+// Обработка ошибок
+app.use((err, req, res, next) => {
+  logger.error('Unhandled error', { 
+    error: err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    path: req.path,
+    method: req.method
+  });
+  
+  res.status(err.status || 500).json({
+    error: process.env.NODE_ENV === 'production' 
+      ? 'Internal server error' 
+      : err.message
   });
 });
 
-// Инициализация базы данных и запуск сервера
-async function startServer() {
-  try {
-    console.log('🚀 Starting server...');
-    
-    console.log('🔄 Connecting to database...');
-    await initDb();
-    console.log('✅ Database connected and initialized!');
-    
-    app.listen(port, () => {
-      console.log(`🌟 Server is running on http://localhost:${port}`);
-      console.log(`📊 Health check: http://localhost:${port}/api/health`);
-    });
-  } catch (error) {
-    console.error('❌ Failed to start server:', error);
-    process.exit(1);
-  }
-}
-
-startServer();
+// Запуск сервера
+app.listen(config.port, () => {
+  logger.info('Server started', { 
+    apiPath: '/api',
+    staticPath: clientDistPath,
+    port: config.port,
+    timestamp: new Date().toISOString()
+  });
+});

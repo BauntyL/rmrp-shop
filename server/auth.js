@@ -1,9 +1,11 @@
 const LocalStrategy = require('passport-local').Strategy;
 const bcrypt = require('bcrypt');
-const storage = require('./storage-fixed');  // ← ИСПРАВЛЕННЫЙ ИМПОРТ
+const storage = require('./storage');  // Используем основной модуль storage
+const config = require('./config');
+const logger = require('./logger');
+const { validatePassword } = require('./utils');
 
 function setupAuth(passport) {
-  // Local Strategy
   passport.use(new LocalStrategy(
     {
       usernameField: 'username',
@@ -11,51 +13,87 @@ function setupAuth(passport) {
     },
     async (username, password, done) => {
       try {
-        console.log(`🔐 Authenticating user: ${username}`);
+        logger.debug('Authentication attempt', { username });
         
         const user = await storage.getUserByUsername(username);
+        
+        // Используем одинаковое сообщение об ошибке для безопасности
+        const genericError = { message: 'Неверные учетные данные' };
+        
         if (!user) {
-          console.log(`❌ User not found: ${username}`);
-          return done(null, false, { message: 'Неверное имя пользователя или пароль' });
+          logger.debug('Authentication failed - user not found', { username });
+          return done(null, false, genericError);
         }
 
         const isValidPassword = await bcrypt.compare(password, user.password);
 
         if (!isValidPassword) {
-          console.log(`❌ Invalid password for user: ${username}`);
-          return done(null, false, { message: 'Неверное имя пользователя или пароль' });
+          logger.debug('Authentication failed - invalid password', { username });
+          return done(null, false, genericError);
         }
 
-        console.log(`✅ User authenticated: ${username}`);
-        return done(null, user);
+        // Удаляем чувствительные данные перед отправкой
+        const sanitizedUser = {
+          id: user.id,
+          username: user.username,
+          role: user.role
+        };
+
+        logger.info('Authentication successful', { username });
+        return done(null, sanitizedUser);
       } catch (error) {
-        console.error('❌ Authentication error:', error);
+        logger.error('Authentication error', { error: error.message });
         return done(error);
       }
     }
   ));
 
-  // Serialize user
   passport.serializeUser((user, done) => {
-    console.log(`🔧 Serializing user: ${user.username} (ID: ${user.id})`);
+    logger.debug('Serializing user', { userId: user.id });
     done(null, user.id);
   });
 
-  // Deserialize user
   passport.deserializeUser(async (id, done) => {
     try {
-      console.log(`🔧 Deserializing user ID: ${id}`);
+      logger.debug('Deserializing user', { userId: id });
       const user = await storage.getUserById(id);
+      
       if (!user) {
+        logger.warn('User not found during deserialization', { userId: id });
         return done(null, false);
       }
-      console.log(`✅ User deserialized: ${user.username}`);
-      done(null, user);
+
+      // Удаляем чувствительные данные
+      const sanitizedUser = {
+        id: user.id,
+        username: user.username,
+        role: user.role
+      };
+
+      done(null, sanitizedUser);
     } catch (error) {
-      console.error('❌ Deserialization error:', error);
+      logger.error('Deserialization error', { error: error.message });
       done(error);
     }
   });
 }
 
-module.exports = setupAuth;
+// Middleware для проверки сильного пароля
+const validatePasswordMiddleware = (req, res, next) => {
+  const { password } = req.body;
+  const validation = validatePassword(password);
+  
+  if (!validation.isValid) {
+    return res.status(400).json({
+      error: 'Invalid password',
+      details: validation.errors
+    });
+  }
+  
+  next();
+};
+
+module.exports = {
+  setupAuth,
+  validatePasswordMiddleware
+};

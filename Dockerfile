@@ -8,7 +8,8 @@ WORKDIR /app
 COPY . .
 
 # Устанавливаем все зависимости (включая devDependencies для сборки)
-RUN npm install
+RUN npm install --verbose && \
+    npm ls
 
 # Собираем приложение
 RUN npm run build

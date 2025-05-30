@@ -1,13 +1,10 @@
 import express, { Request, Response, NextFunction } from 'express';
 import path from 'path';
 import compression from 'compression';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const rootDir = process.cwd();
 
 // Включаем сжатие для всех ответов
 app.use(compression());
@@ -20,14 +17,14 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Обслуживание статических файлов из папки dist
-app.use(express.static(path.join(__dirname, '../../client/dist'), {
+app.use(express.static(path.join(rootDir, 'client/dist'), {
   maxAge: '1y',
   etag: true,
 }));
 
 // Все остальные GET-запросы перенаправляем на index.html
 app.get('*', (req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
+  res.sendFile(path.join(rootDir, 'client/dist/index.html'));
 });
 
 app.listen(PORT, () => {

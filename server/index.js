@@ -49,7 +49,7 @@ app.use(session({
 }));
 
 // Статические файлы
-app.use(express.static(path.join(__dirname, 'client')));
+app.use(express.static(path.join(__dirname, '../build')));
 
 // API Routes
 
@@ -115,7 +115,7 @@ app.get('/api/auth/status', (req, res) => {
 
 // Обработка всех остальных маршрутов - отдаем React приложение
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client', 'index.html'));
+  res.sendFile(path.join(__dirname, '../build', 'index.html'));
 });
 
 // Запуск сервера

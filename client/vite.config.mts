@@ -18,6 +18,12 @@ export default defineConfig({
       }
     }
   },
+  css: {
+    postcss: './postcss.config.js',
+    modules: {
+      localsConvention: 'camelCase'
+    }
+  },
   build: {
     outDir: 'dist',
     sourcemap: false,
@@ -30,9 +36,13 @@ export default defineConfig({
           router: ['wouter']
         },
         assetFileNames: (assetInfo) => {
-          let extType = assetInfo.name.split('.').at(1);
+          if (!assetInfo.name) return 'assets/[name]-[hash][extname]';
+          const info = assetInfo.name.split('.');
+          let extType = info[info.length - 1];
           if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
             extType = 'img';
+          } else if (/woff|woff2|eot|ttf|otf/i.test(extType)) {
+            extType = 'fonts';
           }
           return `assets/${extType}/[name]-[hash][extname]`;
         },

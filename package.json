@@ -2,10 +2,16 @@
   "name": "rmrp-shop",
   "version": "1.0.0",
   "description": "RMRP Shop - Российский автомобильный каталог",
-  "main": "server/index.js",
+  "main": "server.js",
   "scripts": {
+    "install:client": "npm install --prefix client",
+    "install:server": "npm install --prefix server",
+    "postinstall": "npm run install:client && npm run install:server",
     "build": "npm run build --prefix client",
     "start": "node server.js",
     "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
   }
 }

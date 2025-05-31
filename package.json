@@ -4,9 +4,8 @@
   "description": "RMRP Shop - Российский автомобильный каталог",
   "main": "server/index.js",
   "scripts": {
-    "build": "cd client && npm install && npm run build && cd ../server && npm install && npm run build",
-    "build:server": "cd server && npm install && npm run build",
-    "start": "cd server && npm start",
-    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\""
+    "build": "npm run build --prefix client",
+    "start": "node server.js",
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\""
   }
 }

@@ -2,9 +2,10 @@
 
 [build]
 builder = "nixpacks"
+buildCommand = "npm run build"
 
 [deploy]
-startCommand = "npm run start:server"
+startCommand = "npm start"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 30
 restartPolicyType = "on_failure"
@@ -13,11 +14,10 @@ restartPolicyMaxRetries = 3
 [[services]]
 name = "backend"
 source = "."
-buildCommand = "npm run build:server"
 
 [services.variables]
 NODE_ENV = "production"
-PORT = "3001"
+PORT = "10000"
 DATABASE_URL = "${{ Railway.DATABASE_URL }}"
 JWT_SECRET = "${{ Railway.JWT_SECRET }}"
 SESSION_SECRET = "${{ Railway.SESSION_SECRET }}"

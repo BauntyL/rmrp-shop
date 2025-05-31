@@ -14,6 +14,12 @@ const prisma = new PrismaClient();
 const isProduction = process.env.NODE_ENV === 'production';
 const PORT = process.env.PORT || 3001;
 
+console.log('Starting server with configuration:', {
+  nodeEnv: process.env.NODE_ENV,
+  port: PORT,
+  databaseUrl: process.env.DATABASE_URL ? 'configured' : 'missing'
+});
+
 // Настройка CORS для Railway
 const corsOptions = {
   origin: isProduction 
@@ -30,8 +36,17 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Healthcheck endpoint
-app.get('/api/health', async (req, res) => {
+// Базовый healthcheck endpoint
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV
+  });
+});
+
+// Расширенный healthcheck endpoint
+app.get('/api/health/detailed', async (req, res) => {
   try {
     // Проверяем подключение к базе данных
     const dbConnected = await checkConnection();
@@ -40,7 +55,12 @@ app.get('/api/health', async (req, res) => {
       status: dbConnected ? 'healthy' : 'database_error',
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV,
-      database: dbConnected ? 'connected' : 'error'
+      database: dbConnected ? 'connected' : 'error',
+      config: {
+        port: PORT,
+        nodeEnv: process.env.NODE_ENV,
+        corsOrigins: corsOptions.origin
+      }
     });
   } catch (error) {
     res.status(500).json({

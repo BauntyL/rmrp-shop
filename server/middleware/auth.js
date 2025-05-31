@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
-import { UserModel } from '../models/user.js';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 // Используем SESSION_SECRET как JWT_SECRET для совместимости
 const JWT_SECRET = process.env.SESSION_SECRET || 'gHFh_QOGYrQzCpC81HjBVxPyk0NbpyYG';
@@ -10,23 +12,38 @@ export const authenticateToken = async (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-      return res.status(401).json({ error: 'Требуется авторизация' });
+      return res.status(401).json({
+        success: false,
+        message: 'Требуется авторизация'
+      });
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await UserModel.findById(decoded.userId);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-super-secret-jwt-key');
+    
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id }
+    });
 
     if (!user) {
-      return res.status(401).json({ error: 'Пользователь не найден' });
+      return res.status(401).json({
+        success: false,
+        message: 'Пользователь не найден'
+      });
     }
 
-    req.user = user;
+    req.user = {
+      id: user.id,
+      fullName: user.fullName,
+      role: user.role
+    };
+
     next();
   } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError) {
-      return res.status(401).json({ error: 'Недействительный токен' });
-    }
-    next(error);
+    console.error('Ошибка аутентификации:', error);
+    res.status(401).json({
+      success: false,
+      message: 'Недействительный токен'
+    });
   }
 };
 

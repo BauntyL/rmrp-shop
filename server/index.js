@@ -3,8 +3,8 @@
 import express from 'express';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
 import { authenticateToken } from './middleware/auth.js';
+import authRoutes from './routes/auth.js';
 import { checkConnection } from './config/database.js';
 
 const app = express();
@@ -25,7 +25,6 @@ const corsOptions = {
   origin: isProduction 
     ? ['https://autocatalog-production.up.railway.app']
     : ['http://localhost:5173', 'http://localhost:3000'],
-  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
@@ -72,7 +71,6 @@ app.get('/api/health/detailed', async (req, res) => {
 });
 
 // Маршруты аутентификации
-import authRoutes from './routes/auth.js';
 app.use('/api/auth', authRoutes);
 
 // Защищенные маршруты

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/hooks/use-toast';
+import { setAuthToken, getAuthToken, removeAuthToken, getAuthHeaders } from '@/utils/auth';
 
 interface User {
   id: number;
@@ -29,10 +30,7 @@ const checkAuthStatus = async (): Promise<{ user: User } | null> => {
     
     const response = await fetch('/api/auth/me', {
       method: 'GET',
-      credentials: 'include', // Важно для отправки cookies
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
     });
 
     console.log('📡 Ответ от сервера:', response.status, response.statusText);
@@ -40,6 +38,7 @@ const checkAuthStatus = async (): Promise<{ user: User } | null> => {
     if (!response.ok) {
       if (response.status === 401) {
         console.log('❌ Пользователь не авторизован');
+        removeAuthToken();
         return null;
       }
       throw new Error(`Ошибка HTTP: ${response.status}`);
@@ -50,6 +49,7 @@ const checkAuthStatus = async (): Promise<{ user: User } | null> => {
     return data;
   } catch (error) {
     console.error('🚨 Ошибка при проверке авторизации:', error);
+    removeAuthToken();
     return null;
   }
 };
@@ -59,7 +59,6 @@ const loginUser = async (credentials: { fullName: string; password: string }) =>
   
   const response = await fetch('/api/auth/login', {
     method: 'POST',
-    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -74,7 +73,13 @@ const loginUser = async (credentials: { fullName: string; password: string }) =>
   }
 
   const data = await response.json();
-  console.log('✅ Успешный вход:', data.user);
+  console.log('✅ Успешный вход:', data);
+  
+  // Сохраняем токен
+  if (data.token) {
+    setAuthToken(data.token);
+  }
+  
   return data;
 };
 
@@ -83,7 +88,6 @@ const registerUser = async (userData: { fullName: string; password: string }) =>
   
   const response = await fetch('/api/auth/register', {
     method: 'POST',
-    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -98,35 +102,50 @@ const registerUser = async (userData: { fullName: string; password: string }) =>
   }
 
   const data = await response.json();
-  console.log('✅ Успешная регистрация:', data.user);
+  console.log('✅ Успешная регистрация:', data);
+  
+  // Сохраняем токен
+  if (data.token) {
+    setAuthToken(data.token);
+  }
+  
   return data;
 };
 
 const logoutUser = async () => {
   console.log('🚪 Попытка выхода из системы...');
   
-  const response = await fetch('/api/auth/logout', {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+  try {
+    const response = await fetch('/api/auth/logout', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
 
-  console.log('📡 Ответ сервера при выходе:', response.status);
+    console.log('📡 Ответ сервера при выходе:', response.status);
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Ошибка при выходе');
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Ошибка при выходе');
+    }
+  } finally {
+    // Всегда удаляем токен при выходе
+    removeAuthToken();
   }
 
-  console.log('✅ Успешный выход');
-  return await response.json();
+  return { success: true };
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const queryClient = useQueryClient();
+
+  // Проверяем токен при загрузке
+  useEffect(() => {
+    const token = getAuthToken();
+    if (!token) {
+      queryClient.setQueryData(['auth'], null);
+    }
+  }, [queryClient]);
 
   // Запрос для проверки авторизации
   const { data: authData, isLoading, error } = useQuery({
@@ -140,6 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     staleTime: 5 * 60 * 1000, // 5 минут
     refetchOnWindowFocus: true,
     refetchOnMount: true,
+    enabled: !!getAuthToken(), // Запускаем только если есть токен
   });
 
   const user = authData?.user || null;
@@ -150,7 +170,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       hasUser: !!user,
       userFullName: user?.fullName,
-      error: error?.message
+      error: error?.message,
+      hasToken: !!getAuthToken()
     });
 
     // Показываем модальное окно с условиями, если пользователь не принял их
@@ -173,6 +194,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onError: (error: Error) => {
       console.error('❌ Ошибка входа:', error.message);
+      removeAuthToken();
       toast({
         title: "Ошибка входа",
         description: error.message,
@@ -194,6 +216,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onError: (error: Error) => {
       console.error('❌ Ошибка регистрации:', error.message);
+      removeAuthToken();
       toast({
         title: "Ошибка регистрации",
         description: error.message,
@@ -209,6 +232,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('🎉 Выход выполнен успешно');
       queryClient.setQueryData(['auth'], null);
       queryClient.clear(); // Очищаем весь кеш
+      removeAuthToken();
       toast({
         title: "До свидания!",
         description: "Вы успешно вышли из системы",
@@ -219,6 +243,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Даже при ошибке очищаем локальное состояние
       queryClient.setQueryData(['auth'], null);
       queryClient.clear();
+      removeAuthToken();
       toast({
         title: "Выход из системы",
         description: "Сессия завершена",
@@ -232,10 +257,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       const response = await fetch('/api/auth/accept-terms', {
         method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
       });
 
       if (response.ok) {
@@ -252,24 +274,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('❌ Ошибка при принятии условий:', error);
       toast({
         title: "Ошибка",
-        description: "Не удалось принять условия",
+        description: "Не удалось принять условия использования",
         variant: "destructive",
       });
     }
   };
 
-  const contextValue: AuthContextType = {
-    user,
-    isLoading,
-    showTermsModal,
-    loginMutation,
-    registerMutation,
-    logoutMutation,
-    acceptTerms,
-  };
-
   return (
-    <AuthContext.Provider value={contextValue}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        showTermsModal,
+        loginMutation,
+        registerMutation,
+        logoutMutation,
+        acceptTerms,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -97,33 +97,19 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export default function AuthPage() {
   const { user, isLoading, loginMutation, registerMutation } = useAuth();
   const [activeTab, setActiveTab] = useState("login");
-
-  // Функции для работы с сохраненными данными
-  const getSavedCredentials = () => {
-    try {
-      const saved = localStorage.getItem("rememberedCredentials");
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  };
-
-  const saveCredentials = (fullName: string, password: string) => {
-    localStorage.setItem("rememberedCredentials", JSON.stringify({ fullName, password }));
-  };
-
-  const clearSavedCredentials = () => {
-    localStorage.removeItem("rememberedCredentials");
-  };
-
-  const savedCredentials = getSavedCredentials();
+  
+  // Состояние для запоминания данных в памяти (вместо localStorage)
+  const [rememberedCredentials, setRememberedCredentials] = useState<{
+    fullName: string;
+    password: string;
+  } | null>(null);
 
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      fullName: savedCredentials?.fullName || "",
-      password: savedCredentials?.password || "",
-      rememberMe: !!savedCredentials,
+      fullName: rememberedCredentials?.fullName || "",
+      password: rememberedCredentials?.password || "",
+      rememberMe: !!rememberedCredentials,
     },
   });
 
@@ -135,6 +121,15 @@ export default function AuthPage() {
     },
   });
 
+  // Обновляем форму когда данные запоминаются
+  useEffect(() => {
+    if (rememberedCredentials) {
+      loginForm.setValue("fullName", rememberedCredentials.fullName);
+      loginForm.setValue("password", rememberedCredentials.password);
+      loginForm.setValue("rememberMe", true);
+    }
+  }, [rememberedCredentials, loginForm]);
+
   // Redirect if already logged in and not loading
   if (user && !isLoading) {
     return <Redirect to="/" />;
@@ -143,9 +138,12 @@ export default function AuthPage() {
   const onLoginSubmit = (data: LoginFormData) => {
     // Сохраняем или очищаем данные в зависимости от выбора пользователя
     if (data.rememberMe) {
-      saveCredentials(data.fullName, data.password);
+      setRememberedCredentials({
+        fullName: data.fullName,
+        password: data.password
+      });
     } else {
-      clearSavedCredentials();
+      setRememberedCredentials(null);
     }
     
     // Отправляем только fullName и password на сервер

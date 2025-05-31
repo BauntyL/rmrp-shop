@@ -1,151 +1,77 @@
-import express from 'express';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-import cors from 'cors';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import path from 'path';
-import config from './config';
-import logger from './logger';
-import routes from './routes';
-import { checkConnection } from './db';
-import fs from 'fs';
+// server/index.js или аналогичный главный файл сервера
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import express from 'express';
+import cors from 'cors';
+import { PrismaClient } from '@prisma/client';
+import jwt from 'jsonwebtoken';
+import { authenticateToken } from './middleware/auth.js';
+import { checkConnection } from './config/database.js';
 
 const app = express();
+const prisma = new PrismaClient();
 
-// Логирование конфигурации
-logger.info('Starting server with configuration', {
-  nodeEnv: process.env.NODE_ENV,
-  port: config.port,
-  databaseUrl: process.env.DATABASE_URL ? 'configured' : 'missing'
-});
+// Конфигурация для Railway
+const isProduction = process.env.NODE_ENV === 'production';
+const PORT = process.env.PORT || 3001;
 
-// Основные middleware
-app.use(helmet({
-  contentSecurityPolicy: false,
-  crossOriginEmbedderPolicy: false
-}));
-
-// Настройка CORS
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://rmrp-shop.up.railway.app']
-    : ['http://localhost:3000', 'http://localhost:5173'],
+// Настройка CORS для Railway
+const corsOptions = {
+  origin: isProduction 
+    ? ['https://autocatalog-production.up.railway.app']
+    : ['http://localhost:5173', 'http://localhost:3000'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cors(corsOptions));
 
-// Rate limiting
-app.use(rateLimit(config.rateLimit));
+// Middleware для парсинга JSON
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Логирование всех запросов
-app.use((req, res, next) => {
-  logger.info('Incoming request', {
-    method: req.method,
-    path: req.path,
-    originalUrl: req.originalUrl,
-    baseUrl: req.baseUrl,
-    ip: req.ip,
-    headers: req.headers
-  });
-  next();
-});
-
-// Проверка здоровья системы
+// Healthcheck endpoint
 app.get('/api/health', async (req, res) => {
   try {
-    logger.info('Health check started');
-    
     // Проверяем подключение к базе данных
-    await checkConnection();
+    const dbConnected = await checkConnection();
     
     res.json({
-      status: 'healthy',
+      status: dbConnected ? 'healthy' : 'database_error',
       timestamp: new Date().toISOString(),
-      database: 'connected'
+      environment: process.env.NODE_ENV,
+      database: dbConnected ? 'connected' : 'error'
     });
   } catch (error) {
-    logger.error('Health check failed', { 
-      error: error.message,
-      stack: error.stack,
-      code: error.code,
-      detail: error.detail
-    });
-    
     res.status(500).json({
-      status: 'unhealthy',
+      status: 'error',
       timestamp: new Date().toISOString(),
-      error: 'Database connection failed',
-      details: {
-        message: error.message,
-        code: error.code
-      }
+      error: isProduction ? 'Internal server error' : error.message
     });
   }
 });
 
-// Маршруты API
-logger.info('Mounting API routes at /api');
-app.use('/api', routes);
+// Маршруты аутентификации
+import authRoutes from './routes/auth.js';
+app.use('/api/auth', authRoutes);
 
-// Обслуживание статических файлов
-const clientDistPath = path.join(__dirname, '../client/dist');
-logger.info('Serving static files from:', clientDistPath);
-
-// Проверяем наличие директории
-if (!fs.existsSync(clientDistPath)) {
-  logger.error('Client dist directory not found:', clientDistPath);
-  fs.mkdirSync(clientDistPath, { recursive: true });
-}
-
-// Обслуживание статических файлов
-app.use(express.static(clientDistPath, {
-  index: false, // Отключаем автоматическую отдачу index.html
-  maxAge: '1h' // Кэширование на 1 час
-}));
-
-// Все остальные GET-запросы отправляют index.html
-app.get('*', (req, res) => {
-  const indexPath = path.join(clientDistPath, 'index.html');
-  
-  if (fs.existsSync(indexPath)) {
-    logger.info('Serving SPA index.html for path:', req.path);
-    res.sendFile(indexPath);
-  } else {
-    logger.error('index.html not found in:', indexPath);
-    res.status(404).send('Application is not built properly. Please check the deployment logs.');
-  }
+// Защищенные маршруты
+app.use('/api/protected', authenticateToken, (req, res) => {
+  res.json({ message: 'Доступ разрешен', user: req.user });
 });
 
 // Обработка ошибок
 app.use((err, req, res, next) => {
-  logger.error('Unhandled error', { 
-    error: err.message,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-    path: req.path,
-    method: req.method
-  });
-  
+  console.error('Ошибка:', err);
   res.status(err.status || 500).json({
-    error: process.env.NODE_ENV === 'production' 
-      ? 'Internal server error' 
-      : err.message
+    error: isProduction ? 'Внутренняя ошибка сервера' : err.message
   });
 });
 
 // Запуск сервера
-app.listen(config.port, () => {
-  logger.info('Server started', { 
-    apiPath: '/api',
-    staticPath: clientDistPath,
-    port: config.port,
-    timestamp: new Date().toISOString()
-  });
+app.listen(PORT, () => {
+  console.log(`Сервер запущен на порту ${PORT} в режиме ${process.env.NODE_ENV}`);
+  console.log(`CORS настроен для: ${corsOptions.origin}`);
 });
+
+export default app;

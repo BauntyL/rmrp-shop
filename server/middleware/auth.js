@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { UserModel } from '../models/user.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key';
+// Используем SESSION_SECRET как JWT_SECRET для совместимости
+const JWT_SECRET = process.env.SESSION_SECRET || 'gHFh_QOGYrQzCpC81HjBVxPyk0NbpyYG';
 
 export const authenticateToken = async (req, res, next) => {
   try {

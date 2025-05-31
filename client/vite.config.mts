@@ -2,6 +2,9 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
+// Определяем, находимся ли мы в production
+const isProduction = process.env.NODE_ENV === 'production';
+
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -13,8 +16,11 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true
+        target: isProduction 
+          ? 'https://autocatalog-production.up.railway.app'
+          : 'http://localhost:3001',
+        changeOrigin: true,
+        secure: true
       }
     }
   },

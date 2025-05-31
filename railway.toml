@@ -1,8 +1,5 @@
-# railway.toml
-
 [build]
 builder = "nixpacks"
-buildCommand = "npm run build"
 
 [deploy]
 startCommand = "npm start"
@@ -11,24 +8,5 @@ healthcheckTimeout = 30
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
 
-[[services]]
-name = "backend"
-source = "."
-
-[services.variables]
+[variables]
 NODE_ENV = "production"
-PORT = "10000"
-DATABASE_URL = "${{ Railway.DATABASE_URL }}"
-JWT_SECRET = "${{ Railway.JWT_SECRET }}"
-SESSION_SECRET = "${{ Railway.SESSION_SECRET }}"
-
-[[services]]
-name = "frontend"
-source = "./client"
-buildCommand = "npm run build"
-startCommand = "npm run preview"
-
-[services.variables]
-NODE_ENV = "production"
-PORT = "5173"
-VITE_API_URL = "https://${backend.RAILWAY_PUBLIC_DOMAIN}"

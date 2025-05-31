@@ -1,67 +1,51 @@
+require('dotenv').config();
 const { Pool } = require('pg');
-const logger = require('../logger');
 
-async function initDb() {
-  const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-      rejectUnauthorized: false
-    }
-  });
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
 
+async function initDatabase() {
   try {
-    // Проверяем подключение
-    await pool.query('SELECT NOW()');
-    logger.info('Database connection successful');
-
-    // Создаем таблицы
-    await pool.query(`
+    console.log('🗄️  Инициализация базы данных...');
+    
+    // Создаем таблицу пользователей
+    const createUsersTable = `
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
-        username VARCHAR(255) UNIQUE NOT NULL,
+        full_name VARCHAR(255) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
-        email VARCHAR(255) UNIQUE NOT NULL,
         role VARCHAR(50) DEFAULT 'user',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        terms_accepted BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+    `;
 
-      CREATE TABLE IF NOT EXISTS session (
-        sid varchar NOT NULL COLLATE "default",
-        sess json NOT NULL,
-        expire timestamp(6) NOT NULL,
-        CONSTRAINT session_pkey PRIMARY KEY (sid)
-      );
+    await pool.query(createUsersTable);
+    console.log('✅ Таблица users создана/обновлена');
 
-      CREATE TABLE IF NOT EXISTS cars (
-        id SERIAL PRIMARY KEY,
-        brand VARCHAR(255) NOT NULL,
-        model VARCHAR(255) NOT NULL,
-        year INTEGER NOT NULL,
-        price DECIMAL(10, 2) NOT NULL,
-        description TEXT,
-        image_url TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
+    // Создаем индексы для оптимизации
+    const createIndexes = `
+      CREATE INDEX IF NOT EXISTS idx_users_full_name ON users(full_name);
+      CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+    `;
 
-      CREATE TABLE IF NOT EXISTS notifications (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id),
-        message TEXT NOT NULL,
-        read BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `);
+    await pool.query(createIndexes);
+    console.log('✅ Индексы созданы');
 
-    logger.info('Database tables created successfully');
+    // Проверяем подключение
+    const testQuery = await pool.query('SELECT COUNT(*) FROM users');
+    console.log(`✅ База данных готова. Пользователей в системе: ${testQuery.rows[0].count}`);
+
   } catch (error) {
-    logger.error('Database initialization failed:', error);
-    throw error;
+    console.error('❌ Ошибка при инициализации базы данных:', error);
+    process.exit(1);
   } finally {
     await pool.end();
   }
 }
 
-initDb().catch(err => {
-  logger.error('Failed to initialize database:', err);
-  process.exit(1);
-}); 
+// Запускаем инициализацию
+initDatabase();

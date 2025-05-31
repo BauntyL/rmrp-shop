@@ -2,10 +2,9 @@
   "name": "rmrp-shop",
   "version": "1.0.0",
   "description": "RMRP Shop Application",
-  "main": "server/index.js",
-  "type": "module",
+  "main": "server.js",
   "scripts": {
-    "start": "node dist/server/index.js",
+    "start": "node server.js",
     "dev": "nodemon server/index.ts",
     "test": "jest",
     "build": "npm run build:client && npm run build:server",

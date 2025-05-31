@@ -9,6 +9,8 @@ WORKDIR /app
 
 # Копируем package.json файлы
 COPY package*.json ./
+COPY client/package*.json ./client/
+COPY server/package*.json ./server/
 
 # Устанавливаем все зависимости (включая dev для сборки)
 RUN npm ci --verbose

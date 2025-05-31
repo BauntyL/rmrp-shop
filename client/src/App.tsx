@@ -8,20 +8,17 @@ import Home from "@/pages/home";
 import Register from "@/pages/register";
 import Login from "@/pages/login";
 import Category from "@/pages/category";
+import Cars from "@/pages/cars";
+import RealEstate from "@/pages/realestate";
+import FishPage from "@/pages/fish";
+import Treasures from "@/pages/treasures";
 import MyProducts from "@/pages/my-products";
 import Favorites from "@/pages/favorites";
 import Messages from "@/pages/messages";
 import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 
-// Setup auth header interceptor
-const token = localStorage.getItem("token");
-if (token) {
-  queryClient.getQueryDefaults().headers = {
-    ...queryClient.getQueryDefaults().headers,
-    Authorization: `Bearer ${token}`,
-  };
-}
+// This will be handled by queryClient configuration
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -39,6 +36,10 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/register" component={Register} />
       <Route path="/login" component={Login} />
+      <Route path="/category/cars" component={Cars} />
+      <Route path="/category/realestate" component={RealEstate} />
+      <Route path="/category/fish" component={FishPage} />
+      <Route path="/category/treasures" component={Treasures} />
       <Route path="/category/:categoryName" component={Category} />
       
       {isAuthenticated && (

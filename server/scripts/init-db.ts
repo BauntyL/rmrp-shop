@@ -1,5 +1,5 @@
-import pool from '../config/database.js';
-import { createUsersTableSQL } from '../models/user.js';
+import { pool } from '../config/database';
+import { createUsersTableSQL } from '../models/user';
 
 async function initDatabase() {
   try {

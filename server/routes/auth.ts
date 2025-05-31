@@ -10,32 +10,35 @@ interface JwtPayload {
 }
 
 // Регистрация
-router.post('/register', async (req, res) => {
+router.post('/register', async (req, res): Promise<void> => {
   try {
     const { fullName, password } = req.body;
 
     if (!fullName || !password) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Необходимо указать полное имя и пароль'
       });
+      return;
     }
 
     const nameParts = fullName.trim().split(' ');
     if (nameParts.length !== 2) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Полное имя должно быть в формате "Имя Фамилия"'
       });
+      return;
     }
 
     // Проверяем, существует ли пользователь
     const existingUser = await UserModel.findByFullName(fullName);
     if (existingUser) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Пользователь с таким именем уже существует'
       });
+      return;
     }
 
     // Создаем нового пользователя
@@ -65,17 +68,18 @@ router.post('/register', async (req, res) => {
 });
 
 // Вход
-router.post('/login', async (req, res) => {
+router.post('/login', async (req, res): Promise<void> => {
   try {
     const { fullName, password } = req.body;
     
     console.log('Попытка входа для:', fullName);
 
     if (!fullName || !password) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Необходимо указать полное имя и пароль'
       });
+      return;
     }
 
     // Ищем пользователя
@@ -84,10 +88,11 @@ router.post('/login', async (req, res) => {
       console.log('Результат поиска пользователя:', user ? 'найден' : 'не найден');
       
       if (!user) {
-        return res.status(401).json({
+        res.status(401).json({
           success: false,
           message: 'Неверное имя или пароль'
         });
+        return;
       }
 
       // Проверяем пароль
@@ -96,10 +101,11 @@ router.post('/login', async (req, res) => {
         console.log('Результат проверки пароля:', isValidPassword);
         
         if (!isValidPassword) {
-          return res.status(401).json({
+          res.status(401).json({
             success: false,
             message: 'Неверное имя или пароль'
           });
+          return;
         }
 
         // Создаем JWT токен
@@ -134,26 +140,28 @@ router.post('/login', async (req, res) => {
 });
 
 // Проверка текущего пользователя
-router.get('/me', async (req, res) => {
+router.get('/me', async (req, res): Promise<void> => {
   try {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         message: 'Требуется авторизация'
       });
+      return;
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-super-secret-jwt-key') as JwtPayload;
     const user = await UserModel.findById(decoded.userId);
 
     if (!user) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         message: 'Пользователь не найден'
       });
+      return;
     }
 
     res.json({
@@ -172,4 +180,4 @@ router.get('/me', async (req, res) => {
   }
 });
 
-export default router; 
+export default router;

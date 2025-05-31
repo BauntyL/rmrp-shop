@@ -69,4 +69,5 @@ export const checkConnection = async () => {
   }
 };
 
-export default pool; 
+export { pool };
+export default pool;

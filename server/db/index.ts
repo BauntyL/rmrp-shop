@@ -1,9 +1,5 @@
-import pg from 'pg';
-import logger from '../logger/index.js';
-
-const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL || "postgresql://postgres:OKVGVKtirMjvUDZUPQEBpkMAjosxhyQd@tramway.proxy.rlwy.net:41435/railway"
-});
+import { pool } from '../config/database';
+import logger from '../logger';
 
 async function checkConnection() {
   try {
@@ -17,4 +13,4 @@ async function checkConnection() {
   }
 }
 
-export { pool, checkConnection }; 
+export { pool, checkConnection };

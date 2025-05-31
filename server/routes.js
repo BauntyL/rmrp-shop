@@ -658,43 +658,30 @@ router.get('/api/cars/pending', async (req, res) => {
 });
 
 // Модерация карточки
-router.post('/api/cars/:id/moderate', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body;
+PS E:\rmrp-shop> npm start
 
-    // Проверяем права модератора
-    if (!req.session.userId || req.session.userRole !== 'admin') {
-      return res.status(403).json({ error: 'Недостаточно прав' });
-    }
+> rmrp-shop@1.0.0 start
+> node server/index.js
 
-    // Проверяем корректность статуса
-    if (!['approved', 'rejected'].includes(status)) {
-      return res.status(400).json({ error: 'Некорректный статус' });
-    }
+node:internal/modules/cjs/loader:1404
+  throw err;
+  ^
 
-    const car = await storage.updateCarListingStatus(id, status);
+Error: Cannot find module 'E:\rmrp-shop\server\index.js'
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1401:15)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:170:5)
+    at node:internal/main/run_main_module:36:49 {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: []
+}
 
-    if (car.rows.length === 0) {
-      return res.status(404).json({ error: 'Карточка не найдена' });
-    }
-
-    // Отправляем уведомление владельцу
-    await storage.createNotification({
-      user_id: car.rows[0].user_id,
-      title: status === 'approved' ? 'Объявление одобрено' : 'Объявление отклонено',
-      message: status === 'approved'
-        ? 'Ваше объявление прошло модерацию и опубликовано в каталоге'
-        : 'Ваше объявление не прошло модерацию',
-      type: status === 'approved' ? 'success' : 'error'
-    });
-
-    res.json(car.rows[0]);
-  } catch (error) {
-    console.error('Ошибка при модерации:', error);
-    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
-  }
-});
+Node.js v22.15.1
+PS E:\rmrp-shop> 
 
 // Получение одобренных карточек для каталога
 router.get('/api/cars', async (req, res) => {

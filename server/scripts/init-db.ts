@@ -13,4 +13,4 @@ async function initDatabase() {
   }
 }
 
-initDatabase(); 
+initDatabase();

@@ -24,6 +24,25 @@ export interface CreateUserData {
   terms_accepted?: boolean;
 }
 
+// SQL для создания таблицы пользователей
+export const createUsersTableSQL = `
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  full_name VARCHAR(255) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  role VARCHAR(50) DEFAULT 'user' NOT NULL,
+  terms_accepted BOOLEAN DEFAULT false NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Создаем индекс для быстрого поиска по full_name
+CREATE INDEX IF NOT EXISTS idx_users_full_name ON users(full_name);
+
+-- Создаем индекс для поиска по роли
+CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
+`;
+
 export class UserModel {
   // Найти пользователя по полному имени
   static async findByFullName(fullName: string): Promise<User | null> {

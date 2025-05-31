@@ -2,15 +2,18 @@ import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 import { UserModel } from '../models/user.js';
 
+// Определяем наш собственный интерфейс для пользователя в запросе
+export interface AuthenticatedUser {
+  id: number;
+  fullName: string;
+  role: string;
+}
+
 // Расширяем тип Request для добавления пользователя
 declare global {
   namespace Express {
     interface Request {
-      user?: {
-        id: number;
-        fullName: string;
-        role: string;
-      };
+      user?: AuthenticatedUser;
     }
   }
 }
@@ -41,16 +44,17 @@ export function generateToken(userId: number): string {
 }
 
 // Проверка JWT токена (middleware)
-export async function authenticateToken(req: Request, res: Response, next: NextFunction) {
+export async function authenticateToken(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     if (!token) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         message: 'Токен доступа не предоставлен'
       });
+      return;
     }
 
     const secret = process.env.JWT_SECRET || process.env.SESSION_SECRET || 'fallback-secret-key';
@@ -59,10 +63,11 @@ export async function authenticateToken(req: Request, res: Response, next: NextF
     // Проверяем существование пользователя
     const user = await UserModel.findById(decoded.userId);
     if (!user) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         message: 'Пользователь не найден'
       });
+      return;
     }
 
     // Добавляем пользователя в запрос
@@ -77,20 +82,22 @@ export async function authenticateToken(req: Request, res: Response, next: NextF
     console.error('Ошибка при проверке токена:', error);
     
     if (error instanceof jwt.JsonWebTokenError) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         message: 'Недействительный токен'
       });
+      return;
     }
     
     if (error instanceof jwt.TokenExpiredError) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         message: 'Токен истек'
       });
+      return;
     }
 
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: 'Ошибка при проверке токена'
     });
@@ -99,19 +106,21 @@ export async function authenticateToken(req: Request, res: Response, next: NextF
 
 // Проверка роли пользователя
 export function requireRole(role: string) {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         message: 'Требуется авторизация'
       });
+      return;
     }
 
     if (req.user.role !== role && req.user.role !== 'admin') {
-      return res.status(403).json({
+      res.status(403).json({
         success: false,
         message: 'Недостаточно прав доступа'
       });
+      return;
     }
 
     next();
@@ -119,18 +128,19 @@ export function requireRole(role: string) {
 }
 
 // Проверка что пользователь - админ
-export function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  return requireRole('admin')(req, res, next);
+export function requireAdmin(req: Request, res: Response, next: NextFunction): void {
+  requireRole('admin')(req, res, next);
 }
 
 // Опциональная аутентификация (не требует токен, но если есть - проверяет)
-export async function optionalAuth(req: Request, res: Response, next: NextFunction) {
+export async function optionalAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-      return next(); // Продолжаем без пользователя
+      next(); // Продолжаем без пользователя
+      return;
     }
 
     const secret = process.env.JWT_SECRET || process.env.SESSION_SECRET || 'fallback-secret-key';
@@ -154,21 +164,23 @@ export async function optionalAuth(req: Request, res: Response, next: NextFuncti
 
 // Проверка что пользователь может редактировать ресурс (владелец или админ)
 export function requireOwnershipOrAdmin(getUserId: (req: Request) => number) {
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     if (!req.user) {
-      return res.status(401).json({
+      res.status(401).json({
         success: false,
         message: 'Требуется авторизация'
       });
+      return;
     }
 
     const resourceUserId = getUserId(req);
     
     if (req.user.role === 'admin' || req.user.id === resourceUserId) {
-      return next();
+      next();
+      return;
     }
 
-    return res.status(403).json({
+    res.status(403).json({
       success: false,
       message: 'Недостаточно прав доступа'
     });

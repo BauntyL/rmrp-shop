@@ -1,5 +1,5 @@
 // server/index.ts
-import express from 'express';
+import express, { Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
@@ -11,13 +11,13 @@ config();
 
 // Импорты для базы данных и аутентификации (раскомментируйте когда будут готовы)
 // import { PrismaClient } from '@prisma/client';
-// import { authenticateToken } from './middleware/auth.js';
-// import authRoutes from './routes/auth.js';
-// import { checkConnection } from './config/database.js';
+// import { authenticateToken } from './middleware/auth';
+// import authRoutes from './routes/auth';
+// import { checkConnection } from './config/database';
 
 // const prisma = new PrismaClient();
 
-const app = express();
+const app: Application = express();
 
 // Конфигурация для Railway/Production
 const isProduction = process.env.NODE_ENV === 'production';
@@ -75,14 +75,9 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Базовый healthcheck endpoint
+// Health check endpoint для Railway
 app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV,
-    version: process.env.npm_package_version || '1.0.0'
-  });
+  res.status(200).json({ status: 'ok' });
 });
 
 // Расширенный healthcheck endpoint

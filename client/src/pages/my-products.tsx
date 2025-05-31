@@ -1,0 +1,297 @@
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
+import { apiRequest } from "@/lib/queryClient";
+import Header from "@/components/layout/header";
+import Footer from "@/components/layout/footer";
+import CreateListingModal from "@/components/create-listing-modal";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { Plus, Eye, Edit, Trash2 } from "lucide-react";
+
+export default function MyProducts() {
+  const { user, isAuthenticated } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [showCreateListing, setShowCreateListing] = useState(false);
+
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ["/api/my-products"],
+    enabled: isAuthenticated,
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: async (productId: number) => {
+      await apiRequest("DELETE", `/api/products/${productId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Объявление удалено",
+        description: "Ваше объявление было успешно удалено",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/my-products"] });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить объявление",
+        variant: "destructive",
+      });
+    },
+  });
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Доступ ограничен</h1>
+          <p className="text-gray-600 mb-6">Войдите в систему для просмотра ваших товаров</p>
+          <Button onClick={() => window.location.href = "/login"}>
+            Войти
+          </Button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "pending": return "bg-yellow-100 text-yellow-800";
+      case "approved": return "bg-green-100 text-green-800";
+      case "rejected": return "bg-red-100 text-red-800";
+      case "sold": return "bg-blue-100 text-blue-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "pending": return "На модерации";
+      case "approved": return "Одобрено";
+      case "rejected": return "Отклонено";
+      case "sold": return "Продано";
+      default: return status;
+    }
+  };
+
+  const filterProductsByStatus = (status?: string) => {
+    if (!status) return products;
+    return products.filter((product: any) => product.status === status);
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("ru-RU", {
+      style: "currency",
+      currency: "RUB",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+
+  const pendingProducts = filterProductsByStatus("pending");
+  const approvedProducts = filterProductsByStatus("approved");
+  const rejectedProducts = filterProductsByStatus("rejected");
+
+  const ProductCard = ({ product }: { product: any }) => (
+    <Card className="overflow-hidden">
+      <div className="relative">
+        <img 
+          src={product.images?.[0] || "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200"}
+          alt={product.title}
+          className="w-full h-32 object-cover"
+        />
+        <Badge className={`absolute top-2 right-2 ${getStatusColor(product.status)}`}>
+          {getStatusText(product.status)}
+        </Badge>
+      </div>
+      
+      <CardContent className="p-4">
+        <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1">
+          {product.title}
+        </h3>
+        <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+          {product.description}
+        </p>
+        <p className="text-lg font-bold text-gray-900 mb-3">
+          {formatPrice(product.price)}
+        </p>
+        
+        <div className="flex space-x-2">
+          <Button variant="outline" size="sm" className="flex-1">
+            <Eye className="h-4 w-4 mr-1" />
+            Просмотр
+          </Button>
+          <Button variant="outline" size="sm" className="flex-1">
+            <Edit className="h-4 w-4 mr-1" />
+            Редактировать
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-red-600 hover:text-red-700"
+            onClick={() => deleteProductMutation.mutate(product.id)}
+            disabled={deleteProductMutation.isPending}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {product.status === "rejected" && product.moderatorNote && (
+          <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-800">
+              <strong>Причина отклонения:</strong> {product.moderatorNote}
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Мои товары</h1>
+            <p className="text-gray-600">Управляйте вашими объявлениями</p>
+          </div>
+          <Button onClick={() => setShowCreateListing(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Добавить товар
+          </Button>
+        </div>
+
+        <Tabs defaultValue="all" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="all">
+              Все ({products.length})
+            </TabsTrigger>
+            <TabsTrigger value="pending">
+              На модерации ({pendingProducts.length})
+            </TabsTrigger>
+            <TabsTrigger value="approved">
+              Одобренные ({approvedProducts.length})
+            </TabsTrigger>
+            <TabsTrigger value="rejected">
+              Отклоненные ({rejectedProducts.length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="all">
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
+                    <div className="bg-gray-200 rounded-lg h-32 mb-4"></div>
+                    <div className="bg-gray-200 rounded h-4 mb-2"></div>
+                    <div className="bg-gray-200 rounded h-3 mb-4"></div>
+                    <div className="bg-gray-200 rounded h-6"></div>
+                  </div>
+                ))}
+              </div>
+            ) : products.length === 0 ? (
+              <div className="text-center py-16">
+                <Plus className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  У вас еще нет товаров
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Создайте ваше первое объявление
+                </p>
+                <Button onClick={() => setShowCreateListing(true)}>
+                  Создать первое объявление
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {products.map((product: any) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="pending">
+            {pendingProducts.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="inline-flex p-4 rounded-full bg-yellow-100 mb-4">
+                  <Eye className="h-8 w-8 text-yellow-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Нет товаров на модерации
+                </h3>
+                <p className="text-gray-600">
+                  Все ваши товары прошли модерацию
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {pendingProducts.map((product: any) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="approved">
+            {approvedProducts.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="inline-flex p-4 rounded-full bg-green-100 mb-4">
+                  <Eye className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Нет одобренных товаров
+                </h3>
+                <p className="text-gray-600">
+                  Ваши товары еще не прошли модерацию
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {approvedProducts.map((product: any) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="rejected">
+            {rejectedProducts.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="inline-flex p-4 rounded-full bg-red-100 mb-4">
+                  <Eye className="h-8 w-8 text-red-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Нет отклоненных товаров
+                </h3>
+                <p className="text-gray-600">
+                  Все ваши товары соответствуют правилам
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {rejectedProducts.map((product: any) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      <Footer />
+
+      <CreateListingModal 
+        open={showCreateListing} 
+        onOpenChange={setShowCreateListing} 
+      />
+    </div>
+  );
+}

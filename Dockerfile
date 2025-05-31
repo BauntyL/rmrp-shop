@@ -12,8 +12,14 @@ COPY package*.json ./
 COPY client/package*.json ./client/
 COPY server/package*.json ./server/
 
-# Устанавливаем все зависимости (включая dev для сборки)
+# Устанавливаем зависимости для корневой директории
 RUN npm ci --verbose
+
+# Устанавливаем зависимости для сервера
+RUN cd server && npm ci
+
+# Устанавливаем зависимости для клиента (если папка существует)
+RUN if [ -d "client" ]; then cd client && npm ci; fi
 
 # Копируем исходный код
 COPY . .
@@ -24,7 +30,6 @@ RUN npm run build:server
 # Собираем клиентскую часть (если client папка существует)
 RUN if [ -d "client" ]; then \
       cd client && \
-      npm ci && \
       npm run build; \
     fi
 
@@ -72,7 +77,7 @@ USER nextjs
 EXPOSE 3000
 
 # Проверка здоровья
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3
   CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Запускаем приложение

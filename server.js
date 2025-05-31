@@ -1,4 +1,3 @@
-// server.js - точка входа для продакшн сервера
 import { config } from 'dotenv';
 config();
 

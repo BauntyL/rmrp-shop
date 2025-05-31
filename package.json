@@ -3,20 +3,28 @@
   "version": "1.0.0",
   "description": "RMRP Shop Application",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server/index.ts",
+    "dev": "nodemon --exec \"node --loader ts-node/esm\" server/index.ts",
     "test": "jest",
-    "build": "npm run build:client && npm run build:server",
-    "build:client": "cd client && npm install && npm run build",
-    "build:server": "tsc",
+    "build": "npm run build:server && npm run build:client",
+    "build:client": "if [ -d \"client\" ]; then cd client && npm install && npm run build; fi",
+    "build:server": "tsc --project tsconfig.json",
     "init-db": "node server/scripts/init-db.js",
-    "postinstall": "npm run build"
+    "postinstall": "npm run build:server",
+    "clean": "rimraf dist"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   },
-  "keywords": [],
+  "keywords": [
+    "express",
+    "typescript",
+    "shop",
+    "api"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -57,12 +65,8 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
-  "resolutions": {
+  "overrides": {
     "glob": "^10.3.10",
-    "rimraf": "^5.0.5",
-    "npmlog": "^7.0.1",
-    "gauge": "^4.0.4",
-    "are-we-there-yet": "^4.0.0",
-    "inflight": "^2.0.0"
+    "rimraf": "^5.0.5"
   }
 }

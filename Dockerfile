@@ -1,44 +1,76 @@
-# Используем официальный Node.js образ
-FROM node:18-slim
+# Многоэтапная сборка для оптимизации размера образа
+FROM node:18-alpine AS builder
 
-# Устанавливаем рабочую директорию в контейнере
+# Устанавливаем curl для healthcheck
+RUN apk add --no-cache curl
+
+# Устанавливаем рабочую директорию
 WORKDIR /app
 
 # Копируем package.json файлы
 COPY package*.json ./
-COPY client/package*.json ./client/
 
-# Устанавливаем зависимости
-RUN npm ci --only=production --verbose
+# Устанавливаем все зависимости (включая dev для сборки)
+RUN npm ci --verbose
 
-# Копируем остальные файлы проекта
+# Копируем исходный код
 COPY . .
 
-# Собираем приложение
-RUN npm run build
+# Собираем TypeScript проект
+RUN npm run build:server
 
-# Очищаем кеш и ненужные файлы
-RUN npm cache clean --force && \
-    rm -rf client/src client/node_modules/.cache && \
-    rm -rf node_modules/.cache
+# Собираем клиентскую часть (если client папка существует)
+RUN if [ -d "client" ]; then \
+      cd client && \
+      npm ci && \
+      npm run build; \
+    fi
+
+# Продакшн этап
+FROM node:18-alpine AS production
+
+# Устанавливаем curl для healthcheck
+RUN apk add --no-cache curl
+
+# Создаем пользователя без привилегий
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
+
+# Устанавливаем рабочую директорию
+WORKDIR /app
+
+# Копируем package.json для установки только продакшн зависимостей
+COPY package*.json ./
+
+# Устанавливаем только продакшн зависимости
+RUN npm ci --omit=dev --verbose && \
+    npm cache clean --force
+
+# Копируем собранное приложение из builder этапа
+COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nextjs:nodejs /app/server.js ./
+
+# Копируем клиентскую сборку если существует
+COPY --from=builder --chown=nextjs:nodejs /app/client/dist ./client/dist 2>/dev/null || true
+
+# Копируем другие необходимые файлы
+COPY --chown=nextjs:nodejs server ./server
 
 # Устанавливаем переменные окружения
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# Создаем пользователя без привилегий
-RUN addgroup --gid 1001 --system nodejs && \
-    adduser --system --uid 1001 nextjs
-
-# Изменяем владельца файлов
+# Изменяем владельца всех файлов
 RUN chown -R nextjs:nodejs /app
+
+# Переключаемся на непривилегированного пользователя
 USER nextjs
 
 # Открываем порт
 EXPOSE 3000
 
 # Проверка здоровья
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Запускаем приложение

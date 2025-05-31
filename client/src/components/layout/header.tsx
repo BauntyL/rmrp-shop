@@ -49,13 +49,13 @@ export default function Header() {
           <nav className="hidden md:flex space-x-8">
             {navigation.map((item) => (
               <Link key={item.name} href={item.href}>
-                <a className={`font-medium transition-colors ${
+                <span className={`font-medium transition-colors cursor-pointer ${
                   location === item.href 
                     ? "text-primary" 
                     : "text-gray-700 hover:text-primary"
                 }`}>
                   {item.name}
-                </a>
+                </span>
               </Link>
             ))}
           </nav>
@@ -164,9 +164,9 @@ export default function Header() {
                   <nav className="space-y-4">
                     {navigation.map((item) => (
                       <Link key={item.name} href={item.href}>
-                        <a className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50 rounded-lg">
+                        <span className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-50 rounded-lg cursor-pointer">
                           {item.name}
-                        </a>
+                        </span>
                       </Link>
                     ))}
                   </nav>

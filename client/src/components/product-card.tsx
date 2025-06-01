@@ -366,7 +366,8 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                     </Button>
                   </DialogTrigger>
                 </Dialog>
-              </div>
+                </div>
+              </div> 
 
               {/* Кнопки управления для владельца/модератора/админа */
               {(showManageButtons || canManage) && (

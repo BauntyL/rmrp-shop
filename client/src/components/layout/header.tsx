@@ -24,7 +24,67 @@ export default function Header() {
     enabled: isAuthenticated,
   });
 
-  // ... existing code ...
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ["/api/unread-messages-count"],
+    enabled: isAuthenticated,
+  });
+
+  const userInitials = user ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}` : '';
+
+  const navigation = [
+    { name: "Главная", href: "/" },
+    { name: "Товары", href: "/products" },
+    { name: "Избранное", href: "/favorites" },
+    { name: "Диалоги", href: "/messages" },
+  ];
+
+  return (
+    <header className="bg-slate-900 border-b border-slate-700 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <div className="flex items-center">
+            <Link href="/">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">R</span>
+                </div>
+                <span className="text-white font-bold text-xl hidden sm:block">RMRP Shop</span>
+              </div>
+            </Link>
+          </div>
+
+          {/* Server Selection */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Select value={selectedServer} onValueChange={setSelectedServer}>
+              <SelectTrigger className="w-32 bg-slate-800 border-slate-600 text-slate-300">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-800 border-slate-600">
+                {servers.map((server: any) => (
+                  <SelectItem key={server.id} value={server.name} className="text-slate-300 hover:bg-slate-700">
+                    {server.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Navigation & User Menu */}
+          <div className="flex items-center space-x-4">
+            {isAuthenticated ? (
+              <>
+                {/* Favorites */}
+                <Link href="/favorites">
+                  <Button variant="ghost" size="sm" className="relative text-slate-300 hover:text-white hover:bg-slate-800">
+                    <Heart className="h-5 w-5" />
+                    {favorites.length > 0 && (
+                      <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-600 hover:bg-red-700">
+                        {favorites.length}
+                      </Badge>
+                    )}
+                  </Button>
+                </Link>
 
                 {/* Messages */}
                 <Link href="/messages">

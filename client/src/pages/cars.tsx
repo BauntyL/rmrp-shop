@@ -195,8 +195,8 @@ export default function Cars() {
       
       {isCreateModalOpen && (
         <CreateCarModal 
-          open={isCreateModalOpen}
-          onOpenChange={(open) => setIsCreateModalOpen(open)}
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
         />
       )}
     </div>

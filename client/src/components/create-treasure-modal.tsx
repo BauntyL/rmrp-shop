@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Gem, Star, Crown, Sparkles, Scroll, Shield, Loader2, Package, MessageCircle, Users, Phone } from "lucide-react";
 
 const createTreasureSchema = z.object({
-  title: z.string().min(1, "Название обязательно"),
+  // title: z.string().min(1, "Название обязательно"), // Убираем это поле
   description: z.string().min(10, "Описание должно содержать минимум 10 символов"),
   price: z.coerce.number().min(1, "Цена должна быть больше 0"),
   categoryId: z.literal(4), // Только клады
@@ -147,30 +147,40 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
               <h3 className="text-lg font-semibold text-purple-300 mb-6 flex items-center gap-2">
                 <Package className="h-5 w-5" />
-                Количество
+                Количество и детали
               </h3>
-              <FormField
-                control={form.control}
-                name="metadata.quantity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-purple-200 font-medium flex items-center gap-2">
-                      <Package className="h-4 w-4" />
-                      Количество предметов (шт.)
-                    </FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="1"
-                        placeholder="1" 
-                        {...field} 
-                        className="bg-slate-700/50 border-purple-500/30 text-white placeholder:text-purple-300/50 focus:border-purple-400 focus:ring-purple-400/20 transition-all duration-200" 
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-400" />
-                  </FormItem>
-                )}
-              />
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="metadata.quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-purple-200 font-medium flex items-center gap-2">
+                        <Package className="h-4 w-4" />
+                        Количество предметов (шт.)
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="1"
+                          placeholder="1" 
+                          {...field} 
+                          className="bg-slate-700/50 border-purple-500/30 text-white placeholder:text-purple-300/50 focus:border-purple-400 focus:ring-purple-400/20 transition-all duration-200" 
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-400" />
+                    </FormItem>
+                  )}
+                />
+                <div className="text-sm text-purple-300/70 bg-purple-900/20 p-3 rounded-lg">
+                  <p className="font-medium mb-1">💎 Рекомендации по указанию количества:</p>
+                  <ul className="list-disc list-inside space-y-1 text-xs">
+                    <li>Указывайте точное количество предметов в кладе</li>
+                    <li>Для наборов укажите общее количество элементов</li>
+                    <li>При продаже коллекции опишите состав в описании</li>
+                  </ul>
+                </div>
+              </div>
             </div>
 
             {/* Contact Information */}
@@ -277,24 +287,8 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 space-y-6">
               <h3 className="text-lg font-semibold text-purple-300 mb-4">Детали объявления</h3>
               
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-purple-200 font-medium">Название объявления</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Древние золотые монеты" 
-                        {...field} 
-                        className="bg-slate-700/50 border-purple-500/30 text-white placeholder:text-purple-300/50 focus:border-purple-400 focus:ring-purple-400/20 transition-all duration-200" 
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-400" />
-                  </FormItem>
-                )}
-              />
-
+              {/* Убираем поле title */}
+              
               <FormField
                 control={form.control}
                 name="imageUrl"

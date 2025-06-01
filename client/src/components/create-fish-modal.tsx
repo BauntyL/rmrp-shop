@@ -15,10 +15,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Fish, MessageCircle, Users, Phone, Loader2, Package } from "lucide-react";
 
 const createFishSchema = z.object({
-  title: z.string().min(1, "Название обязательно"),
+  // title: z.string().min(1, "Название обязательно"), // Убираем это поле
   description: z.string().min(10, "Описание должно содержать минимум 10 символов"),
   price: z.coerce.number().min(1, "Цена должна быть больше 0"),
-  categoryId: z.literal(3), // Только рыбалка
+  categoryId: z.literal(3), // Только рыба
   serverId: z.coerce.number().min(1, "Выберите сервер"),
   imageUrl: z.string().optional(),
   metadata: z.object({
@@ -150,30 +150,40 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20">
               <h3 className="text-lg font-semibold text-blue-300 mb-6 flex items-center gap-2">
                 <Package className="h-5 w-5" />
-                Количество
+                Количество и характеристики
               </h3>
-              <FormField
-                control={form.control}
-                name="metadata.quantity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-blue-200 font-medium flex items-center gap-2">
-                      <Package className="h-4 w-4" />
-                      Количество рыбы (шт.)
-                    </FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="1"
-                        placeholder="1" 
-                        {...field} 
-                        className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-400" />
-                  </FormItem>
-                )}
-              />
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="metadata.quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-blue-200 font-medium flex items-center gap-2">
+                        <Package className="h-4 w-4" />
+                        Количество рыбы (шт.)
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min="1"
+                          placeholder="1" 
+                          {...field} 
+                          className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-400" />
+                    </FormItem>
+                  )}
+                />
+                <div className="text-sm text-blue-300/70 bg-blue-900/20 p-3 rounded-lg">
+                  <p className="font-medium mb-1">💡 Рекомендации по указанию количества:</p>
+                  <ul className="list-disc list-inside space-y-1 text-xs">
+                    <li>Указывайте точное количество рыбы в штуках</li>
+                    <li>Для крупной рыбы можно указать вес в описании</li>
+                    <li>При продаже улова укажите общее количество</li>
+                  </ul>
+                </div>
+              </div>
             </div>
 
             {/* Contact Information */}
@@ -280,24 +290,8 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20 space-y-6">
               <h3 className="text-lg font-semibold text-blue-300 mb-4">Детали объявления</h3>
               
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-blue-200 font-medium">Название объявления</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Свежая щука, 2 кг" 
-                        {...field} 
-                        className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-400" />
-                  </FormItem>
-                )}
-              />
-
+              {/* Убираем поле title */}
+              
               <FormField
                 control={form.control}
                 name="imageUrl"

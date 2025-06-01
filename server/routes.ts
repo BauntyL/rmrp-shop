@@ -270,55 +270,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Conversation routes
+  // Обновляем роут для получения диалогов
   app.get('/api/conversations', authenticateToken, async (req: any, res) => {
     try {
-      const conversations = await storage.getConversations(req.user.id);
+      const conversations = await storage.getConversationsWithUnreadCount(req.user.id);
       res.json(conversations);
     } catch (error) {
       res.status(500).json({ message: 'Failed to fetch conversations' });
     }
   });
 
-  app.post('/api/conversations', authenticateToken, async (req: any, res) => {
+  // Добавляем роут для получения количества непрочитанных сообщений
+  app.get('/api/messages/unread-count', authenticateToken, async (req: any, res) => {
     try {
-      const { otherUserId, productId } = req.body;
-      const userId = req.user.id;
-
-      if (userId === otherUserId) {
-        return res.status(400).json({ message: 'Cannot start conversation with yourself' });
-      }
-
-      // Check if conversation already exists
-      const existing = await storage.findExistingConversation(userId, otherUserId, productId);
-      if (existing) {
-        return res.json(existing);
-      }
-
-      const conversation = await storage.createConversation({
-        user1Id: userId,
-        user2Id: otherUserId,
-        productId,
-      });
-
-      res.json(conversation);
+      const count = await storage.getUnreadMessagesCount(req.user.id);
+      res.json({ count });
     } catch (error) {
-      res.status(500).json({ message: 'Failed to create conversation' });
+      res.status(500).json({ message: 'Failed to fetch unread count' });
     }
   });
 
-  // Message routes
+  // Обновляем роут для получения сообщений
   app.get('/api/conversations/:id/messages', authenticateToken, async (req: any, res) => {
     try {
       const conversationId = parseInt(req.params.id);
       const userId = req.user.id;
 
-      // Verify user is part of conversation
       const conversation = await storage.getConversation(conversationId);
       if (!conversation || (conversation.user1Id !== userId && conversation.user2Id !== userId)) {
         return res.status(403).json({ message: 'Access denied' });
       }
 
       const messages = await storage.getMessages(conversationId);
+      
+      // Помечаем сообщения как прочитанные
+      await storage.markMessagesAsRead(conversationId, userId);
+      
       res.json(messages);
     } catch (error) {
       res.status(500).json({ message: 'Failed to fetch messages' });

@@ -223,7 +223,9 @@ export default function Messages() {
                             </p>
                           </div>
                           {conversation.unreadCount > 0 && (
-                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                            <Badge className="bg-blue-600 text-white text-xs">
+                              {conversation.unreadCount}
+                            </Badge>
                           )}
                         </div>
                       </div>

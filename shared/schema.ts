@@ -92,6 +92,7 @@ export const messages = pgTable("messages", {
   content: text("content").notNull(),
   isModerated: boolean("is_moderated").default(false),
   moderatorId: integer("moderator_id"),
+  readAt: timestamp("read_at"), // Новое поле
   createdAt: timestamp("created_at").defaultNow(),
 });
 

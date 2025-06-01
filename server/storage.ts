@@ -436,6 +436,63 @@ export class DatabaseStorage implements IStorage {
       .where(eq(messages.isModerated, false))
       .orderBy(asc(messages.createdAt));
   }
+
+  async getUnreadMessagesCount(userId: number): Promise<number> {
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(messages)
+      .innerJoin(conversations, eq(messages.conversationId, conversations.id))
+      .where(
+        and(
+          or(
+            eq(conversations.user1Id, userId),
+            eq(conversations.user2Id, userId)
+          ),
+          ne(messages.senderId, userId),
+          isNull(messages.readAt)
+        )
+      );
+    
+    return result[0]?.count || 0;
+  }
+
+  async markMessagesAsRead(conversationId: number, userId: number): Promise<void> {
+    await db
+      .update(messages)
+      .set({ readAt: new Date() })
+      .where(
+        and(
+          eq(messages.conversationId, conversationId),
+          ne(messages.senderId, userId),
+          isNull(messages.readAt)
+        )
+      );
+  }
+
+  async getConversationsWithUnreadCount(userId: number): Promise<any[]> {
+    return await db
+      .select({
+        id: conversations.id,
+        user1Id: conversations.user1Id,
+        user2Id: conversations.user2Id,
+        productId: conversations.productId,
+        createdAt: conversations.createdAt,
+        updatedAt: conversations.updatedAt,
+        unreadCount: sql<number>`count(case when ${messages.senderId} != ${userId} and ${messages.readAt} is null then 1 end)`,
+        lastMessage: sql<string>`(
+          select ${messages.content} 
+          from ${messages} 
+          where ${messages.conversationId} = ${conversations.id} 
+          order by ${messages.createdAt} desc 
+          limit 1
+        )`
+      })
+      .from(conversations)
+      .leftJoin(messages, eq(messages.conversationId, conversations.id))
+      .where(or(eq(conversations.user1Id, userId), eq(conversations.user2Id, userId)))
+      .groupBy(conversations.id)
+      .orderBy(desc(conversations.updatedAt));
+  }
 }
 
 export const storage = new DatabaseStorage();

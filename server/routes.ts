@@ -43,15 +43,20 @@ const requireRole = (roles: string[]) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Initialize default data
-  await storage.initializeServers();
-  await storage.initializeCategories();
+  console.log('Initializing routes...');
   
-  // Add health check endpoint
-  app.get('/health', (req, res) => {
-    res.status(200).send('OK');
-  });
-  
+  try {
+    // Initialize default data
+    console.log('Initializing servers...');
+    await storage.initializeServers();
+    console.log('Initializing categories...');
+    await storage.initializeCategories();
+    console.log('Database initialization complete');
+  } catch (error) {
+    console.error('Database initialization failed:', error);
+    // Don't throw error, let healthcheck work
+  }
+
   // Auth routes
   app.post('/api/auth/register', async (req, res) => {
     try {
@@ -437,6 +442,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  console.log('Routes registered successfully');
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -17,7 +17,8 @@ export default function MyProducts() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showCreateListing, setShowCreateListing] = useState(false);
-
+  
+  console.log('MyProducts рендерится, showCreateListing:', showCreateListing);
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["/api/my-products"],
     enabled: isAuthenticated,
@@ -196,7 +197,14 @@ export default function MyProducts() {
             <h1 className="text-3xl font-bold text-white">Мои товары</h1>
             <p className="text-slate-300">Управляйте вашими объявлениями</p>
           </div>
-          <Button onClick={() => setShowCreateListing(true)} className="bg-blue-600 hover:bg-blue-700">
+          <Button 
+            onClick={() => {
+              console.log('Кнопка нажата, showCreateListing:', showCreateListing);
+              setShowCreateListing(true);
+              console.log('setShowCreateListing(true) вызван');
+            }} 
+            className="bg-blue-600 hover:bg-blue-700"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Добавить товар
           </Button>
@@ -324,7 +332,10 @@ export default function MyProducts() {
 
       <CreateListingModal 
         open={showCreateListing} 
-        onOpenChange={setShowCreateListing} 
+        onOpenChange={(open) => {
+          console.log('onOpenChange вызван с:', open);
+          setShowCreateListing(open);
+        }} 
       />
     </div>
   );

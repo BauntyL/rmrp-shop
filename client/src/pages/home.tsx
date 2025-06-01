@@ -27,9 +27,17 @@ export default function Home() {
         const response = await fetch('/api/categories');
         const data = await response.json();
         console.log('Raw categories from API:', data);
-        setCategories(data);
+        
+        // Проверяем, что data это массив, а не объект с ошибкой
+        if (Array.isArray(data)) {
+          setCategories(data);
+        } else {
+          console.error('Categories API returned error:', data);
+          setCategories([]); // Устанавливаем пустой массив
+        }
       } catch (error) {
         console.error('Error loading categories:', error);
+        setCategories([]); // Устанавливаем пустой массив при ошибке
       }
     };
     loadCategories();

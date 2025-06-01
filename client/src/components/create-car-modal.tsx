@@ -78,7 +78,7 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
         price: data.price,
         categoryId: 1, // Cars category
         serverId: data.serverId,
-        imageUrl: data.imageUrl,
+        images: data.imageUrl ? [data.imageUrl] : [], // Convert imageUrl to images array
         metadata: data.metadata
       };
       const response = await apiRequest("POST", "/api/products", productData);

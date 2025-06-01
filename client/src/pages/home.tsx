@@ -144,3 +144,22 @@ export default function Home() {
     </div>
   );
 }
+
+// В useEffect где загружаются категории
+useEffect(() => {
+  const loadCategories = async () => {
+    try {
+      const response = await fetch('/api/categories');
+      const data = await response.json();
+      console.log('Raw categories from API:', data); // Добавить эту строку
+      setCategories(data);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
+  };
+  loadCategories();
+}, []);
+
+// Перед return в компоненте
+const mainCategories = categories.filter(cat => !cat.parentId);
+console.log('Filtered main categories:', mainCategories); // Добавить эту строку

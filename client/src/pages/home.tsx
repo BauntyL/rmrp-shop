@@ -16,7 +16,7 @@ export default function Home() {
   const [categories, setCategories] = useState([]);
 
   const { data: featuredProducts = [] } = useQuery({
-    queryKey: ["/api/products"],
+    queryKey: ["/api/products", { status: "approved" }],
   });
   // УДАЛИТЬ ЭТУ СТРОКУ:
   // е

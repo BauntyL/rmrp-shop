@@ -167,7 +167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const filters = {
         categoryId: req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined,
         serverId: req.query.serverId ? parseInt(req.query.serverId as string) : undefined,
-        status: req.query.status as string,
+        status: req.query.status as string || 'approved', // По умолчанию только одобренные
         search: req.query.search as string,
         userId: req.query.userId ? parseInt(req.query.userId as string) : undefined,
       };

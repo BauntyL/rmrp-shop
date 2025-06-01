@@ -29,7 +29,19 @@ export default function Home() {
       window.location.href = "/login";
       return;
     }
-    setShowCreateListing(true);
+    // Перенаправляем на страницу "мои товары"
+    window.location.href = "/my-products";
+  };
+
+  const handleViewProducts = () => {
+    // Автоматический скролл к секции категорий
+    const categoriesSection = document.getElementById('categories');
+    if (categoriesSection) {
+      categoriesSection.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
   };
 
   const handleProductContact = (userId: number) => {
@@ -59,11 +71,11 @@ export default function Home() {
                 Разместить объявление
               </Button>
               <Button 
+                onClick={handleViewProducts}
                 className="bg-blue-500 text-white hover:bg-blue-400 px-8 py-4 font-semibold text-lg transition-all duration-200 border-0 shadow-lg"
                 size="lg"
-                asChild
               >
-                <Link href="#categories">Смотреть товары</Link>
+                Смотреть товары
               </Button>
             </div>
           </div>

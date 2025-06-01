@@ -160,7 +160,10 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
               }`}
               onLoad={() => setImageLoaded(true)}
               onError={(e) => {
-                (e.target as HTMLImageElement).src = defaultImage;
+                const target = e.target as HTMLImageElement;
+                if (target.src !== defaultImage) {
+                  target.src = defaultImage;
+                }
                 setImageLoaded(true);
               }}
             />
@@ -196,7 +199,7 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
                 product.category?.color === 'purple' ? 'bg-purple-500/90 text-white' :
                 'bg-gray-500/90 text-white'
               }`}>
-                {product.category?.displayName}
+                {product.category?.displayName || 'Без категории'}
               </Badge>
             </div>
           </div>
@@ -266,7 +269,10 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
                   alt={product.title}
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = defaultImage;
+                    const target = e.target as HTMLImageElement;
+                    if (target.src !== defaultImage) {
+                      target.src = defaultImage;
+                    }
                   }}
                 />
                 <div className="absolute bottom-4 left-4">
@@ -286,7 +292,10 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
                         alt={`${product.title} ${index + 2}`}
                         className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = defaultImage;
+                          const target = e.target as HTMLImageElement;
+                          if (target.src !== defaultImage) {
+                            target.src = defaultImage;
+                          }
                         }}
                       />
                     </div>
@@ -363,7 +372,7 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
                       product.category?.color === 'purple' ? 'bg-purple-500 text-white' :
                       'bg-gray-500 text-white'
                     }`}>
-                      {product.category?.displayName}
+                      {product.category?.displayName || 'Без категории'}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">

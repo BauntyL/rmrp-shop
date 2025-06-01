@@ -628,8 +628,8 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
           </CardContent>
         </div>
       </Card>
-      
-      {/* Модальное окно */
+
+      {/* Модальное окно */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] bg-gradient-to-br from-white to-gray-50">
           <DialogHeader>

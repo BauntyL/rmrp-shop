@@ -23,6 +23,8 @@ export default function FishPage() {
 
   const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ["/api/products", { categoryId: 3, search: searchQuery }],
+    staleTime: 0, // Отключить кэширование временно
+    cacheTime: 0,
   });
 
   const { data: servers = [] } = useQuery({

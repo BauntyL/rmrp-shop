@@ -167,12 +167,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const filters = {
         categoryId: req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined,
         serverId: req.query.serverId ? parseInt(req.query.serverId as string) : undefined,
-        status: req.query.status as string || 'approved', // По умолчанию только одобренные
+        status: req.query.status as string || 'approved',
         search: req.query.search as string,
         userId: req.query.userId ? parseInt(req.query.userId as string) : undefined,
       };
-
+  
+      // Add this debug logging
+      console.log('API Request filters:', filters);
+      
       const products = await storage.getProducts(filters);
+      
+      // Add this debug logging
+      console.log('Returned products count:', products.length);
+      console.log('Products categoryIds:', products.map(p => ({ title: p.title, categoryId: p.categoryId })));
+      
       res.json(products);
     } catch (error) {
       res.status(500).json({ message: 'Failed to fetch products' });

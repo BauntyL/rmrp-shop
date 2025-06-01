@@ -28,6 +28,69 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
   const [isEditPriceOpen, setIsEditPriceOpen] = useState(false);
   const [newPrice, setNewPrice] = useState(product.price);
 
+  // Добавляем определения прав доступа
+  const canManage = user && (user.role === 'admin' || user.role === 'moderator' || user.id === product.userId);
+  const canEdit = user && (user.role === 'admin' || user.role === 'moderator' || user.id === product.userId);
+  const canEditPrice = user && (user.role === 'admin' || user.role === 'moderator' || user.id === product.userId);
+
+  // Добавляем мутацию для обновления цены
+  const updatePriceMutation = useMutation({
+    mutationFn: async (newPrice: number) => {
+      await apiRequest("PUT", `/api/products/${product.id}/price`, { price: newPrice });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/my-products"] });
+      setIsEditPriceOpen(false);
+      toast({
+        title: "Успешно",
+        description: "Цена товара обновлена",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить цену товара",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Добавляем мутацию для удаления товара
+  const deleteProductMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("DELETE", `/api/products/${product.id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/my-products"] });
+      toast({
+        title: "Успешно",
+        description: "Товар удален",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить товар",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Добавляем обработчики
+  const handleUpdatePrice = () => {
+    if (newPrice && newPrice > 0) {
+      updatePriceMutation.mutate(newPrice);
+    }
+  };
+
+  const handleDeleteProduct = () => {
+    if (window.confirm('Вы уверены, что хотите удалить этот товар?')) {
+      deleteProductMutation.mutate();
+    }
+  };
+
   const toggleFavoriteMutation = useMutation({
     mutationFn: async () => {
       if (isFavorite) {

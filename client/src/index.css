@@ -17,7 +17,7 @@
   --primary-foreground: 248 250 252;
   --secondary: 71 85 105;
   --secondary-foreground: 248 250 252;
-  --accent: 30 41 59; /* обновлено для темнее выделения */
+  --accent: 30 41 59;
   --accent-foreground: 248 250 252;
   --destructive: 239 68 68;
   --destructive-foreground: 248 250 252;
@@ -40,7 +40,7 @@
   --primary-foreground: 15 23 42;
   --secondary: 30 41 59;
   --secondary-foreground: 248 250 252;
-  --accent: 30 41 59; /* обновлено для темнее выделения */
+  --accent: 30 41 59;
   --accent-foreground: 248 250 252;
   --destructive: 220 38 38;
   --destructive-foreground: 248 250 252;
@@ -52,12 +52,12 @@
   * {
     @apply border-border;
   }
+  
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
   
   /* МИНИМАЛИСТИЧНЫЙ ПОДХОД - ТОНКИЕ ЭФФЕКТЫ */
-  /* Убираем все радикальные переопределения accent */
   :root {
     --accent: 210 40% 98%; /* очень светлый серый */
     --accent-foreground: 222.2 84% 4.9%; /* темный текст */
@@ -153,111 +153,6 @@
 
   .animate-fade-in {
     animation: fade-in 0.3s ease-out;
-  }
-}
-  body {
-    @apply font-sans antialiased bg-background text-foreground;
-  }
-  
-  /* МИНИМАЛИСТИЧНЫЙ ПОДХОД - ТОНКИЕ ЭФФЕКТЫ */
-  /* Убираем все радикальные переопределения accent */
-  :root {
-    --accent: 210 40% 98%; /* очень светлый серый */
-    --accent-foreground: 222.2 84% 4.9%; /* темный текст */
-  }
-  
-  .dark {
-    --accent: 217.2 32.6% 17.5%; /* мягкий темно-серый */
-    --accent-foreground: 210 40% 98%; /* светлый текст */
-  }
-  
-  /* Тонкие эффекты для dropdown элементов */
-  [data-radix-select-item],
-  [data-radix-dropdown-menu-item] {
-    transition: all 0.15s ease !important;
-    border-radius: 4px !important;
-    margin: 1px 2px !important;
-  }
-  
-  /* Мягкое выделение при наведении */
-  [data-radix-select-content] [data-highlighted],
-  [data-radix-dropdown-menu-content] [data-highlighted],
-  [data-radix-select-item]:hover,
-  [data-radix-dropdown-menu-item]:hover {
-    background-color: hsl(var(--accent)) !important;
-    color: hsl(var(--accent-foreground)) !important;
-    transform: scale(1.02) !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-  }
-  
-  /* Выбранный элемент - тонкая граница */
-  [data-radix-select-item][data-state="checked"],
-  [data-radix-dropdown-menu-item][data-state="checked"] {
-    background-color: hsl(var(--accent)) !important;
-    border-left: 2px solid hsl(var(--primary)) !important;
-    font-weight: 500 !important;
-  }
-  
-  /* Плавное появление dropdown */
-  [data-radix-select-content],
-  [data-radix-dropdown-menu-content] {
-    animation: gentleSlide 0.2s ease-out !important;
-    border: 1px solid hsl(var(--border)) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-  }
-  
-  @keyframes gentleSlide {
-    from {
-      opacity: 0;
-      transform: translateY(-2px) scale(0.98);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-  }
-  
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
-  }
-
-  @keyframes float-delayed {
-    0%, 100% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-15px);
-    }
-  }
-
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
-
-  .animate-float-delayed {
-    animation: float-delayed 3s ease-in-out infinite 1.5s;
-  }
-
-  .animate-fade-in {
-    animation: fade-in 0.3s ease-out;
-  }
-}de-in 0.3s ease-out;
   }
 }
 

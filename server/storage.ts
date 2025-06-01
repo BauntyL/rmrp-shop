@@ -20,7 +20,7 @@ import {
   type InsertMessage,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, desc, asc, like } from "drizzle-orm";
+import { eq, and, or, desc, asc, like, sql, ne, isNull } from "drizzle-orm";
 
 export interface IStorage {
   // User operations

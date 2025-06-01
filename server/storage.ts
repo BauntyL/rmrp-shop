@@ -222,6 +222,12 @@ export class DatabaseStorage implements IStorage {
       { name: "fish_catfish", displayName: "Сом", icon: "fas fa-fish", color: "cyan", parentId: categoryMap.get("fish") },
       { name: "fish_pike", displayName: "Щука", icon: "fas fa-fish", color: "cyan", parentId: categoryMap.get("fish") },
       { name: "fish_sturgeon", displayName: "Осетр", icon: "fas fa-fish", color: "cyan", parentId: categoryMap.get("fish") },
+      
+      // Real estate subcategories
+      { name: "realestate_house", displayName: "Дом", icon: "fas fa-home", color: "green", parentId: categoryMap.get("realestate") },
+      { name: "realestate_cottage", displayName: "Коттедж", icon: "fas fa-house-chimney", color: "green", parentId: categoryMap.get("realestate") },
+      { name: "realestate_apartment", displayName: "Квартира", icon: "fas fa-building", color: "green", parentId: categoryMap.get("realestate") },
+      { name: "realestate_business", displayName: "Бизнес", icon: "fas fa-briefcase", color: "green", parentId: categoryMap.get("realestate") },
     ];
 
     for (const subcategory of subcategories) {

@@ -19,16 +19,16 @@ const createRealEstateSchema = z.object({
   description: z.string().min(10, "Описание должно содержать минимум 10 символов"),
   price: z.coerce.number().min(1, "Цена должна быть больше 0"),
   categoryId: z.literal(2), // Только недвижимость
-  subcategoryId: z.coerce.number().optional(),
+  subcategoryId: z.coerce.number().min(1, "Выберите тип недвижимости"),
   serverId: z.coerce.number().min(1, "Выберите сервер"),
   imageUrl: z.string().url("Введите корректную ссылку на изображение").optional().or(z.literal("")),
   metadata: z.object({
-    area: z.coerce.number().optional(),
-    rooms: z.coerce.number().optional(),
-    floor: z.coerce.number().optional(),
-    totalFloors: z.coerce.number().optional(),
-    address: z.string().optional(),
-  }).optional(),
+    garageSpaces: z.coerce.number().min(1).max(6),
+    warehouses: z.coerce.number().min(1).max(2),
+    helipads: z.coerce.number().min(1).max(2),
+    income: z.coerce.number().optional(), // Только для бизнеса
+    contactInfo: z.string().min(1, "Контактные данные обязательны"),
+  }),
 });
 
 type CreateRealEstateFormData = z.infer<typeof createRealEstateSchema>;
@@ -58,24 +58,27 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
       description: "",
       price: 0,
       categoryId: 2,
-      subcategoryId: undefined,
+      subcategoryId: 0,
       serverId: 0,
-      imageUrl: "", // Добавить эту строку
+      imageUrl: "",
       metadata: {
-        area: 0,
-        rooms: 0,
-        floor: 0,
-        totalFloors: 0,
-        address: "",
+        garageSpaces: 1,
+        warehouses: 1,
+        helipads: 1,
+        income: 0,
+        contactInfo: "",
       },
     },
   });
+
+  const selectedSubcategory = form.watch("subcategoryId");
+  const isBusiness = subcategories.find((sub: any) => sub.id === selectedSubcategory)?.name === "realestate_business";
 
   const createListingMutation = useMutation({
     mutationFn: async (data: CreateRealEstateFormData) => {
       const productData = {
         ...data,
-        images: data.imageUrl ? [data.imageUrl] : [], // Добавить эту строку
+        images: data.imageUrl ? [data.imageUrl] : [],
       };
       const response = await apiRequest("POST", "/api/products", productData);
       return response.json();
@@ -134,7 +137,7 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            {/* Subcategory Selection */}
+            {/* Property Type Selection */}
             {subcategories.length > 0 && (
               <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
                 <FormField
@@ -170,27 +173,33 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
             {/* Property Details Grid */}
             <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
               <h3 className="text-xl font-semibold text-emerald-400 mb-6 flex items-center gap-2">
-                <Building className="h-5 w-5" />
+                <Home className="h-5 w-5" />
                 Характеристики недвижимости
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <FormField
                   control={form.control}
-                  name="metadata.area"
+                  name="metadata.garageSpaces"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-slate-300 font-medium flex items-center gap-2">
-                        <Ruler className="h-4 w-4 text-emerald-400" />
-                        Площадь (м²)
+                        <Car className="h-4 w-4 text-emerald-400" />
+                        Гаражные места
                       </FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="85" 
-                          {...field} 
-                          className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-emerald-500/20 h-12" 
-                        />
-                      </FormControl>
+                      <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger className="bg-slate-800 border-slate-600 text-white focus:border-emerald-500 focus:ring-emerald-500/20 h-12">
+                            <SelectValue placeholder="Выберите количество" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-slate-800 border-slate-600">
+                          {[1, 2, 3, 4, 5, 6].map((num) => (
+                            <SelectItem key={num} value={num.toString()} className="text-white hover:bg-slate-700">
+                              {num}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage className="text-red-400" />
                     </FormItem>
                   )}
@@ -198,21 +207,27 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
 
                 <FormField
                   control={form.control}
-                  name="metadata.rooms"
+                  name="metadata.warehouses"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-slate-300 font-medium flex items-center gap-2">
-                        <Bed className="h-4 w-4 text-emerald-400" />
-                        Количество комнат
+                        <Warehouse className="h-4 w-4 text-emerald-400" />
+                        Склады
                       </FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="3" 
-                          {...field} 
-                          className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-emerald-500/20 h-12" 
-                        />
-                      </FormControl>
+                      <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger className="bg-slate-800 border-slate-600 text-white focus:border-emerald-500 focus:ring-emerald-500/20 h-12">
+                            <SelectValue placeholder="Выберите количество" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-slate-800 border-slate-600">
+                          {[1, 2].map((num) => (
+                            <SelectItem key={num} value={num.toString()} className="text-white hover:bg-slate-700">
+                              {num}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage className="text-red-400" />
                     </FormItem>
                   )}
@@ -220,69 +235,32 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
 
                 <FormField
                   control={form.control}
-                  name="metadata.floor"
+                  name="metadata.helipads"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-slate-300 font-medium flex items-center gap-2">
-                        <Layers className="h-4 w-4 text-emerald-400" />
-                        Этаж
+                        <Plane className="h-4 w-4 text-emerald-400" />
+                        Вертолетные площадки
                       </FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="5" 
-                          {...field} 
-                          className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-emerald-500/20 h-12" 
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-400" />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="metadata.totalFloors"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-slate-300 font-medium flex items-center gap-2">
-                        <Building className="h-4 w-4 text-emerald-400" />
-                        Этажность дома
-                      </FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="12" 
-                          {...field} 
-                          className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-emerald-500/20 h-12" 
-                        />
-                      </FormControl>
+                      <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger className="bg-slate-800 border-slate-600 text-white focus:border-emerald-500 focus:ring-emerald-500/20 h-12">
+                            <SelectValue placeholder="Выберите количество" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-slate-800 border-slate-600">
+                          {[1, 2].map((num) => (
+                            <SelectItem key={num} value={num.toString()} className="text-white hover:bg-slate-700">
+                              {num}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage className="text-red-400" />
                     </FormItem>
                   )}
                 />
               </div>
-
-              <FormField
-                control={form.control}
-                name="metadata.address"
-                render={({ field }) => (
-                  <FormItem className="mt-6">
-                    <FormLabel className="text-slate-300 font-medium flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-emerald-400" />
-                      Адрес
-                    </FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="ул. Пушкина, д. 10, кв. 25" 
-                        {...field} 
-                        className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-emerald-500/20 h-12" 
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-400" />
-                  </FormItem>
-                )}
-              />
             </div>
 
             {/* Server Selection */}
@@ -374,29 +352,85 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
               />
             </div>
 
-            {/* Price */}
+            {/* Contact Information */}
             <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
               <FormField
                 control={form.control}
-                name="price"
+                name="metadata.contactInfo"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-emerald-400 font-semibold text-lg">Цена</FormLabel>
+                    <FormLabel className="text-emerald-400 font-semibold text-lg flex items-center gap-2">
+                      <Phone className="h-5 w-5" />
+                      Контактные данные
+                    </FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <Input 
-                          type="number" 
-                          placeholder="5500000" 
-                          {...field}
-                          className="pr-12 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-emerald-500/20 h-12 text-lg"
-                        />
-                        <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-emerald-400 font-bold text-lg">₽</span>
-                      </div>
+                      <Input 
+                        placeholder="Телефон, Discord, Telegram или другие контакты" 
+                        {...field} 
+                        className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-emerald-500/20 h-12" 
+                      />
                     </FormControl>
                     <FormMessage className="text-red-400" />
                   </FormItem>
                 )}
               />
+            </div>
+
+            {/* Price and Income */}
+            <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-emerald-400 font-semibold text-lg flex items-center gap-2">
+                        <DollarSign className="h-5 w-5" />
+                        Цена
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input 
+                            type="number" 
+                            placeholder="5500000" 
+                            {...field}
+                            className="pr-12 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-emerald-500/20 h-12 text-lg"
+                          />
+                          <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-emerald-400 font-bold text-lg">₽</span>
+                        </div>
+                      </FormControl>
+                      <FormMessage className="text-red-400" />
+                    </FormItem>
+                  )}
+                />
+
+                {isBusiness && (
+                  <FormField
+                    control={form.control}
+                    name="metadata.income"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-emerald-400 font-semibold text-lg flex items-center gap-2">
+                          <DollarSign className="h-5 w-5" />
+                          Доход (в день)
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input 
+                              type="number" 
+                              placeholder="50000" 
+                              {...field}
+                              className="pr-12 bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-emerald-500/20 h-12 text-lg"
+                            />
+                            <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-emerald-400 font-bold text-lg">₽</span>
+                          </div>
+                        </FormControl>
+                        <FormMessage className="text-red-400" />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
             </div>
 
             {/* Action Buttons */}

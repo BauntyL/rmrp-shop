@@ -341,13 +341,13 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                           <DialogTitle className="text-2xl font-bold text-emerald-800">
                             Изменить цену
                           </DialogTitle>
-                          <p className="text-emerald-600 mt-2">
+                          <p className="text-emerald-700 mt-2">
                             Установите новую цену для товара
                           </p>
                         </DialogHeader>
                         <div className="space-y-6">
                           <div className="space-y-2">
-                            <Label htmlFor="price" className="text-emerald-700 font-semibold">
+                            <Label htmlFor="price" className="text-emerald-800 font-semibold">
                               Новая цена (₽)
                             </Label>
                             <div className="relative">
@@ -357,10 +357,10 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                                 value={newPrice}
                                 onChange={(e) => setNewPrice(Number(e.target.value))}
                                 min="1"
-                                className="pl-8 border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400 bg-white"
+                                className="pl-8 border-emerald-300 focus:border-emerald-500 focus:ring-emerald-500 bg-white text-gray-900 placeholder-gray-500"
                                 placeholder="Введите цену"
                               />
-                              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-600 font-semibold">
+                              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-700 font-semibold">
                                 ₽
                               </span>
                             </div>
@@ -386,7 +386,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                             <Button 
                               variant="outline" 
                               onClick={() => setIsEditPriceOpen(false)}
-                              className="flex-1 border-emerald-300 text-emerald-700 hover:bg-emerald-50 font-semibold py-3 rounded-xl transition-all duration-300"
+                              className="flex-1 border-gray-400 text-gray-800 hover:bg-gray-100 hover:text-gray-900 font-semibold py-3 rounded-xl transition-all duration-300"
                             >
                               <X className="h-4 w-4 mr-2" />
                               Отмена
@@ -409,7 +409,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                           <Edit className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="sm:max-w-lg bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+                      <DialogContent className="sm:max-w-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 max-h-[90vh] overflow-y-auto">
                         <DialogHeader className="text-center pb-4">
                           <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
                             <Edit className="h-8 w-8 text-blue-600" />
@@ -417,29 +417,85 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                           <DialogTitle className="text-2xl font-bold text-blue-800">
                             Редактировать товар
                           </DialogTitle>
-                          <p className="text-blue-600 mt-2">
-                            Функция полного редактирования
+                          <p className="text-blue-700 mt-2">
+                            Измените информацию о товаре
                           </p>
                         </DialogHeader>
                         <div className="space-y-6">
-                          <div className="bg-blue-100 border border-blue-200 rounded-xl p-6 text-center">
-                            <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center mx-auto mb-3">
-                              <Settings className="h-6 w-6 text-blue-600" />
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-title" className="text-blue-800 font-semibold">
+                                Название товара
+                              </Label>
+                              <Input
+                                id="edit-title"
+                                value={editForm.title}
+                                onChange={(e) => setEditForm({...editForm, title: e.target.value})}
+                                className="border-blue-300 focus:border-blue-500 focus:ring-blue-500 bg-white text-gray-900 placeholder-gray-500"
+                                placeholder="Введите название"
+                              />
                             </div>
-                            <h3 className="text-lg font-semibold text-blue-800 mb-2">
-                              В разработке
-                            </h3>
-                            <p className="text-blue-600 text-sm">
-                              Функция полного редактирования товара будет добавлена в следующем обновлении
-                            </p>
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-price" className="text-blue-800 font-semibold">
+                                Цена (₽)
+                              </Label>
+                              <Input
+                                id="edit-price"
+                                type="number"
+                                value={editForm.price}
+                                onChange={(e) => setEditForm({...editForm, price: Number(e.target.value)})}
+                                min="1"
+                                className="border-blue-300 focus:border-blue-500 focus:ring-blue-500 bg-white text-gray-900 placeholder-gray-500"
+                                placeholder="Введите цену"
+                              />
+                            </div>
                           </div>
-                          <div className="flex justify-center">
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-description" className="text-blue-800 font-semibold">
+                              Описание
+                            </Label>
+                            <textarea
+                              id="edit-description"
+                              value={editForm.description}
+                              onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                              className="w-full min-h-[100px] p-3 border border-blue-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 bg-white text-gray-900 placeholder-gray-500 resize-none"
+                              placeholder="Введите описание товара"
+                            />
+                          </div>
+                          <div className="flex space-x-3">
                             <Button 
-                              onClick={() => setIsEditProductOpen(false)}
-                              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+                              onClick={handleEditProduct}
+                              disabled={editProductMutation.isPending}
+                              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
                             >
-                              <Check className="h-4 w-4 mr-2" />
-                              Понятно
+                              {editProductMutation.isPending ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                  Сохранение...
+                                </>
+                              ) : (
+                                <>
+                                  <Check className="h-4 w-4 mr-2" />
+                                  Сохранить
+                                </>
+                              )}
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              onClick={() => {
+                                setIsEditProductOpen(false);
+                                setEditForm({
+                                  title: product.title,
+                                  description: product.description,
+                                  price: product.price,
+                                  categoryId: product.categoryId,
+                                  serverId: product.serverId
+                                });
+                              }}
+                              className="flex-1 border-gray-400 text-gray-800 hover:bg-gray-100 hover:text-gray-900 font-semibold py-3 rounded-xl transition-all duration-300"
+                            >
+                              <X className="h-4 w-4 mr-2" />
+                              Отмена
                             </Button>
                           </div>
                         </div>
@@ -467,7 +523,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                           <DialogTitle className="text-2xl font-bold text-red-800">
                             Удалить товар
                           </DialogTitle>
-                          <p className="text-red-600 mt-2">
+                          <p className="text-red-700 mt-2">
                             Это действие нельзя отменить
                           </p>
                         </DialogHeader>
@@ -479,7 +535,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                                 <h3 className="font-semibold text-red-800 mb-1">
                                   Внимание!
                                 </h3>
-                                <p className="text-red-700 text-sm">
+                                <p className="text-red-800 text-sm">
                                   Вы собираетесь удалить товар "{product.title}". Это действие необратимо и все данные о товаре будут потеряны.
                                 </p>
                               </div>
@@ -489,7 +545,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                             <Button 
                               variant="outline" 
                               onClick={() => setIsDeleteConfirmOpen(false)}
-                              className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold py-3 rounded-xl transition-all duration-300"
+                              className="flex-1 border-gray-400 text-gray-800 hover:bg-gray-100 hover:text-gray-900 font-semibold py-3 rounded-xl transition-all duration-300"
                             >
                               <X className="h-4 w-4 mr-2" />
                               Отмена

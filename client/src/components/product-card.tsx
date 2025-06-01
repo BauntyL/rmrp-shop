@@ -627,10 +627,9 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
             </div>
           </CardContent>
         </div>
-      </Card>
 
-      {/* Модальное окно */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        {/* Модальное окно */}
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] bg-gradient-to-br from-white to-gray-50">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-gray-900 mb-4">

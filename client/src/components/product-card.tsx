@@ -236,10 +236,9 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
                   <DialogTrigger asChild>
                     <Button 
                       variant="outline"
-                      className="px-6 py-3 border-2 border-gray-300 hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 rounded-xl font-semibold"
+                      className="px-4 py-3 border-2 border-blue-300 bg-blue-50 hover:border-blue-500 hover:bg-blue-100 text-blue-700 transition-all duration-300 rounded-xl font-semibold text-sm"
                     >
-                      <Info className="h-5 w-5 mr-2" />
-                      Подробнее
+                      <Info className="h-4 w-4" />
                     </Button>
                   </DialogTrigger>
                 </Dialog>
@@ -251,7 +250,7 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
       
       {/* Модальное окно */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-gray-50">
+        <DialogContent className="max-w-4xl max-h-[90vh] bg-gradient-to-br from-white to-gray-50">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-gray-900 mb-4">
               {product.title}
@@ -259,7 +258,7 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
           </DialogHeader>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Левая колонка - изображение */}
+            {/* Левая колонка - изображение и контакты */}
             <div className="space-y-4">
               <div className="relative h-80 rounded-xl overflow-hidden shadow-lg">
                 <img 
@@ -292,82 +291,6 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
                       />
                     </div>
                   ))}
-                </div>
-              )}
-            </div>
-            
-            {/* Правая колонка - информация */}
-            <div className="space-y-6">
-              {/* Основная информация */}
-              <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Основная информация</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Категория:</span>
-                    <Badge className={`${
-                      product.category?.color === 'blue' ? 'bg-blue-500 text-white' :
-                      product.category?.color === 'green' ? 'bg-green-500 text-white' :
-                      product.category?.color === 'cyan' ? 'bg-cyan-500 text-white' :
-                      product.category?.color === 'purple' ? 'bg-purple-500 text-white' :
-                      'bg-gray-500 text-white'
-                    }`}>
-                      {product.category?.displayName}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Сервер:</span>
-                    <span className="font-semibold text-gray-900">{product.server?.displayName || 'Неизвестный сервер'}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-600">Рейтинг:</span>
-                    <div className="flex items-center space-x-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="h-4 w-4 text-orange-400 fill-current" />
-                      ))}
-                      <span className="text-gray-600 ml-2">(5.0)</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Описание */}
-              <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Описание</h3>
-                <p className="text-gray-700 leading-relaxed">
-                  {product.description}
-                </p>
-              </div>
-              
-              {/* Характеристики автомобиля */}
-              {product.categoryId === 1 && metadata && Object.keys(metadata).length > 0 && (
-                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Характеристики</h3>
-                  <div className="grid grid-cols-1 gap-3">
-                    {metadata.category && (
-                      <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                        <span className="text-gray-600">Категория ТС:</span>
-                        <span className="font-semibold text-gray-900">{getCategoryLabel(metadata.category)}</span>
-                      </div>
-                    )}
-                    {metadata.maxSpeed && (
-                      <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                        <span className="text-gray-600">Макс. скорость:</span>
-                        <span className="font-semibold text-gray-900">{metadata.maxSpeed} км/ч</span>
-                      </div>
-                    )}
-                    {metadata.tuning && (
-                      <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                        <span className="text-gray-600">Тюнинг:</span>
-                        <span className="font-semibold text-gray-900">{getTuningLabel(metadata.tuning)}</span>
-                      </div>
-                    )}
-                    {metadata.acceleration && (
-                      <div className="flex items-center justify-between py-2">
-                        <span className="text-gray-600">Разгон 0-100:</span>
-                        <span className="font-semibold text-gray-900">{metadata.acceleration}с</span>
-                      </div>
-                    )}
-                  </div>
                 </div>
               )}
               
@@ -423,6 +346,82 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
                 <MessageCircle className="h-6 w-6 mr-3" />
                 Написать продавцу
               </Button>
+            </div>
+            
+            {/* Правая колонка - информация */}
+            <div className="space-y-6">
+              {/* Основная информация */}
+              <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Основная информация</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Категория:</span>
+                    <Badge className={`${
+                      product.category?.color === 'blue' ? 'bg-blue-500 text-white' :
+                      product.category?.color === 'green' ? 'bg-green-500 text-white' :
+                      product.category?.color === 'cyan' ? 'bg-cyan-500 text-white' :
+                      product.category?.color === 'purple' ? 'bg-purple-500 text-white' :
+                      'bg-gray-500 text-white'
+                    }`}>
+                      {product.category?.displayName}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Сервер:</span>
+                    <span className="font-semibold text-gray-900">{product.server?.displayName || 'Неизвестный сервер'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Рейтинг:</span>
+                    <div className="flex items-center space-x-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 text-orange-500 fill-current" />
+                      ))}
+                      <span className="text-gray-600 ml-2">(5.0)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Описание */}
+              <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Описание</h3>
+                <p className="text-gray-700 leading-relaxed">
+                  {product.description}
+                </p>
+              </div>
+              
+              {/* Характеристики автомобиля */}
+              {product.categoryId === 1 && metadata && Object.keys(metadata).length > 0 && (
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Характеристики</h3>
+                  <div className="grid grid-cols-1 gap-3">
+                    {metadata.category && (
+                      <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">Категория ТС:</span>
+                        <span className="font-semibold text-gray-900">{getCategoryLabel(metadata.category)}</span>
+                      </div>
+                    )}
+                    {metadata.maxSpeed && (
+                      <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">Макс. скорость:</span>
+                        <span className="font-semibold text-gray-900">{metadata.maxSpeed} км/ч</span>
+                      </div>
+                    )}
+                    {metadata.tuning && (
+                      <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">Тюнинг:</span>
+                        <span className="font-semibold text-gray-900">{getTuningLabel(metadata.tuning)}</span>
+                      </div>
+                    )}
+                    {metadata.acceleration && (
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-gray-600">Разгон 0-100:</span>
+                        <span className="font-semibold text-gray-900">{metadata.acceleration}с</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </DialogContent>

@@ -20,7 +20,7 @@ import {
   type InsertMessage,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, desc, asc, like, count, sql } from "drizzle-orm";
+import { eq, and, or, desc, asc, like } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -235,8 +235,35 @@ export class DatabaseStorage implements IStorage {
     status?: string;
     search?: string;
     userId?: number;
-  }): Promise<Product[]> {
-    let query = db.select().from(products);
+  }): Promise<any[]> {
+    let query = db
+      .select({
+        id: products.id,
+        title: products.title,
+        description: products.description,
+        price: products.price,
+        categoryId: products.categoryId,
+        subcategoryId: products.subcategoryId,
+        serverId: products.serverId,
+        userId: products.userId,
+        images: products.images,
+        metadata: products.metadata,
+        status: products.status,
+        moderatorId: products.moderatorId,
+        moderatorNote: products.moderatorNote,
+        createdAt: products.createdAt,
+        updatedAt: products.updatedAt,
+        category: {
+          displayName: categories.displayName,
+          color: categories.color,
+        },
+        server: {
+          displayName: servers.displayName,
+        },
+      })
+      .from(products)
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .leftJoin(servers, eq(products.serverId, servers.id));
     
     const conditions = [];
     
@@ -274,8 +301,36 @@ export class DatabaseStorage implements IStorage {
     return await query.orderBy(desc(products.createdAt));
   }
 
-  async getProduct(id: number): Promise<Product | undefined> {
-    const [product] = await db.select().from(products).where(eq(products.id, id));
+  async getProduct(id: number): Promise<any | undefined> {
+    const [product] = await db
+      .select({
+        id: products.id,
+        title: products.title,
+        description: products.description,
+        price: products.price,
+        categoryId: products.categoryId,
+        subcategoryId: products.subcategoryId,
+        serverId: products.serverId,
+        userId: products.userId,
+        images: products.images,
+        metadata: products.metadata,
+        status: products.status,
+        moderatorId: products.moderatorId,
+        moderatorNote: products.moderatorNote,
+        createdAt: products.createdAt,
+        updatedAt: products.updatedAt,
+        category: {
+          displayName: categories.displayName,
+          color: categories.color,
+        },
+        server: {
+          displayName: servers.displayName,
+        },
+      })
+      .from(products)
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .leftJoin(servers, eq(products.serverId, servers.id))
+      .where(eq(products.id, id));
     return product;
   }
 

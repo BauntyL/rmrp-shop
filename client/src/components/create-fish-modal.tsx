@@ -21,6 +21,7 @@ const createFishSchema = z.object({
   categoryId: z.literal(3), // Только рыбалка
   subcategoryId: z.coerce.number().optional(),
   serverId: z.coerce.number().min(1, "Выберите сервер"),
+  imageUrl: z.string().url("Введите корректную ссылку на изображение").optional().or(z.literal("")),
   metadata: z.object({
     fishType: z.string().optional(),
     weight: z.coerce.number().optional(),
@@ -59,6 +60,7 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
       categoryId: 3,
       subcategoryId: undefined,
       serverId: 0,
+      imageUrl: "", // Добавить эту строку
       metadata: {
         fishType: "",
         weight: 0,
@@ -71,7 +73,11 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
 
   const createListingMutation = useMutation({
     mutationFn: async (data: CreateFishFormData) => {
-      const response = await apiRequest("POST", "/api/products", data);
+      const productData = {
+        ...data,
+        images: data.imageUrl ? [data.imageUrl] : [], // Добавить эту строку
+      };
+      const response = await apiRequest("POST", "/api/products", productData);
       return response.json();
     },
     onSuccess: () => {
@@ -308,6 +314,27 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
                     <FormControl>
                       <Input 
                         placeholder="Профессиональная удочка для ловли щуки" 
+                        {...field} 
+                        className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-400" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="imageUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-blue-200 font-medium flex items-center gap-2">
+                      <Fish className="h-4 w-4" />
+                      Ссылка на фото
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="https://example.com/image.jpg" 
                         {...field} 
                         className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
                       />

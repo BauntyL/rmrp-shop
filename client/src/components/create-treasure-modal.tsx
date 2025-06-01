@@ -21,6 +21,7 @@ const createTreasureSchema = z.object({
   categoryId: z.literal(4), // Только сокровища
   subcategoryId: z.coerce.number().optional(),
   serverId: z.coerce.number().min(1, "Выберите сервер"),
+  imageUrl: z.string().url("Введите корректную ссылку на изображение").optional().or(z.literal("")),
   metadata: z.object({
     rarity: z.string().optional(),
     material: z.string().optional(),
@@ -59,6 +60,7 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
       categoryId: 4,
       subcategoryId: undefined,
       serverId: 0,
+      imageUrl: "", // Добавить эту строку
       metadata: {
         rarity: "",
         material: "",
@@ -71,7 +73,11 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
 
   const createListingMutation = useMutation({
     mutationFn: async (data: CreateTreasureFormData) => {
-      const response = await apiRequest("POST", "/api/products", data);
+      const productData = {
+        ...data,
+        images: data.imageUrl ? [data.imageUrl] : [], // Добавить эту строку
+      };
+      const response = await apiRequest("POST", "/api/products", productData);
       return response.json();
     },
     onSuccess: () => {
@@ -326,6 +332,27 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
                     <FormControl>
                       <Input 
                         placeholder="Легендарный меч древних воинов" 
+                        {...field} 
+                        className="bg-slate-700/50 border-purple-500/30 text-white placeholder:text-purple-300/50 focus:border-purple-400 focus:ring-purple-400/20 transition-all duration-200" 
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-400" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="imageUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-purple-200 font-medium flex items-center gap-2">
+                      <Crown className="h-4 w-4" />
+                      Ссылка на фото
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="https://example.com/image.jpg" 
                         {...field} 
                         className="bg-slate-700/50 border-purple-500/30 text-white placeholder:text-purple-300/50 focus:border-purple-400 focus:ring-purple-400/20 transition-all duration-200" 
                       />

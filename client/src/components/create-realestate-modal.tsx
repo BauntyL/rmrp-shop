@@ -21,6 +21,7 @@ const createRealEstateSchema = z.object({
   categoryId: z.literal(2), // Только недвижимость
   subcategoryId: z.coerce.number().optional(),
   serverId: z.coerce.number().min(1, "Выберите сервер"),
+  imageUrl: z.string().url("Введите корректную ссылку на изображение").optional().or(z.literal("")),
   metadata: z.object({
     area: z.coerce.number().optional(),
     rooms: z.coerce.number().optional(),
@@ -59,6 +60,7 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
       categoryId: 2,
       subcategoryId: undefined,
       serverId: 0,
+      imageUrl: "", // Добавить эту строку
       metadata: {
         area: 0,
         rooms: 0,
@@ -71,7 +73,11 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
 
   const createListingMutation = useMutation({
     mutationFn: async (data: CreateRealEstateFormData) => {
-      const response = await apiRequest("POST", "/api/products", data);
+      const productData = {
+        ...data,
+        images: data.imageUrl ? [data.imageUrl] : [], // Добавить эту строку
+      };
+      const response = await apiRequest("POST", "/api/products", productData);
       return response.json();
     },
     onSuccess: () => {
@@ -317,7 +323,28 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
                     <FormLabel className="text-emerald-400 font-semibold text-lg">Название объявления</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="3-комнатная квартира в центре города" 
+                        placeholder="Продается 3-комнатная квартира в центре" 
+                        {...field} 
+                        className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-emerald-500/20 h-12" 
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-400" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="imageUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-emerald-400 font-semibold flex items-center gap-2">
+                      <Home className="h-4 w-4" />
+                      Ссылка на фото
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="https://example.com/image.jpg" 
                         {...field} 
                         className="bg-slate-800 border-slate-600 text-white placeholder:text-slate-500 focus:border-emerald-500 focus:ring-emerald-500/20 h-12" 
                       />

@@ -19,17 +19,17 @@ const createFishSchema = z.object({
   description: z.string().min(10, "Описание должно содержать минимум 10 символов"),
   price: z.coerce.number().min(1, "Цена должна быть больше 0"),
   categoryId: z.literal(3), // Только рыбалка
-  subcategoryId: z.coerce.number().optional(),
   serverId: z.coerce.number().min(1, "Выберите сервер"),
-  imageUrl: z.string().url("Введите корректную ссылку на изображение").optional().or(z.literal("")),
+  imageUrl: z.string().optional(),
   metadata: z.object({
+    fishType: z.string().min(1, "Укажите тип рыбы"),
     quantity: z.coerce.number().min(1, "Количество должно быть больше 0"),
     contacts: z.object({
       discord: z.string().optional(),
       telegram: z.string().optional(),
       phone: z.string().optional(),
-    }).optional(),
-  }).optional(),
+    }),
+  }),
 });
 
 type CreateFishFormData = z.infer<typeof createFishSchema>;
@@ -59,10 +59,10 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
       description: "",
       price: 0,
       categoryId: 3,
-      subcategoryId: undefined,
       serverId: 0,
       imageUrl: "",
       metadata: {
+        fishType: "",
         quantity: 1,
         contacts: {
           discord: "",
@@ -280,6 +280,31 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
                         ))}
                       </SelectContent>
                     </Select>
+                    <FormMessage className="text-red-400" />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Category Selection */}
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20">
+              <h3 className="text-lg font-semibold text-blue-300 mb-4 flex items-center gap-2">
+                <Fish className="h-5 w-5" />
+                Рыба на продажу
+              </h3>
+              <FormField
+                control={form.control}
+                name="metadata.fishType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-blue-200 font-medium">Тип рыбы</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Введите тип рыбы (например: Плотва, Щука, Лещ)" 
+                        {...field} 
+                        className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
+                      />
+                    </FormControl>
                     <FormMessage className="text-red-400" />
                   </FormItem>
                 )}

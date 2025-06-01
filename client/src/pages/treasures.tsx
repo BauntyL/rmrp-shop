@@ -108,7 +108,7 @@ export default function Treasures() {
                   <SelectItem value="all" className="text-white">Все серверы</SelectItem>
                   {servers.map((server: any) => (
                     <SelectItem key={server.id} value={server.id.toString()} className="text-white">
-                      {server.name}
+                      {server.displayName}
                     </SelectItem>
                   ))}
                 </SelectContent>

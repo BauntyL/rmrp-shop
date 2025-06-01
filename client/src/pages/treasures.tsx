@@ -49,7 +49,7 @@ export default function Treasures() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-900">
       <Header />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -57,16 +57,16 @@ export default function Treasures() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <Gem className="h-8 w-8 text-purple-600" />
+              <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                <Gem className="h-8 w-8 text-purple-400" />
                 Клады
               </h1>
-              <p className="text-gray-600 mt-2">
+              <p className="text-slate-300 mt-2">
                 Покупайте и продавайте клады и сокровища на серверах RMRP
               </p>
             </div>
             {isAuthenticated && (
-              <Button onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2">
+              <Button onClick={() => setIsCreateModalOpen(true)} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white">
                 <Plus className="h-4 w-4" />
                 Добавить объявление
               </Button>
@@ -75,102 +75,88 @@ export default function Treasures() {
         </div>
 
         {/* Filters Section */}
-        <Card className="mb-8">
+        <Card className="mb-8 bg-slate-800 border-slate-700">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-white">
+              <Filter className="h-5 w-5 text-purple-400" />
               Фильтры
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-slate-300">
               Найдите ценные сокровища для вашего персонажа
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Поиск кладов..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-
-              {/* Subcategory Filter */}
+          <CardContent className="space-y-4">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+              <Input
+                placeholder="Поиск кладов..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
+              />
+            </div>
+            
+            {/* Filters Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Select value={selectedServer} onValueChange={setSelectedServer}>
+                <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                  <SelectValue placeholder="Выберите сервер" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-700 border-slate-600">
+                  <SelectItem value="all" className="text-white">Все серверы</SelectItem>
+                  {servers.map((server: any) => (
+                    <SelectItem key={server.id} value={server.id.toString()} className="text-white">
+                      {server.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
               <Select value={selectedSubcategory} onValueChange={setSelectedSubcategory}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                   <SelectValue placeholder="Тип клада" />
                 </SelectTrigger>
-                <SelectContent>
-                  {subcategories.map((subcategory) => (
-                    <SelectItem key={subcategory.id} value={subcategory.id}>
-                      {subcategory.name} ({subcategory.count})
+                <SelectContent className="bg-slate-700 border-slate-600">
+                  {subcategories.map((sub) => (
+                    <SelectItem key={sub.id} value={sub.id} className="text-white">
+                      {sub.name} ({sub.count})
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-
-              {/* Server Filter */}
-              <Select value={selectedServer} onValueChange={setSelectedServer}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Сервер" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все серверы</SelectItem>
-                  {servers.map((server: any) => (
-                    <SelectItem key={server.id} value={server.id.toString()}>
-                      {server.displayName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* Price Range */}
-              <div className="flex items-center gap-2">
-                <Input placeholder="От" type="number" />
-                <span className="text-gray-400">-</span>
-                <Input placeholder="До" type="number" />
-              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Popular Subcategories */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Популярные категории</h2>
-          <div className="flex flex-wrap gap-3">
-            {subcategories.slice(1).map((subcategory) => (
-              <Badge
-                key={subcategory.id}
-                variant={selectedSubcategory === subcategory.id ? "default" : "secondary"}
-                className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                onClick={() => setSelectedSubcategory(subcategory.id)}
-              >
-                {subcategory.name}
-              </Badge>
-            ))}
-          </div>
-        </div>
-
-        {/* Results Count */}
+        {/* Results */}
         <div className="mb-6">
-          <p className="text-gray-600">
-            Найдено {filteredProducts.length} объявлений
-          </p>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-white">
+              Найдено {filteredProducts.length} кладов
+            </h2>
+            <div className="flex gap-2">
+              <Badge variant="secondary" className="bg-purple-600 text-white">
+                {selectedServer === "all" ? "Все серверы" : servers.find((s: any) => s.id.toString() === selectedServer)?.name}
+              </Badge>
+              <Badge variant="secondary" className="bg-slate-600 text-white">
+                {subcategories.find(s => s.id === selectedSubcategory)?.name}
+              </Badge>
+            </div>
+          </div>
         </div>
 
         {/* Products Grid */}
         {productsLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg border border-gray-200 p-4 animate-pulse">
-                <div className="h-48 bg-gray-200 rounded-lg mb-4"></div>
-                <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-2/3 mb-2"></div>
-                <div className="h-6 bg-gray-200 rounded w-1/2"></div>
-              </div>
+              <Card key={i} className="animate-pulse bg-slate-800 border-slate-700">
+                <CardContent className="p-4">
+                  <div className="h-48 bg-slate-700 rounded mb-4"></div>
+                  <div className="h-4 bg-slate-700 rounded mb-2"></div>
+                  <div className="h-4 bg-slate-700 rounded w-2/3"></div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         ) : filteredProducts.length > 0 ? (
@@ -184,47 +170,35 @@ export default function Treasures() {
             ))}
           </div>
         ) : (
-          <Card className="text-center py-12">
+          <Card className="text-center py-16 bg-slate-800 border-slate-700">
             <CardContent>
-              <Gem className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Клады не найдены
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Попробуйте изменить параметры поиска или {isAuthenticated ? "создайте" : "войдите, чтобы создать"} первое объявление
+              <Gem className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-white mb-2">Клады не найдены</h3>
+              <p className="text-slate-300 mb-6">
+                {searchQuery ? 
+                  `По запросу "${searchQuery}" ничего не найдено. Попробуйте изменить параметры поиска.` :
+                  "В данной категории пока нет объявлений."
+                }
               </p>
               {isAuthenticated && (
-                <Button onClick={() => setIsCreateModalOpen(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Добавить клад
+                <Button onClick={() => setIsCreateModalOpen(true)} className="bg-purple-600 hover:bg-purple-700 text-white">
+                  Разместить первое объявление
                 </Button>
               )}
             </CardContent>
           </Card>
         )}
-
-        {/* Tips Section */}
-        <Card className="mt-12 bg-purple-50 border-purple-200">
-          <CardHeader>
-            <CardTitle className="text-purple-900">Советы по покупке кладов</CardTitle>
-          </CardHeader>
-          <CardContent className="text-purple-800">
-            <ul className="space-y-2">
-              <li>• Проверьте подлинность и редкость предмета</li>
-              <li>• Узнайте историю происхождения клада</li>
-              <li>• Договоритесь о безопасном месте обмена</li>
-              <li>• Убедитесь в соответствии описания товару</li>
-            </ul>
-          </CardContent>
-        </Card>
       </main>
 
       <Footer />
-
-      <CreateListingModal
-        open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
-      />
+      
+      {isCreateModalOpen && (
+        <CreateListingModal 
+          isOpen={isCreateModalOpen} 
+          onClose={() => setIsCreateModalOpen(false)}
+          defaultCategory="treasures"
+        />
+      )}
     </div>
   );
 }

@@ -200,7 +200,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Failed to fetch product' });
     }
   });
-
+  
   console.log('Routes registered successfully');
   const httpServer = createServer(app);
   return httpServer;

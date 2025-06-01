@@ -430,6 +430,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Обновление цены продукта (только владелец)
+  app.patch('/api/products/:id/price', authenticateToken, async (req: any, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const { price } = req.body;
+      const userId = req.user.id;
+      const userRole = req.user.role;
+
+      if (!price || price <= 0) {
+        return res.status(400).json({ message: 'Invalid price' });
+      }
+
+      const product = await storage.getProduct(productId);
+      if (!product) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+
+      // Проверка прав: владелец, модератор или админ
+      if (product.userId !== userId && userRole !== 'moderator' && userRole !== 'admin') {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+
+      const updatedProduct = await storage.updateProductPrice(productId, price);
+      res.json(updatedProduct);
+    } catch (error) {
+      console.error('Update product price error:', error);
+      res.status(500).json({ message: 'Failed to update product price' });
+    }
+  });
+
+  // Полное редактирование продукта (модераторы и админы)
+  app.put('/api/products/:id', authenticateToken, requireRole(['moderator', 'admin']), async (req: any, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const updates = req.body;
+
+      const product = await storage.getProduct(productId);
+      if (!product) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+
+      const updatedProduct = await storage.updateProduct(productId, updates);
+      res.json(updatedProduct);
+    } catch (error) {
+      console.error('Update product error:', error);
+      res.status(500).json({ message: 'Failed to update product' });
+    }
+  });
+
+  // Удаление продукта
+  app.delete('/api/products/:id', authenticateToken, async (req: any, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const userId = req.user.id;
+      const userRole = req.user.role;
+
+      const product = await storage.getProduct(productId);
+      if (!product) {
+        return res.status(404).json({ message: 'Product not found' });
+      }
+
+      // Проверка прав: владелец, модератор или админ
+      if (product.userId !== userId && userRole !== 'moderator' && userRole !== 'admin') {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+
+      await storage.deleteProduct(productId);
+      res.json({ message: 'Product deleted successfully' });
+    } catch (error) {
+      console.error('Delete product error:', error);
+      res.status(500).json({ message: 'Failed to delete product' });
+    }
+  });
+
   console.log('Routes registered successfully');
   const httpServer = createServer(app);
   return httpServer;

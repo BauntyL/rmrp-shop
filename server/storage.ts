@@ -55,6 +55,10 @@ export interface IStorage {
   updateProductStatus(id: number, status: string, moderatorId?: number, note?: string): Promise<Product>;
   getUserProducts(userId: number): Promise<Product[]>;
   getPendingProducts(): Promise<Product[]>;
+  // Новые методы для редактирования и удаления
+  updateProduct(id: number, updates: Partial<InsertProduct>): Promise<Product>;
+  updateProductPrice(id: number, price: number): Promise<Product>;
+  deleteProduct(id: number): Promise<void>;
 
   // Favorite operations
   getFavorites(userId: number): Promise<Product[]>;
@@ -367,6 +371,35 @@ export class DatabaseStorage implements IStorage {
       .from(products)
       .where(eq(products.status, "pending"))
       .orderBy(asc(products.createdAt));
+  }
+
+  // Новые методы для редактирования и удаления продуктов
+  async updateProduct(id: number, updates: Partial<InsertProduct>): Promise<Product> {
+    const [product] = await db
+      .update(products)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(products.id, id))
+      .returning();
+    return product;
+  }
+
+  async updateProductPrice(id: number, price: number): Promise<Product> {
+    const [product] = await db
+      .update(products)
+      .set({
+        price,
+        updatedAt: new Date(),
+      })
+      .where(eq(products.id, id))
+      .returning();
+    return product;
+  }
+
+  async deleteProduct(id: number): Promise<void> {
+    await db.delete(products).where(eq(products.id, id));
   }
 
   // Favorite operations

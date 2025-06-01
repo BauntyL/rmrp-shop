@@ -46,7 +46,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize default data
   await storage.initializeServers();
   await storage.initializeCategories();
-
+  
+  // Add health check endpoint
+  app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+  });
+  
   // Auth routes
   app.post('/api/auth/register', async (req, res) => {
     try {

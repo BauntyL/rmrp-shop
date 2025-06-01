@@ -35,7 +35,25 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const token = localStorage.getItem("token");
     
-    const res = await fetch(queryKey[0] as string, {
+    let url = queryKey[0] as string;
+    
+    // Добавляем параметры запроса, если они есть
+    if (queryKey[1] && typeof queryKey[1] === 'object') {
+      const params = new URLSearchParams();
+      const filters = queryKey[1] as Record<string, any>;
+      
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          params.append(key, String(value));
+        }
+      });
+      
+      if (params.toString()) {
+        url += '?' + params.toString();
+      }
+    }
+    
+    const res = await fetch(url, {
       headers: {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },

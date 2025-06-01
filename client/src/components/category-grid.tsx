@@ -14,7 +14,7 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
       cyan: "from-cyan-500 to-cyan-600",
       purple: "from-purple-500 to-purple-600",
     };
-    return gradients[color] || "from-gray-500 to-gray-600";
+    return gradients[color] || "from-slate-500 to-slate-600";
   };
 
   const getCategoryPath = (name: string) => {
@@ -25,21 +25,23 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
       {categories.map((category) => (
         <Link key={category.id} href={getCategoryPath(category.name)}>
-          <Card className="group cursor-pointer transform hover:scale-105 transition-transform duration-200">
-            <CardContent className={`bg-gradient-to-br ${getCategoryGradient(category.color)} p-6 text-white`}>
+          <Card className="group cursor-pointer transform hover:scale-105 transition-all duration-300 h-48 shadow-lg hover:shadow-xl">
+            <CardContent className={`bg-gradient-to-br ${getCategoryGradient(category.color)} p-6 text-white h-full flex flex-col justify-between`}>
               <div className="flex items-center justify-between mb-4">
                 <i className={`${category.icon} text-3xl`}></i>
-                <span className="text-sm opacity-75">
+                <span className="text-sm bg-white/20 px-2 py-1 rounded-full backdrop-blur-sm">
                   {category.productCount || 0} объявлений
                 </span>
               </div>
-              <h3 className="text-xl font-semibold mb-2">{category.displayName}</h3>
-              <p className="text-sm opacity-90">
-                {category.name === "cars" && "Стандарт, Спорт, Внедорожники, Купе"}
-                {category.name === "realestate" && "Дома, квартиры, коммерческая"}
-                {category.name === "fish" && "Плотва, Ерш, Форель, Сом, Щука"}
-                {category.name === "treasures" && "Редкие предметы и артефакты"}
-              </p>
+              <div>
+                <h3 className="text-xl font-bold mb-2 text-white">{category.displayName}</h3>
+                <p className="text-sm text-white/90 leading-relaxed">
+                  {category.name === "cars" && "Стандарт, Спорт, Внедорожники, Купе"}
+                  {category.name === "realestate" && "Дома, квартиры, коммерческая"}
+                  {category.name === "fish" && "Плотва, Ерш, Форель, Сом, Щука"}
+                  {category.name === "treasures" && "Редкие предметы и артефакты"}
+                </p>
+              </div>
             </CardContent>
           </Card>
         </Link>

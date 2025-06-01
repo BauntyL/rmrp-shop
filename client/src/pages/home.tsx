@@ -26,7 +26,6 @@ export default function Home() {
 
   const handleCreateListing = () => {
     if (!isAuthenticated) {
-      // Redirect to login
       window.location.href = "/login";
       return;
     }
@@ -34,34 +33,33 @@ export default function Home() {
   };
 
   const handleProductContact = (userId: number) => {
-    // Navigate to messages with specific user
     window.location.href = `/messages?contact=${userId}`;
   };
 
   return (
-    <div className="min-h-screen bg-slate-800">
+    <div className="min-h-screen bg-slate-900">
       <Header />
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white py-20 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center">
             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
               RMRP SHOP
             </h1>
-            <p className="text-xl md:text-2xl mb-10 opacity-90 max-w-2xl mx-auto">
+            <p className="text-xl md:text-2xl mb-10 text-blue-100 max-w-2xl mx-auto font-medium">
               Торговая площадка для игровых товаров
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-lg mx-auto">
               <Button 
                 onClick={handleCreateListing}
-                className="bg-white text-blue-600 px-8 py-4 hover:bg-blue-50 font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                className="bg-white text-blue-600 px-8 py-4 hover:bg-blue-50 font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 border-0"
                 size="lg"
               >
                 Разместить объявление
               </Button>
               <Button 
-                className="bg-blue-500 text-white hover:bg-blue-400 px-8 py-4 font-semibold text-lg transition-all duration-200 border-0"
+                className="bg-blue-500 text-white hover:bg-blue-400 px-8 py-4 font-semibold text-lg transition-all duration-200 border-0 shadow-lg"
                 size="lg"
                 asChild
               >
@@ -79,7 +77,7 @@ export default function Home() {
       </section>
 
       {/* Categories Section */}
-      <section id="categories" className="py-20 bg-slate-700 relative">
+      <section id="categories" className="py-20 bg-slate-800 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-white mb-4">Категории товаров</h2>
@@ -92,60 +90,56 @@ export default function Home() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-20 bg-gradient-to-br from-slate-800 to-slate-900">
+      <section className="py-20 bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-16">
             <div>
               <h2 className="text-4xl font-bold text-white mb-4">Рекомендуемые товары</h2>
-              <p className="text-xl text-gray-600">Популярные предложения от наших продавцов</p>
+              <p className="text-xl text-slate-300">Популярные предложения от наших продавцов</p>
             </div>
             <Button 
-              variant="ghost" 
-              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-semibold text-lg px-6 py-3" 
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 transition-all duration-200"
               asChild
             >
-              <Link href="/category/all">
-                Смотреть все <ArrowRight className="ml-2 h-5 w-5" />
+              <Link href="/category/all" className="flex items-center gap-2">
+                Все товары
+                <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
           </div>
-
-          {featuredProducts.length === 0 ? (
-            <div className="text-center py-20 bg-white rounded-2xl shadow-sm border">
-              <div className="max-w-md mx-auto">
-                <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <ArrowRight className="w-12 h-12 text-blue-600" />
-                </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-4">Товары еще не добавлены</h3>
-                <p className="text-gray-600 mb-8">Станьте первым продавцом на нашей платформе!</p>
-                <Button 
-                  onClick={handleCreateListing}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 font-semibold"
-                >
-                  Стать первым продавцом
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          
+          {featuredProducts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {featuredProducts.slice(0, 8).map((product: any) => (
-                <ProductCard 
-                  key={product.id} 
-                  product={product} 
+                <ProductCard
+                  key={product.id}
+                  product={product}
                   onContact={handleProductContact}
                 />
               ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <p className="text-slate-400 text-lg mb-6">Пока нет товаров для отображения</p>
+              <Button 
+                onClick={handleCreateListing}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3"
+              >
+                Разместить первое объявление
+              </Button>
             </div>
           )}
         </div>
       </section>
 
       <Footer />
-
-      <CreateListingModal 
-        open={showCreateListing} 
-        onOpenChange={setShowCreateListing} 
-      />
+      
+      {showCreateListing && (
+        <CreateListingModal 
+          isOpen={showCreateListing} 
+          onClose={() => setShowCreateListing(false)} 
+        />
+      )}
     </div>
   );
 }

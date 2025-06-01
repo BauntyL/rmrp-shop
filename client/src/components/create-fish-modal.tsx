@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Fish, Waves, Weight, Ruler, Anchor, Target, Loader2 } from "lucide-react";
+import { Fish, MessageCircle, Users, Phone, Loader2, Package } from "lucide-react";
 
 const createFishSchema = z.object({
   title: z.string().min(1, "Название обязательно"),
@@ -23,11 +23,12 @@ const createFishSchema = z.object({
   serverId: z.coerce.number().min(1, "Выберите сервер"),
   imageUrl: z.string().url("Введите корректную ссылку на изображение").optional().or(z.literal("")),
   metadata: z.object({
-    fishType: z.string().optional(),
-    weight: z.coerce.number().optional(),
-    length: z.coerce.number().optional(),
-    location: z.string().optional(),
-    bait: z.string().optional(),
+    quantity: z.coerce.number().min(1, "Количество должно быть больше 0"),
+    contacts: z.object({
+      discord: z.string().optional(),
+      telegram: z.string().optional(),
+      phone: z.string().optional(),
+    }).optional(),
   }).optional(),
 });
 
@@ -60,13 +61,14 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
       categoryId: 3,
       subcategoryId: undefined,
       serverId: 0,
-      imageUrl: "", // Добавить эту строку
+      imageUrl: "",
       metadata: {
-        fishType: "",
-        weight: 0,
-        length: 0,
-        location: "",
-        bait: "",
+        quantity: 1,
+        contacts: {
+          discord: "",
+          telegram: "",
+          phone: "",
+        },
       },
     },
   });
@@ -75,7 +77,7 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
     mutationFn: async (data: CreateFishFormData) => {
       const productData = {
         ...data,
-        images: data.imageUrl ? [data.imageUrl] : [], // Добавить эту строку
+        images: data.imageUrl ? [data.imageUrl] : [],
       };
       const response = await apiRequest("POST", "/api/products", productData);
       return response.json();
@@ -113,9 +115,9 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
             <Fish className="h-10 w-10 text-white" />
           </div>
           <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent mb-2">
-            Рыболовное снаряжение
+            Рыба на продажу
           </DialogTitle>
-          <p className="text-blue-200/80 text-lg">Создайте объявление о продаже рыболовных товаров</p>
+          <p className="text-blue-200/80 text-lg">Создайте объявление о продаже рыбы</p>
         </DialogHeader>
 
         <Form {...form}>
@@ -124,19 +126,19 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
             {subcategories.length > 0 && (
               <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20">
                 <h3 className="text-lg font-semibold text-blue-300 mb-4 flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Категория товара
+                  <Fish className="h-5 w-5" />
+                  Рыба на продажу
                 </h3>
                 <FormField
                   control={form.control}
                   name="subcategoryId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-blue-200 font-medium">Тип товара</FormLabel>
+                      <FormLabel className="text-blue-200 font-medium">Тип рыбы</FormLabel>
                       <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
                         <FormControl>
                           <SelectTrigger className="bg-slate-700/50 border-blue-500/30 text-white focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200">
-                            <SelectValue placeholder="Выберите категорию" />
+                            <SelectValue placeholder="Выберите тип рыбы" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="bg-slate-800 border-blue-500/30">
@@ -154,25 +156,55 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
               </div>
             )}
 
-            {/* Fish Details */}
+            {/* Quantity */}
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20">
               <h3 className="text-lg font-semibold text-blue-300 mb-6 flex items-center gap-2">
-                <Fish className="h-5 w-5" />
-                Характеристики товара
+                <Package className="h-5 w-5" />
+                Количество
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="metadata.quantity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-blue-200 font-medium flex items-center gap-2">
+                      <Package className="h-4 w-4" />
+                      Количество рыбы (шт.)
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        min="1"
+                        placeholder="1" 
+                        {...field} 
+                        className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-400" />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Contact Information */}
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20">
+              <h3 className="text-lg font-semibold text-blue-300 mb-6 flex items-center gap-2">
+                <MessageCircle className="h-5 w-5" />
+                Контактная информация
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <FormField
                   control={form.control}
-                  name="metadata.fishType"
+                  name="metadata.contacts.discord"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-blue-200 font-medium flex items-center gap-2">
-                        <Fish className="h-4 w-4" />
-                        Тип рыбы/снаряжения
+                        <MessageCircle className="h-4 w-4" />
+                        Discord
                       </FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="Щука, Удочка, Катушка..." 
+                          placeholder="username#1234" 
                           {...field} 
                           className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
                         />
@@ -184,18 +216,16 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
 
                 <FormField
                   control={form.control}
-                  name="metadata.weight"
+                  name="metadata.contacts.telegram"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-blue-200 font-medium flex items-center gap-2">
-                        <Weight className="h-4 w-4" />
-                        Вес (кг)
+                        <Users className="h-4 w-4" />
+                        Telegram
                       </FormLabel>
                       <FormControl>
                         <Input 
-                          type="number" 
-                          step="0.1" 
-                          placeholder="2.5" 
+                          placeholder="@username" 
                           {...field} 
                           className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
                         />
@@ -207,61 +237,16 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
 
                 <FormField
                   control={form.control}
-                  name="metadata.length"
+                  name="metadata.contacts.phone"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-blue-200 font-medium flex items-center gap-2">
-                        <Ruler className="h-4 w-4" />
-                        Длина (см)
+                        <Phone className="h-4 w-4" />
+                        Телефон
                       </FormLabel>
                       <FormControl>
                         <Input 
-                          type="number" 
-                          placeholder="45" 
-                          {...field} 
-                          className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-400" />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="metadata.location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-blue-200 font-medium flex items-center gap-2">
-                        <Waves className="h-4 w-4" />
-                        Место ловли
-                      </FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Озеро, Река, Море..." 
-                          {...field} 
-                          className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-400" />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="mt-6">
-                <FormField
-                  control={form.control}
-                  name="metadata.bait"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-blue-200 font-medium flex items-center gap-2">
-                        <Anchor className="h-4 w-4" />
-                        Приманка/Наживка
-                      </FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Воблер, Червь, Блесна..." 
+                          placeholder="+7 (999) 123-45-67" 
                           {...field} 
                           className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
                         />
@@ -313,7 +298,7 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
                     <FormLabel className="text-blue-200 font-medium">Название объявления</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="Профессиональная удочка для ловли щуки" 
+                        placeholder="Свежая щука, 2 кг" 
                         {...field} 
                         className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
                       />
@@ -352,7 +337,7 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
                     <FormLabel className="text-blue-200 font-medium">Описание</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Опишите состояние снаряжения, особенности использования, результаты ловли..." 
+                        placeholder="Опишите рыбу: вес, размер, свежесть, способ ловли..." 
                         rows={4}
                         {...field} 
                         className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200 resize-none"

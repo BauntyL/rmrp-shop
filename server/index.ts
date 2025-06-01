@@ -18,14 +18,15 @@ app.get('/health', (req, res) => {
   });
 });
 
-app.get('/', (req, res) => {
-  console.log('Root endpoint requested');
-  res.status(200).json({ 
-    status: 'OK', 
-    message: 'Server is running',
-    timestamp: new Date().toISOString()
-  });
-});
+// УДАЛЯЕМ этот маршрут - он мешает статическим файлам!
+// app.get('/', (req, res) => {
+//   console.log('Root endpoint requested');
+//   res.status(200).json({ 
+//     status: 'OK', 
+//     message: 'Server is running',
+//     timestamp: new Date().toISOString()
+//   });
+// });
 
 // Logging middleware
 app.use((req, res, next) => {

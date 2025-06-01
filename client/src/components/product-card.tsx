@@ -6,22 +6,27 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Heart, MessageCircle, Copy, Phone, Star, Eye, Info, Send, MessageSquare } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Heart, MessageCircle, Copy, Phone, Star, Eye, Info, Send, MessageSquare, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { ProductWithDetails } from "@/lib/types";
 
 interface ProductCardProps {
   product: ProductWithDetails;
   onContact?: (userId: number) => void;
+  showManageButtons?: boolean; // Новый пропс для показа кнопок управления
 }
 
-export default function ProductCard({ product, onContact }: ProductCardProps) {
+export default function ProductCard({ product, onContact, showManageButtons = false }: ProductCardProps) {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isFavorite, setIsFavorite] = useState(product.isFavorite || false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditPriceOpen, setIsEditPriceOpen] = useState(false);
+  const [newPrice, setNewPrice] = useState(product.price);
 
   const toggleFavoriteMutation = useMutation({
     mutationFn: async () => {
@@ -246,6 +251,88 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
                   </DialogTrigger>
                 </Dialog>
               </div>
+
+              {/* Кнопки управления для владельца/модератора/админа */}
+              {(showManageButtons || canManage) && (
+                <div className="flex space-x-2 pt-3 border-t border-gray-200">
+                  {canEditPrice && (
+                    <Dialog open={isEditPriceOpen} onOpenChange={setIsEditPriceOpen}>
+                      <DialogTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1 border-green-300 text-green-700 hover:bg-green-50"
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Цена
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Изменить цену</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="price">Новая цена (₽)</Label>
+                            <Input
+                              id="price"
+                              type="number"
+                              value={newPrice}
+                              onChange={(e) => setNewPrice(Number(e.target.value))}
+                              min="1"
+                            />
+                          </div>
+                          <div className="flex space-x-2">
+                            <Button 
+                              onClick={handleUpdatePrice}
+                              disabled={updatePriceMutation.isPending}
+                              className="flex-1"
+                            >
+                              {updatePriceMutation.isPending ? "Обновление..." : "Обновить"}
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setIsEditPriceOpen(false)}
+                              className="flex-1"
+                            >
+                              Отмена
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  )}
+                  
+                  {canEdit && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1 border-blue-300 text-blue-700 hover:bg-blue-50"
+                      onClick={() => {
+                        toast({
+                          title: "Редактирование",
+                          description: "Функция полного редактирования будет добавлена в следующем обновлении",
+                        });
+                      }}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Редактировать
+                    </Button>
+                  )}
+                  
+                  {canManage && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-red-600 hover:text-red-700 border-red-300 hover:bg-red-50"
+                      onClick={handleDeleteProduct}
+                      disabled={deleteProductMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           </CardContent>
         </div>

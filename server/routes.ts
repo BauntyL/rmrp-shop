@@ -516,3 +516,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   return httpServer;
 }
+
+## 2. Очистите кэш браузера
+
+Проблема может быть связана с кэшированием:
+- Нажмите Ctrl+F5 для жесткого обновления
+- Очистите кэш браузера и cookies
+- Попробуйте открыть сайт в режиме инкогнито
+
+## 3. Проверьте Network запросы
+
+Откройте DevTools → Network и проверьте:
+
+**Для страницы Рыба:**
+- URL должен быть: `/api/products?categoryId=3`
+- Ответ должен содержать только продукты с `categoryId: 3`
+
+**Для страницы Недвижимость:**
+- URL должен быть: `/api/products?categoryId=2`
+- Ответ должен содержать только продукты с `categoryId: 2`
+
+**Для страницы Клады:**
+- URL должен быть: `/api/products?categoryId=4`
+- Ответ должен содержать только продукты с `categoryId: 4`
+
+## 4. Временное решение для отладки
+
+Добавьте логирование в API эндпоинт для отладки. В <mcfile name="routes.ts" path="e:\RMRPTP\rmrp-shop\rmrp-shop\server\routes.ts"></mcfile> измените эндпоинт `/api/products`:
+```typescript
+app.get('/api/products', async (req, res) => {
+  try {
+    const filters = {
+      categoryId: req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined,
+      serverId: req.query.serverId ? parseInt(req.query.serverId as string) : undefined,
+      status: req.query.status as string || 'approved',
+      search: req.query.search as string,
+      userId: req.query.userId ? parseInt(req.query.userId as string) : undefined,
+    };
+
+    // Добавляем отладочное логирование
+    console.log('🔍 API Request filters:', JSON.stringify(filters, null, 2));
+    console.log('🔍 Raw query params:', req.query);
+    
+    const products = await storage.getProducts(filters);
+    
+    // Логируем результаты
+    console.log('📦 Products found:', products.length);
+    console.log('📦 Products by category:', products.reduce((acc, p) => {
+      acc[p.categoryId] = (acc[p.categoryId] || 0) + 1;
+      return acc;
+    }, {} as Record<number, number>));
+    
+    // Логируем конкретные продукты с "Гелик"
+    const gelikProducts = products.filter(p => p.title.includes('Гелик'));
+    if (gelikProducts.length > 0) {
+      console.log('🚗 Гелик products found:', gelikProducts.map(p => ({
+        id: p.id,
+        title: p.title,
+        categoryId: p.categoryId
+      })));
+    }
+    
+    res.json(products);
+  } catch (error) {
+    console.error('❌ Error in /api/products:', error);
+    res.status(500).json({ message: 'Failed to fetch products' });
+  }
+});

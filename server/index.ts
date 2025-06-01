@@ -2,7 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { db } from "./db";
-import { users } from "../shared/schema";
+import { users, products, categories, servers, favorites, conversations, messages } from "../shared/schema";
 
 const app = express();
 app.use(express.json());
@@ -66,6 +66,9 @@ app.use((req, res, next) => {
     console.log('🔌 Port:', process.env.PORT || 5000);
     console.log('🌐 Host: 0.0.0.0');
     
+    // Инициализируем базу данных ПЕРЕД регистрацией routes
+    await initializeDatabase();
+    
     // Регистрируем API routes
     console.log('📋 Registering routes...');
     const server = await registerRoutes(app);
@@ -111,3 +114,98 @@ app.use((req, res, next) => {
     process.exit(1);
   }
 })();
+
+// Добавьте эту функцию после импортов
+async function initializeDatabase() {
+  try {
+    console.log('🗄️ Initializing database tables...');
+    
+    // Создаем таблицы если они не существуют
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(255) UNIQUE NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        role VARCHAR(50) DEFAULT 'user',
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS categories (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        display_name VARCHAR(255) NOT NULL,
+        color VARCHAR(7) NOT NULL
+      )
+    `);
+    
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS servers (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        display_name VARCHAR(255) NOT NULL
+      )
+    `);
+    
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS products (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        price INTEGER NOT NULL,
+        category_id INTEGER REFERENCES categories(id),
+        subcategory_id INTEGER,
+        server_id INTEGER REFERENCES servers(id),
+        user_id INTEGER REFERENCES users(id),
+        images TEXT[],
+        metadata JSONB,
+        status VARCHAR(50) DEFAULT 'pending',
+        moderator_id INTEGER REFERENCES users(id),
+        moderator_note TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS favorites (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        product_id INTEGER REFERENCES products(id),
+        created_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(user_id, product_id)
+      )
+    `);
+    
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS conversations (
+        id SERIAL PRIMARY KEY,
+        user1_id INTEGER NOT NULL,
+        user2_id INTEGER NOT NULL,
+        product_id INTEGER,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS messages (
+        id SERIAL PRIMARY KEY,
+        conversation_id INTEGER NOT NULL,
+        sender_id INTEGER NOT NULL,
+        content TEXT NOT NULL,
+        is_moderated BOOLEAN DEFAULT false,
+        moderator_id INTEGER,
+        read_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+    
+    console.log('✅ Database tables initialized successfully');
+  } catch (error) {
+    console.error('❌ Failed to initialize database:', error);
+    throw error;
+  }
+}

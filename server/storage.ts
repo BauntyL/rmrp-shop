@@ -233,13 +233,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Product operations
-  async getProducts(filters?: {
+  async getProducts(filters: {
     categoryId?: number;
     serverId?: number;
     status?: string;
     search?: string;
     userId?: number;
   }): Promise<any[]> {
+    console.log('🗄️ Storage getProducts called with filters:', JSON.stringify(filters, null, 2));
+    
     let query = db
       .select({
         id: products.id,
@@ -272,6 +274,7 @@ export class DatabaseStorage implements IStorage {
     const conditions = [];
     
     if (filters?.categoryId) {
+      console.log('🔍 Adding categoryId filter:', filters.categoryId);
       conditions.push(eq(products.categoryId, filters.categoryId));
     }
     
@@ -302,7 +305,10 @@ export class DatabaseStorage implements IStorage {
       query = query.where(and(...conditions));
     }
     
-    return await query.orderBy(desc(products.createdAt));
+    const result = await query.orderBy(desc(products.createdAt));
+    console.log('📊 Query result count:', result.length);
+    
+    return result;
   }
 
   async getProduct(id: number): Promise<any | undefined> {

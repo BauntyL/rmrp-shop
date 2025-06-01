@@ -320,9 +320,10 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                 'bg-gray-500/90 text-white'
               }`}>
                 {product.category?.displayName || 'Без категории'}
-              </Badge>
+                </Badge>
             </div>
           </div>
+        </div>
           
           {/* Контент */}
           <CardContent className="p-6">

@@ -59,17 +59,53 @@
   
   /* Исправление желтого выделения в dropdown меню */
   [data-radix-select-content] [data-highlighted] {
-    @apply bg-slate-700 text-white;
+    @apply bg-slate-700 text-white !important;
   }
   
   [data-radix-dropdown-menu-content] [data-highlighted] {
-    @apply bg-slate-700 text-white;
+    @apply bg-slate-700 text-white !important;
+  }
+  
+  /* Убираем желтое выделение для всех select элементов */
+  [data-radix-select-item][data-highlighted] {
+    @apply bg-slate-700 text-white !important;
+  }
+  
+  [data-radix-select-item]:hover {
+    @apply bg-slate-700 text-white !important;
+  }
+  
+  [data-radix-select-item][data-state="checked"] {
+    @apply bg-slate-600 text-white !important;
+  }
+  
+  /* Убираем желтое выделение для dropdown menu элементов */
+  [data-radix-dropdown-menu-item][data-highlighted] {
+    @apply bg-slate-700 text-white !important;
+  }
+  
+  [data-radix-dropdown-menu-item]:hover {
+    @apply bg-slate-700 text-white !important;
+  }
+  
+  /* Переопределяем accent цвета для всех radix компонентов */
+  .radix-select-item:focus,
+  .radix-dropdown-menu-item:focus {
+    @apply bg-slate-700 text-white !important;
   }
   
   /* Улучшение читаемости для всех выпадающих меню */
   .select-item:hover,
   .dropdown-menu-item:hover {
-    @apply bg-slate-700 text-white;
+    @apply bg-slate-700 text-white !important;
+  }
+  
+  /* Убираем желтое выделение из focus состояний */
+  [data-radix-select-content] [data-state="checked"],
+  [data-radix-select-content] [data-highlighted],
+  [data-radix-dropdown-menu-content] [data-highlighted] {
+    background-color: rgb(51 65 85) !important; /* slate-700 */
+    color: white !important;
   }
 }
 

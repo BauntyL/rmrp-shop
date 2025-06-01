@@ -51,7 +51,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
   // Добавляем мутацию для обновления цены
   const updatePriceMutation = useMutation({
     mutationFn: async (newPrice: number) => {
-      await apiRequest("PUT", `/api/products/${product.id}/price`, { price: newPrice });
+      await apiRequest("PATCH", `/api/products/${product.id}/price`, { price: newPrice });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });

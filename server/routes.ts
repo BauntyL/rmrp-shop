@@ -334,6 +334,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/admin/products/pending', authenticateToken, requireRole(['admin', 'moderator']), async (req, res) => {
+    try {
+      const products = await storage.getPendingProducts();
+      res.json(products);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch pending products' });
+    }
+  });
+
   app.patch('/api/admin/products/:id/status', authenticateToken, requireRole(['admin', 'moderator']), async (req: any, res) => {
     try {
       const productId = parseInt(req.params.id);

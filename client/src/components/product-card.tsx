@@ -763,6 +763,39 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                 </p>
               </div>
               
+              {/* Характеристики недвижимости */}
+              {product.categoryId === 2 && metadata && Object.keys(metadata).length > 0 && (
+                <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Характеристики недвижимости</h3>
+                  <div className="grid grid-cols-1 gap-3">
+                    {metadata.garageSpaces && (
+                      <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">Гаражные места:</span>
+                        <span className="font-semibold text-gray-900">{metadata.garageSpaces}</span>
+                      </div>
+                    )}
+                    {metadata.warehouses && (
+                      <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">Склады:</span>
+                        <span className="font-semibold text-gray-900">{metadata.warehouses}</span>
+                      </div>
+                    )}
+                    {metadata.helipads && (
+                      <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                        <span className="text-gray-600">Вертолетные площадки:</span>
+                        <span className="font-semibold text-gray-900">{metadata.helipads}</span>
+                      </div>
+                    )}
+                    {metadata.income && metadata.income > 0 && (
+                      <div className="flex items-center justify-between py-2">
+                        <span className="text-gray-600">Доход в день:</span>
+                        <span className="font-semibold text-emerald-600">{metadata.income.toLocaleString('ru-RU')} ₽</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
               {/* Характеристики автомобиля */}
               {product.categoryId === 1 && metadata && Object.keys(metadata).length > 0 && (
                 <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">

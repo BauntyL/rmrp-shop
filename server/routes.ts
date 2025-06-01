@@ -200,11 +200,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: 'Failed to fetch product' });
     }
   });
-  
-  console.log('Routes registered successfully');
-  const httpServer = createServer(app);
-  return httpServer;
-}
+
   app.patch('/api/admin/products/:id/status', authenticateToken, requireRole(['admin', 'moderator']), async (req: any, res) => {
     try {
       const productId = parseInt(req.params.id);

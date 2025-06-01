@@ -10,11 +10,15 @@ app.use(express.urlencoded({ extended: false }));
 
 // КРИТИЧЕСКИ ВАЖНО: healthcheck endpoints должны быть ПЕРВЫМИ
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'healthy' });
+  console.log('Health check requested');
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ status: 'healthy', timestamp: new Date().toISOString() }));
 });
 
 app.get('/', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Server is running' });
+  console.log('Root endpoint requested');
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ status: 'OK', message: 'Server is running' }));
 });
 
 // Logging middleware
@@ -50,28 +54,39 @@ app.use((req, res, next) => {
 
 (async () => {
   try {
+    console.log('Starting server initialization...');
+    console.log('Environment:', process.env.NODE_ENV);
+    console.log('Port:', process.env.PORT || 5000);
+    
     // Регистрируем API routes
+    console.log('Registering routes...');
     const server = await registerRoutes(app);
+    console.log('Routes registered successfully');
 
     // Error handling middleware
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
+      console.error('Error middleware triggered:', { status, message, error: err });
       res.status(status).json({ message });
     });
 
     // Setup Vite or static serving
     if (app.get("env") === "development") {
+      console.log('Setting up Vite for development...');
       await setupVite(app, server);
     } else {
+      console.log('Setting up static serving for production...');
       serveStatic(app);
     }
 
     // Start server
     const PORT = process.env.PORT || 5000;
-    const serverInstance = app.listen(PORT, '0.0.0.0', () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`Health check available at http://localhost:${PORT}/health`);
+    const HOST = process.env.HOST || '0.0.0.0';
+    const serverInstance = app.listen(PORT, HOST, () => {
+      console.log(`✅ Server running on ${HOST}:${PORT}`);
+      console.log(`✅ Health check available at http://${HOST}:${PORT}/health`);
+      console.log('✅ Server startup complete');
     });
 
     // Graceful shutdown

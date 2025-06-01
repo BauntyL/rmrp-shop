@@ -212,9 +212,7 @@ export class DatabaseStorage implements IStorage {
       { name: "cars_special", displayName: "Специальные", icon: "fas fa-truck-monster", color: "blue", parentId: categoryMap.get("cars") },
       
       // Fish subcategories
-      { name: "fish_roach_fry", displayName: "Малек Плотвы", icon: "fas fa-fish", color: "cyan", parentId: categoryMap.get("fish") },
       { name: "fish_roach", displayName: "Плотва", icon: "fas fa-fish", color: "cyan", parentId: categoryMap.get("fish") },
-      { name: "fish_ruff_fry", displayName: "Малек Ерша", icon: "fas fa-fish", color: "cyan", parentId: categoryMap.get("fish") },
       { name: "fish_ruff", displayName: "Ерш", icon: "fas fa-fish", color: "cyan", parentId: categoryMap.get("fish") },
       { name: "fish_trout", displayName: "Форель", icon: "fas fa-fish", color: "cyan", parentId: categoryMap.get("fish") },
       { name: "fish_bream", displayName: "Лещ", icon: "fas fa-fish", color: "cyan", parentId: categoryMap.get("fish") },

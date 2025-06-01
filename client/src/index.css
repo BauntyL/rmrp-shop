@@ -88,19 +88,30 @@
     @apply bg-slate-700 text-white !important;
   }
   
-  /* Переопределяем accent цвета для всех radix компонентов */
-  .radix-select-item:focus,
-  .radix-dropdown-menu-item:focus {
+  /* НОВЫЕ ПРАВИЛА - переопределяем focus:bg-accent */
+  [data-radix-select-item]:focus,
+  [data-radix-select-item][data-state="focused"],
+  [data-radix-dropdown-menu-item]:focus,
+  [data-radix-dropdown-menu-item][data-state="focused"] {
     @apply bg-slate-700 text-white !important;
+    background-color: rgb(51 65 85) !important; /* slate-700 */
+  }
+  
+  /* Переопределяем все accent цвета в select и dropdown компонентах */
+  [data-radix-select-content] *:focus,
+  [data-radix-dropdown-menu-content] *:focus {
+    @apply bg-slate-700 text-white !important;
+    background-color: rgb(51 65 85) !important;
+  }
+  
+  /* Убираем accent цвет полностью для этих компонентов */
+  [data-radix-select-content] .focus\:bg-accent,
+  [data-radix-dropdown-menu-content] .focus\:bg-accent {
+    background-color: rgb(51 65 85) !important;
+    color: white !important;
   }
   
   /* Улучшение читаемости для всех выпадающих меню */
-  .select-item:hover,
-  .dropdown-menu-item:hover {
-    @apply bg-slate-700 text-white !important;
-  }
-  
-  /* Убираем желтое выделение из focus состояний */
   [data-radix-select-content] [data-state="checked"],
   [data-radix-select-content] [data-highlighted],
   [data-radix-dropdown-menu-content] [data-highlighted] {

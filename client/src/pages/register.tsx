@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { UserPlus, User, Mail, Lock, Sparkles, Shield } from "lucide-react";
 
 const registerSchema = z.object({
   firstName: z.string().min(1, "Имя обязательно"),
@@ -68,36 +69,72 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-teal-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-full blur-3xl animate-spin-slow"></div>
+      </div>
+
+      <div className="max-w-md w-full space-y-8 relative z-10">
+        {/* Logo and title */}
+        <div className="text-center animate-fade-in">
           <Link href="/">
-            <h1 className="text-3xl font-bold text-primary cursor-pointer">RMRP SHOP</h1>
+            <div className="group cursor-pointer">
+              <div className="flex items-center justify-center space-x-2 mb-2">
+                <Sparkles className="h-8 w-8 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform">
+                  RMRP SHOP
+                </h1>
+                <Sparkles className="h-8 w-8 text-teal-400 group-hover:text-teal-300 transition-colors" />
+              </div>
+              <p className="text-slate-300 group-hover:text-white transition-colors">
+                Торговая площадка для игровых товаров
+              </p>
+            </div>
           </Link>
-          <p className="mt-2 text-gray-600">Торговая площадка для игровых товаров</p>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Регистрация</CardTitle>
-            <CardDescription>
+        {/* Register card */}
+        <Card className="bg-slate-800/50 backdrop-blur-xl border-slate-700/50 shadow-2xl animate-slide-up">
+          <CardHeader className="text-center pb-4">
+            <div className="flex items-center justify-center space-x-2 mb-2">
+              <UserPlus className="h-6 w-6 text-emerald-400" />
+              <CardTitle className="text-2xl text-white">Регистрация</CardTitle>
+            </div>
+            <CardDescription className="text-slate-300">
               Создайте аккаунт для размещения объявлений
             </CardDescription>
+            {/* Decorative gradient line */}
+            <div className="w-20 h-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full mx-auto mt-4"></div>
           </CardHeader>
-          <CardContent>
+          
+          <CardContent className="space-y-6">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+                {/* Name fields */}
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="firstName"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Имя</FormLabel>
+                      <FormItem className="space-y-2">
+                        <FormLabel className="text-slate-200 font-medium flex items-center space-x-2">
+                          <User className="h-4 w-4 text-emerald-400" />
+                          <span>Имя</span>
+                        </FormLabel>
                         <FormControl>
-                          <Input placeholder="Введите ваше имя" {...field} />
+                          <div className="relative group">
+                            <Input 
+                              placeholder="Ваше имя" 
+                              {...field}
+                              className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20 transition-all duration-200 group-hover:border-slate-500"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/5 to-teal-500/0 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                          </div>
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400" />
                       </FormItem>
                     )}
                   />
@@ -106,55 +143,100 @@ export default function Register() {
                     control={form.control}
                     name="lastName"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Фамилия</FormLabel>
+                      <FormItem className="space-y-2">
+                        <FormLabel className="text-slate-200 font-medium flex items-center space-x-2">
+                          <User className="h-4 w-4 text-emerald-400" />
+                          <span>Фамилия</span>
+                        </FormLabel>
                         <FormControl>
-                          <Input placeholder="Введите вашу фамилию" {...field} />
+                          <div className="relative group">
+                            <Input 
+                              placeholder="Ваша фамилия" 
+                              {...field}
+                              className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20 transition-all duration-200 group-hover:border-slate-500"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/5 to-teal-500/0 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                          </div>
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-red-400" />
                       </FormItem>
                     )}
                   />
                 </div>
 
+                {/* Email field */}
                 <FormField
                   control={form.control}
                   name="email"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
+                    <FormItem className="space-y-2">
+                      <FormLabel className="text-slate-200 font-medium flex items-center space-x-2">
+                        <Mail className="h-4 w-4 text-emerald-400" />
+                        <span>Email</span>
+                      </FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="user@example.com" {...field} />
+                        <div className="relative group">
+                          <Input 
+                            type="email" 
+                            placeholder="user@example.com" 
+                            {...field}
+                            className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20 transition-all duration-200 group-hover:border-slate-500"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/5 to-teal-500/0 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                        </div>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-red-400" />
                     </FormItem>
                   )}
                 />
 
+                {/* Username field */}
                 <FormField
                   control={form.control}
                   name="username"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Логин</FormLabel>
+                    <FormItem className="space-y-2">
+                      <FormLabel className="text-slate-200 font-medium flex items-center space-x-2">
+                        <User className="h-4 w-4 text-emerald-400" />
+                        <span>Логин</span>
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="Выберите логин" {...field} />
+                        <div className="relative group">
+                          <Input 
+                            placeholder="Выберите логин" 
+                            {...field}
+                            className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20 transition-all duration-200 group-hover:border-slate-500"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/5 to-teal-500/0 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                        </div>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-red-400" />
                     </FormItem>
                   )}
                 />
 
+                {/* Password fields */}
                 <FormField
                   control={form.control}
                   name="password"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Пароль</FormLabel>
+                    <FormItem className="space-y-2">
+                      <FormLabel className="text-slate-200 font-medium flex items-center space-x-2">
+                        <Lock className="h-4 w-4 text-emerald-400" />
+                        <span>Пароль</span>
+                      </FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="Создайте пароль" {...field} />
+                        <div className="relative group">
+                          <Input 
+                            type="password" 
+                            placeholder="Создайте пароль" 
+                            {...field}
+                            className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20 transition-all duration-200 group-hover:border-slate-500"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/5 to-teal-500/0 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                        </div>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-red-400" />
                     </FormItem>
                   )}
                 />
@@ -163,55 +245,80 @@ export default function Register() {
                   control={form.control}
                   name="confirmPassword"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Подтверждение пароля</FormLabel>
+                    <FormItem className="space-y-2">
+                      <FormLabel className="text-slate-200 font-medium flex items-center space-x-2">
+                        <Shield className="h-4 w-4 text-emerald-400" />
+                        <span>Подтверждение пароля</span>
+                      </FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="Повторите пароль" {...field} />
+                        <div className="relative group">
+                          <Input 
+                            type="password" 
+                            placeholder="Повторите пароль" 
+                            {...field}
+                            className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500/20 transition-all duration-200 group-hover:border-slate-500"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/5 to-teal-500/0 rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                        </div>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-red-400" />
                     </FormItem>
                   )}
                 />
 
+                {/* Terms agreement */}
                 <FormField
                   control={form.control}
                   name="agreeTerms"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 pt-2">
                       <FormControl>
                         <Checkbox 
                           checked={field.value} 
-                          onCheckedChange={field.onChange} 
+                          onCheckedChange={field.onChange}
+                          className="border-slate-600 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600 mt-1"
                         />
                       </FormControl>
                       <div className="space-y-1 leading-none">
-                        <FormLabel className="text-sm">
+                        <FormLabel className="text-sm text-slate-300 cursor-pointer">
                           Я соглашаюсь с{" "}
-                          <a href="#" className="text-primary hover:underline">
+                          <a href="#" className="text-emerald-400 hover:text-emerald-300 transition-colors">
                             условиями использования
                           </a>
                         </FormLabel>
-                        <FormMessage />
+                        <FormMessage className="text-red-400" />
                       </div>
                     </FormItem>
                   )}
                 />
 
+                {/* Submit button */}
                 <Button 
                   type="submit" 
                   disabled={isRegisterPending} 
-                  className="w-full"
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-medium py-3 rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-emerald-500/25"
                 >
-                  {isRegisterPending ? "Регистрация..." : "Зарегистрироваться"}
+                  {isRegisterPending ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <span>Регистрация...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center space-x-2">
+                      <UserPlus className="h-4 w-4" />
+                      <span>Зарегистрироваться</span>
+                    </div>
+                  )}
                 </Button>
               </form>
             </Form>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
+            {/* Login link */}
+            <div className="text-center pt-4 border-t border-slate-700/50">
+              <p className="text-sm text-slate-400">
                 Уже есть аккаунт?{" "}
                 <Link href="/login">
-                  <a className="text-primary hover:underline font-medium">
+                  <a className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
                     Войти
                   </a>
                 </Link>
@@ -220,6 +327,30 @@ export default function Register() {
           </CardContent>
         </Card>
       </div>
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(-20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slide-up {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes spin-slow {
+          from { transform: translate(-50%, -50%) rotate(0deg); }
+          to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.6s ease-out;
+        }
+        .animate-slide-up {
+          animation: slide-up 0.8s ease-out 0.2s both;
+        }
+        .animate-spin-slow {
+          animation: spin-slow 20s linear infinite;
+        }
+      `}</style>
     </div>
   );
 }

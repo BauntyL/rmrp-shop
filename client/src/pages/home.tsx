@@ -104,20 +104,9 @@ export default function Home() {
       {/* Featured Products */}
       <section className="py-20 bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-16">
-            <div>
-              <h2 className="text-4xl font-bold text-white mb-4">Рекомендуемые товары</h2>
-              <p className="text-xl text-slate-300">Популярные предложения от наших продавцов</p>
-            </div>
-            <Button 
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 transition-all duration-200"
-              asChild
-            >
-              <Link href="/category/all" className="flex items-center gap-2">
-                Все товары
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">Рекомендуемые товары</h2>
+            <p className="text-xl text-slate-300">Популярные предложения от наших продавцов</p>
           </div>
           
           {featuredProducts.length > 0 ? (

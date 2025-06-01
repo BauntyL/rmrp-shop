@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Heart, MessageCircle } from "lucide-react";
+import { Heart, MessageCircle, Copy, Phone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { ProductWithDetails } from "@/lib/types";
 
@@ -81,6 +81,26 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
     onContact?.(product.userId);
   };
 
+  const copyToClipboard = (text: string, type: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast({
+        title: "Скопировано",
+        description: `${type} скопирован в буфер обмена`,
+      });
+    }).catch(() => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось скопировать",
+        variant: "destructive",
+      });
+    });
+  };
+
+  const openTelegram = (username: string) => {
+    const cleanUsername = username.replace('@', '');
+    window.open(`https://t.me/${cleanUsername}`, '_blank');
+  };
+
   const getCategoryColor = (color: string) => {
     const colorMap: Record<string, string> = {
       blue: "bg-blue-100 text-blue-600",
@@ -100,8 +120,31 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
     }).format(price);
   };
 
+  const getCategoryLabel = (category: string) => {
+    const categories: Record<string, string> = {
+      standard: "Стандарт",
+      coupe: "Купе",
+      suv: "Внедорожники",
+      sport: "Спорт",
+      motorcycle: "Мотоциклы",
+      special: "Специальные",
+    };
+    return categories[category] || category;
+  };
+
+  const getTuningLabel = (tuning: string) => {
+    const tunings: Record<string, string> = {
+      none: "Без тюнинга",
+      ft: "FT",
+      fft: "FFT",
+    };
+    return tunings[tuning] || tuning;
+  };
+
   const defaultImage = "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=250";
   const imageUrl = product.images?.[0] || defaultImage;
+  const metadata = product.metadata || {};
+  const contacts = metadata.contacts || {};
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200">
@@ -137,6 +180,22 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
         <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1">
           {product.title}
         </h3>
+        
+        {/* Информация об автомобиле */}
+        {product.categoryId === 1 && metadata && (
+          <div className="space-y-1 mb-3 text-sm text-gray-600">
+            {metadata.category && (
+              <div>Категория: {getCategoryLabel(metadata.category)}</div>
+            )}
+            {metadata.maxSpeed && (
+              <div>Макс. скорость: {metadata.maxSpeed} км/ч</div>
+            )}
+            {metadata.tuning && (
+              <div>Тюнинг: {getTuningLabel(metadata.tuning)}</div>
+            )}
+          </div>
+        )}
+        
         <p className="text-sm text-gray-600 mb-3 line-clamp-2">
           {product.description}
         </p>
@@ -149,6 +208,47 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
             {product.server?.displayName}
           </span>
         </div>
+        
+        {/* Контактная информация */}
+        {product.categoryId === 1 && contacts && Object.keys(contacts).some(key => contacts[key]) && (
+          <div className="mb-3 space-y-2">
+            <h4 className="text-sm font-medium text-gray-700">Контакты:</h4>
+            <div className="flex flex-wrap gap-2">
+              {contacts.discord && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyToClipboard(contacts.discord, 'Discord')}
+                  className="text-xs h-7 px-2"
+                >
+                  <Copy className="h-3 w-3 mr-1" />
+                  {contacts.discord}
+                </Button>
+              )}
+              {contacts.telegram && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openTelegram(contacts.telegram)}
+                  className="text-xs h-7 px-2"
+                >
+                  TG: {contacts.telegram}
+                </Button>
+              )}
+              {contacts.phone && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyToClipboard(contacts.phone, 'Телефон')}
+                  className="text-xs h-7 px-2"
+                >
+                  <Phone className="h-3 w-3 mr-1" />
+                  {contacts.phone}
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
         
         <div className="flex space-x-2">
           <Button 

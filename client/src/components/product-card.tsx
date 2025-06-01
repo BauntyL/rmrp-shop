@@ -74,6 +74,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       queryClient.invalidateQueries({ queryKey: ["/api/my-products"] });
+      setIsDeleteConfirmOpen(false);
       toast({
         title: "Успешно",
         description: "Товар удален",
@@ -126,7 +127,12 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
     setIsDeleteConfirmOpen(true);
   };
 
-  // Добавляем недостающую функцию handleEditProduct
+  // Добавляем функцию для подтверждения удаления
+  const handleConfirmDelete = () => {
+    deleteProductMutation.mutate();
+    setIsDeleteConfirmOpen(false);
+  };
+
   const handleEditProduct = () => {
     if (editForm.title && editForm.price > 0) {
       editProductMutation.mutate();

@@ -659,7 +659,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                 </div>
               </div>
               
-              {/* Дополнительные изображения */
+              {/* Дополнительные изображения */}
               {product.images && product.images.length > 1 && (
                 <div className="grid grid-cols-3 gap-2">
                   {product.images.slice(1, 4).map((img, index) => (

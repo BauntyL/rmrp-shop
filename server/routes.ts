@@ -201,320 +201,321 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ВОТ ЗДЕСЬ НАЧИНАЕТСЯ ДУБЛИРОВАННЫЙ КОД - НУЖНО УДАЛИТЬ ВСЕ НИЖЕ
   import { createServer, type Server } from "http";
-import { storage } from "./storage";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import { z } from "zod";
-import { insertUserSchema, insertProductSchema, insertMessageSchema } from "@shared/schema";
+  import { storage } from "./storage";
+  import bcrypt from "bcryptjs";
+  import jwt from "jsonwebtoken";
+  import { z } from "zod";
+  import { insertUserSchema, insertProductSchema, insertMessageSchema } from "@shared/schema";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+  const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
-// Middleware to verify JWT token
-const authenticateToken = async (req: any, res: any, next: any) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ message: 'Access token required' });
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
-    const user = await storage.getUser(decoded.userId);
-    
-    if (!user || user.isBanned) {
-      return res.status(401).json({ message: 'User not found or banned' });
-    }
-    
-    req.user = user;
-    next();
-  } catch (error) {
-    return res.status(403).json({ message: 'Invalid token' });
-  }
-};
-
-// Middleware to check admin/moderator role
-const requireRole = (roles: string[]) => {
-  return (req: any, res: any, next: any) => {
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: 'Insufficient permissions' });
-    }
-    next();
-  };
-};
-
-export async function registerRoutes(app: Express): Promise<Server> {
-  console.log('Initializing routes...');
+  // Middleware to verify JWT token
+  const authenticateToken = async (req: any, res: any, next: any) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
   
-  // Запускаем инициализацию в фоне, не блокируя сервер
-  Promise.resolve().then(async () => {
-    try {
-      console.log('Initializing servers...');
-      await storage.initializeServers();
-      console.log('Initializing categories...');
-      await storage.initializeCategories();
-      console.log('Database initialization complete');
-    } catch (error) {
-      console.error('Database initialization failed:', error);
+    if (!token) {
+      return res.status(401).json({ message: 'Access token required' });
     }
-  });
-
-  // Auth routes
-  app.post('/api/auth/register', async (req, res) => {
+  
     try {
-      const registerSchema = insertUserSchema.extend({
-        confirmPassword: z.string(),
-      }).refine(data => data.password === data.confirmPassword, {
-        message: "Passwords don't match",
-        path: ["confirmPassword"],
-      });
-
-      const userData = registerSchema.parse(req.body);
-      
-      // Check if user already exists
-      const existingUser = await storage.getUserByEmail(userData.email) || 
-                          await storage.getUserByUsername(userData.username);
-      
-      if (existingUser) {
-        return res.status(400).json({ message: 'User already exists' });
-      }
-
-      // Hash password
-      const hashedPassword = await bcrypt.hash(userData.password, 10);
-      
-      // Create user
-      const { confirmPassword, ...userToCreate } = userData;
-      const user = await storage.createUser({
-        ...userToCreate,
-        password: hashedPassword,
-      });
-
-      // Generate JWT token
-      const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
-
-      res.json({
-        user: { ...user, password: undefined },
-        token,
-      });
-    } catch (error) {
-      console.error('Registration error:', error);
-      res.status(400).json({ message: error instanceof Error ? error.message : 'Registration failed' });
-    }
-  });
-
-  app.post('/api/auth/login', async (req, res) => {
-    try {
-      const { login, password } = req.body;
-      
-      if (!login || !password) {
-        return res.status(400).json({ message: 'Login and password required' });
-      }
-
-      // Find user by email or username
-      const user = await storage.getUserByEmail(login) || 
-                   await storage.getUserByUsername(login);
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
+      const user = await storage.getUser(decoded.userId);
       
       if (!user || user.isBanned) {
-        return res.status(401).json({ message: 'Invalid credentials or user banned' });
+        return res.status(401).json({ message: 'User not found or banned' });
       }
+      
+      req.user = user;
+      next();
+    } catch (error) {
+      return res.status(403).json({ message: 'Invalid token' });
+    }
+  };
 
-      // Verify password
-      const isValidPassword = await bcrypt.compare(password, user.password);
-      if (!isValidPassword) {
-        return res.status(401).json({ message: 'Invalid credentials' });
+  // Middleware to check admin/moderator role
+  const requireRole = (roles: string[]) => {
+    return (req: any, res: any, next: any) => {
+      if (!roles.includes(req.user.role)) {
+        return res.status(403).json({ message: 'Insufficient permissions' });
       }
+      next();
+    };
+  };
 
-      // Generate JWT token
-      const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+  export async function registerRoutes(app: Express): Promise<Server> {
+    console.log('Initializing routes...');
+    
+    // Запускаем инициализацию в фоне, не блокируя сервер
+    Promise.resolve().then(async () => {
+      try {
+        console.log('Initializing servers...');
+        await storage.initializeServers();
+        console.log('Initializing categories...');
+        await storage.initializeCategories();
+        console.log('Database initialization complete');
+      } catch (error) {
+        console.error('Database initialization failed:', error);
+      }
+    });
 
-      res.json({
-        user: { ...user, password: undefined },
-        token,
-      });
-    } catch (error) {
-      console.error('Login error:', error);
-      res.status(500).json({ message: 'Login failed' });
-    }
-  });
-
-  app.get('/api/auth/me', authenticateToken, async (req: any, res) => {
-    res.json({ ...req.user, password: undefined });
-  });
-
-  // Server routes
-  app.get('/api/servers', async (req, res) => {
-    try {
-      const servers = await storage.getServers();
-      res.json(servers);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch servers' });
-    }
-  });
-
-  // Category routes
-  app.get('/api/categories', async (req, res) => {
-    try {
-      const parentId = req.query.parentId ? parseInt(req.query.parentId as string) : undefined;
-      const categories = await storage.getCategoriesByParent(parentId);
-      res.json(categories);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch categories' });
-    }
-  });
-
-  // Product routes
-  app.get('/api/products', async (req, res) => {
-    try {
-      const filters = {
-        categoryId: req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined,
-        serverId: req.query.serverId ? parseInt(req.query.serverId as string) : undefined,
-        status: req.query.status as string || 'approved',
-        search: req.query.search as string,
-        userId: req.query.userId ? parseInt(req.query.userId as string) : undefined,
-      };
+    // Auth routes
+    app.post('/api/auth/register', async (req, res) => {
+      try {
+        const registerSchema = insertUserSchema.extend({
+          confirmPassword: z.string(),
+        }).refine(data => data.password === data.confirmPassword, {
+          message: "Passwords don't match",
+          path: ["confirmPassword"],
+        });
   
-      // Add this debug logging
-      console.log('API Request filters:', filters);
-      
-      const products = await storage.getProducts(filters);
-      
-      // Add this debug logging
-      console.log('Returned products count:', products.length);
-      console.log('Products categoryIds:', products.map(p => ({ title: p.title, categoryId: p.categoryId })));
-      
-      res.json(products);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch products' });
-    }
-  });
-
-  app.get('/api/products/:id', async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const product = await storage.getProduct(id);
-      
-      if (!product) {
-        return res.status(404).json({ message: 'Product not found' });
+        const userData = registerSchema.parse(req.body);
+        
+        // Check if user already exists
+        const existingUser = await storage.getUserByEmail(userData.email) || 
+                            await storage.getUserByUsername(userData.username);
+        
+        if (existingUser) {
+          return res.status(400).json({ message: 'User already exists' });
+        }
+  
+        // Hash password
+        const hashedPassword = await bcrypt.hash(userData.password, 10);
+        
+        // Create user
+        const { confirmPassword, ...userToCreate } = userData;
+        const user = await storage.createUser({
+          ...userToCreate,
+          password: hashedPassword,
+        });
+  
+        // Generate JWT token
+        const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+  
+        res.json({
+          user: { ...user, password: undefined },
+          token,
+        });
+      } catch (error) {
+        console.error('Registration error:', error);
+        res.status(400).json({ message: error instanceof Error ? error.message : 'Registration failed' });
       }
-      
-      res.json(product);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch product' });
-    }
-  });
-
-  app.patch('/api/admin/products/:id/status', authenticateToken, requireRole(['admin', 'moderator']), async (req: any, res) => {
-    try {
-      const productId = parseInt(req.params.id);
-      const { status, note } = req.body;
-
-      if (!['pending', 'approved', 'rejected'].includes(status)) {
-        return res.status(400).json({ message: 'Invalid status' });
+    });
+  
+    app.post('/api/auth/login', async (req, res) => {
+      try {
+        const { login, password } = req.body;
+        
+        if (!login || !password) {
+          return res.status(400).json({ message: 'Login and password required' });
+        }
+  
+        // Find user by email or username
+        const user = await storage.getUserByEmail(login) || 
+                     await storage.getUserByUsername(login);
+        
+        if (!user || user.isBanned) {
+          return res.status(401).json({ message: 'Invalid credentials or user banned' });
+        }
+  
+        // Verify password
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if (!isValidPassword) {
+          return res.status(401).json({ message: 'Invalid credentials' });
+        }
+  
+        // Generate JWT token
+        const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+  
+        res.json({
+          user: { ...user, password: undefined },
+          token,
+        });
+      } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ message: 'Login failed' });
       }
-
-      const product = await storage.updateProductStatus(productId, status, req.user.id, note);
-      res.json(product);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to update product status' });
-    }
-  });
-
-  app.get('/api/admin/messages/pending', authenticateToken, requireRole(['admin', 'moderator']), async (req, res) => {
-    try {
-      const messages = await storage.getPendingMessages();
-      res.json(messages);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch pending messages' });
-    }
-  });
-
-  app.patch('/api/admin/messages/:id/moderate', authenticateToken, requireRole(['admin', 'moderator']), async (req: any, res) => {
-    try {
-      const messageId = parseInt(req.params.id);
-
-      const message = await storage.moderateMessage(messageId, req.user.id);
-      res.json(message);
-    } catch (error) {
-      res.status(500).json({ message: 'Failed to moderate message' });
-    }
-  });
-
-  // Обновление цены продукта (только владелец)
-  app.patch('/api/products/:id/price', authenticateToken, async (req: any, res) => {
-    try {
-      const productId = parseInt(req.params.id);
-      const { price } = req.body;
-      const userId = req.user.id;
-      const userRole = req.user.role;
-
-      if (!price || price <= 0) {
-        return res.status(400).json({ message: 'Invalid price' });
+    });
+  
+    app.get('/api/auth/me', authenticateToken, async (req: any, res) => {
+      res.json({ ...req.user, password: undefined });
+    });
+  
+    // Server routes
+    app.get('/api/servers', async (req, res) => {
+      try {
+        const servers = await storage.getServers();
+        res.json(servers);
+      } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch servers' });
       }
-
-      const product = await storage.getProduct(productId);
-      if (!product) {
-        return res.status(404).json({ message: 'Product not found' });
+    });
+  
+    // Category routes
+    app.get('/api/categories', async (req, res) => {
+      try {
+        const parentId = req.query.parentId ? parseInt(req.query.parentId as string) : undefined;
+        const categories = await storage.getCategoriesByParent(parentId);
+        res.json(categories);
+      } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch categories' });
       }
-
-      // Проверка прав: владелец, модератор или админ
-      if (product.userId !== userId && userRole !== 'moderator' && userRole !== 'admin') {
-        return res.status(403).json({ message: 'Access denied' });
+    });
+  
+    // Product routes
+    app.get('/api/products', async (req, res) => {
+      try {
+        const filters = {
+          categoryId: req.query.categoryId ? parseInt(req.query.categoryId as string) : undefined,
+          serverId: req.query.serverId ? parseInt(req.query.serverId as string) : undefined,
+          status: req.query.status as string || 'approved',
+          search: req.query.search as string,
+          userId: req.query.userId ? parseInt(req.query.userId as string) : undefined,
+        };
+    
+        // Add this debug logging
+        console.log('API Request filters:', filters);
+        
+        const products = await storage.getProducts(filters);
+        
+        // Add this debug logging
+        console.log('Returned products count:', products.length);
+        console.log('Products categoryIds:', products.map(p => ({ title: p.title, categoryId: p.categoryId })));
+        
+        res.json(products);
+      } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch products' });
       }
-
-      const updatedProduct = await storage.updateProductPrice(productId, price);
-      res.json(updatedProduct);
-    } catch (error) {
-      console.error('Update product price error:', error);
-      res.status(500).json({ message: 'Failed to update product price' });
-    }
-  });
-
-  // Полное редактирование продукта (модераторы и админы)
-  app.put('/api/products/:id', authenticateToken, requireRole(['moderator', 'admin']), async (req: any, res) => {
-    try {
-      const productId = parseInt(req.params.id);
-      const updates = req.body;
-
-      const product = await storage.getProduct(productId);
-      if (!product) {
-        return res.status(404).json({ message: 'Product not found' });
+    });
+  
+    app.get('/api/products/:id', async (req, res) => {
+      try {
+        const id = parseInt(req.params.id);
+        const product = await storage.getProduct(id);
+        
+        if (!product) {
+          return res.status(404).json({ message: 'Product not found' });
+        }
+        
+        res.json(product);
+      } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch product' });
       }
-
-      const updatedProduct = await storage.updateProduct(productId, updates);
-      res.json(updatedProduct);
-    } catch (error) {
-      console.error('Update product error:', error);
-      res.status(500).json({ message: 'Failed to update product' });
-    }
-  });
-
-  // Удаление продукта
-  app.delete('/api/products/:id', authenticateToken, async (req: any, res) => {
-    try {
-      const productId = parseInt(req.params.id);
-      const userId = req.user.id;
-      const userRole = req.user.role;
-
-      const product = await storage.getProduct(productId);
-      if (!product) {
-        return res.status(404).json({ message: 'Product not found' });
+    });
+  
+    app.patch('/api/admin/products/:id/status', authenticateToken, requireRole(['admin', 'moderator']), async (req: any, res) => {
+      try {
+        const productId = parseInt(req.params.id);
+        const { status, note } = req.body;
+  
+        if (!['pending', 'approved', 'rejected'].includes(status)) {
+          return res.status(400).json({ message: 'Invalid status' });
+        }
+  
+        const product = await storage.updateProductStatus(productId, status, req.user.id, note);
+        res.json(product);
+      } catch (error) {
+        res.status(500).json({ message: 'Failed to update product status' });
       }
-
-      // Проверка прав: владелец, модератор или админ
-      if (product.userId !== userId && userRole !== 'moderator' && userRole !== 'admin') {
-        return res.status(403).json({ message: 'Access denied' });
+    });
+  
+    app.get('/api/admin/messages/pending', authenticateToken, requireRole(['admin', 'moderator']), async (req, res) => {
+      try {
+        const messages = await storage.getPendingMessages();
+        res.json(messages);
+      } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch pending messages' });
       }
-
-      await storage.deleteProduct(productId);
-      res.json({ message: 'Product deleted successfully' });
-    } catch (error) {
-      console.error('Delete product error:', error);
-      res.status(500).json({ message: 'Failed to delete product' });
-    }
-  });
-
-  console.log('Routes registered successfully');
-  const httpServer = createServer(app);
-  return httpServer;
-}
+    });
+  
+    app.patch('/api/admin/messages/:id/moderate', authenticateToken, requireRole(['admin', 'moderator']), async (req: any, res) => {
+      try {
+        const messageId = parseInt(req.params.id);
+  
+        const message = await storage.moderateMessage(messageId, req.user.id);
+        res.json(message);
+      } catch (error) {
+        res.status(500).json({ message: 'Failed to moderate message' });
+      }
+    });
+  
+    // Обновление цены продукта (только владелец)
+    app.patch('/api/products/:id/price', authenticateToken, async (req: any, res) => {
+      try {
+        const productId = parseInt(req.params.id);
+        const { price } = req.body;
+        const userId = req.user.id;
+        const userRole = req.user.role;
+  
+        if (!price || price <= 0) {
+          return res.status(400).json({ message: 'Invalid price' });
+        }
+  
+        const product = await storage.getProduct(productId);
+        if (!product) {
+          return res.status(404).json({ message: 'Product not found' });
+        }
+  
+        // Проверка прав: владелец, модератор или админ
+        if (product.userId !== userId && userRole !== 'moderator' && userRole !== 'admin') {
+          return res.status(403).json({ message: 'Access denied' });
+        }
+  
+        const updatedProduct = await storage.updateProductPrice(productId, price);
+        res.json(updatedProduct);
+      } catch (error) {
+        console.error('Update product price error:', error);
+        res.status(500).json({ message: 'Failed to update product price' });
+      }
+    });
+  
+    // Полное редактирование продукта (модераторы и админы)
+    app.put('/api/products/:id', authenticateToken, requireRole(['moderator', 'admin']), async (req: any, res) => {
+      try {
+        const productId = parseInt(req.params.id);
+        const updates = req.body;
+  
+        const product = await storage.getProduct(productId);
+        if (!product) {
+          return res.status(404).json({ message: 'Product not found' });
+        }
+  
+        const updatedProduct = await storage.updateProduct(productId, updates);
+        res.json(updatedProduct);
+      } catch (error) {
+        console.error('Update product error:', error);
+        res.status(500).json({ message: 'Failed to update product' });
+      }
+    });
+  
+    // Удаление продукта
+    app.delete('/api/products/:id', authenticateToken, async (req: any, res) => {
+      try {
+        const productId = parseInt(req.params.id);
+        const userId = req.user.id;
+        const userRole = req.user.role;
+  
+        const product = await storage.getProduct(productId);
+        if (!product) {
+          return res.status(404).json({ message: 'Product not found' });
+        }
+  
+        // Проверка прав: владелец, модератор или админ
+        if (product.userId !== userId && userRole !== 'moderator' && userRole !== 'admin') {
+          return res.status(403).json({ message: 'Access denied' });
+        }
+  
+        await storage.deleteProduct(productId);
+        res.json({ message: 'Product deleted successfully' });
+      } catch (error) {
+        console.error('Delete product error:', error);
+        res.status(500).json({ message: 'Failed to delete product' });
+      }
+    });
+  
+    console.log('Routes registered successfully');
+    const httpServer = createServer(app);
+    return httpServer;
+  }

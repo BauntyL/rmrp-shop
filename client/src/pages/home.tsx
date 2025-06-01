@@ -18,8 +18,7 @@ export default function Home() {
   const { data: featuredProducts = [] } = useQuery({
     queryKey: ["/api/products"],
   });
-
-  // Перемещаем useEffect ВНУТРЬ компонента
+е
   useEffect(() => {
     const loadCategories = async () => {
       try {
@@ -34,7 +33,6 @@ export default function Home() {
     loadCategories();
   }, []);
 
-  // Используем локальное состояние вместо данных из useQuery
   const mainCategories = categories.filter((cat: any) => !cat.parentId);
   console.log('Filtered main categories:', mainCategories);
 
@@ -159,14 +157,6 @@ export default function Home() {
   );
 }
 
-// УДАЛЯЕМ этот блок - он должен быть внутри компонента:
-// useEffect(() => {
-//   const loadCategories = async () => {
-//     ...
-//   };
-//   loadCategories();
-// }, []);
-
-// Перед return в компоненте
-const mainCategories = categories.filter(cat => !cat.parentId);
-console.log('Filtered main categories:', mainCategories); // Добавить эту строку
+// УДАЛИТЬ ЭТИ СТРОКИ (170-172):
+// const mainCategories = categories.filter(cat => !cat.parentId);
+// console.log('Filtered main categories:', mainCategories);

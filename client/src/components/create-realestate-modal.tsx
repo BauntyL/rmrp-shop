@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Home, MapPin, Ruler, Bed, Building, Layers, X, Sparkles, Car, Warehouse, Plane, Phone, DollarSign, Image, FileText } from "lucide-react";
+import { Home, MapPin, Ruler, Bed, Building, Layers, X, Sparkles, Car, Warehouse, Plane, Phone, DollarSign, Image, FileText, MessageCircle, Users } from "lucide-react";
 
 const createRealEstateSchema = z.object({
   title: z.string().min(1, "Название обязательно"),
@@ -27,7 +27,11 @@ const createRealEstateSchema = z.object({
     warehouses: z.coerce.number().min(1).max(2),
     helipads: z.coerce.number().min(1).max(2),
     income: z.coerce.number().optional(), // Только для бизнеса
-    contactInfo: z.string().min(1, "Контактные данные обязательны"),
+    contacts: z.object({
+      discord: z.string().optional(),
+      telegram: z.string().optional(),
+      phone: z.string().optional(),
+    })
   }),
 });
 
@@ -66,7 +70,11 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
         warehouses: 1,
         helipads: 1,
         income: 0,
-        contactInfo: "",
+        contacts: {
+          discord: "",
+          telegram: "",
+          phone: "",
+        }
       },
     },
   });
@@ -407,28 +415,84 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
 
             {/* Contact Information */}
             <div className="bg-gradient-to-r from-slate-800/60 to-slate-700/60 p-8 rounded-2xl border border-emerald-500/20 backdrop-blur-sm">
-              <FormField
-                control={form.control}
-                name="metadata.contactInfo"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-emerald-300 font-bold text-xl flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-emerald-500/20 rounded-lg">
-                        <Phone className="h-6 w-6 text-emerald-400" />
-                      </div>
-                      Контактные данные
-                    </FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Телефон, Discord, Telegram или другие контакты" 
-                        {...field} 
-                        className="bg-slate-800/80 border-emerald-500/30 text-white placeholder:text-slate-400 focus:border-emerald-400 focus:ring-emerald-400/30 h-14 text-lg backdrop-blur-sm" 
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-400" />
-                  </FormItem>
-                )}
-              />
+              <h3 className="text-emerald-300 font-bold text-xl flex items-center gap-3 mb-6">
+                <div className="p-2 bg-emerald-500/20 rounded-lg">
+                  <Users className="h-6 w-6 text-emerald-400" />
+                </div>
+                Контактная информация
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <FormField
+                  control={form.control}
+                  name="metadata.contacts.discord"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-emerald-300 font-medium flex items-center gap-2">
+                        <MessageCircle className="h-4 w-4 text-indigo-400" />
+                        Discord
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="user#0000" 
+                          {...field} 
+                          className="bg-slate-800/80 border-emerald-500/30 text-white placeholder:text-slate-400 focus:border-indigo-500/50 transition-colors h-12 text-lg backdrop-blur-sm"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-400" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="metadata.contacts.telegram"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-emerald-300 font-medium flex items-center gap-2">
+                        <MessageCircle className="h-4 w-4 text-blue-400" />
+                        Telegram
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="@user" 
+                          {...field} 
+                          className="bg-slate-800/80 border-emerald-500/30 text-white placeholder:text-slate-400 focus:border-blue-500/50 transition-colors h-12 text-lg backdrop-blur-sm"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-400" />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="metadata.contacts.phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-emerald-300 font-medium flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-green-400" />
+                        Номер телефона
+                      </FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="+7 123 456 78 90" 
+                          {...field} 
+                          className="bg-slate-800/80 border-emerald-500/30 text-white placeholder:text-slate-400 focus:border-green-500/50 transition-colors h-12 text-lg backdrop-blur-sm"
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-400" />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Decorative elements */}
+            <div className="flex justify-center items-center gap-2 mt-4">
+              <div className="w-8 h-1 bg-gradient-to-r from-transparent to-emerald-500 rounded-full" />
+              <div className="w-12 h-1 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full" />
+              <div className="w-8 h-1 bg-gradient-to-r from-green-500 to-transparent rounded-full" />
             </div>
 
             {/* Price and Income */}

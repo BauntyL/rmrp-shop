@@ -193,13 +193,13 @@ export default function Admin() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-slate-900">
         <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <Shield className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Доступ ограничен</h1>
-          <p className="text-gray-600 mb-6">Войдите в систему для доступа к панели администратора</p>
-          <Button onClick={() => window.location.href = "/login"}>
+          <Shield className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-white mb-4">Доступ ограничен</h1>
+          <p className="text-slate-300 mb-6">Войдите в систему для доступа к панели администратора</p>
+          <Button onClick={() => window.location.href = "/login"} className="bg-blue-600 hover:bg-blue-700">
             Войти
           </Button>
         </div>
@@ -210,13 +210,13 @@ export default function Admin() {
 
   if (!hasPermission) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-slate-900">
         <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <Shield className="h-16 w-16 text-red-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Недостаточно прав</h1>
-          <p className="text-gray-600 mb-6">У вас нет прав для доступа к панели администратора</p>
-          <Button onClick={() => window.location.href = "/"}>
+          <h1 className="text-2xl font-bold text-white mb-4">Недостаточно прав</h1>
+          <p className="text-slate-300 mb-6">У вас нет прав для доступа к панели администратора</p>
+          <Button onClick={() => window.location.href = "/"} className="bg-blue-600 hover:bg-blue-700">
             На главную
           </Button>
         </div>
@@ -226,65 +226,65 @@ export default function Admin() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-900">
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-4">
-            <Shield className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-gray-900">Панель администратора</h1>
+            <Shield className="h-8 w-8 text-blue-400" />
+            <h1 className="text-3xl font-bold text-white">Панель администратора</h1>
           </div>
-          <p className="text-gray-600">
+          <p className="text-slate-300">
             Управление пользователями, модерация контента
           </p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
+          <Card className="bg-slate-800 border-slate-700">
             <CardContent className="p-6">
               <div className="flex items-center">
-                <Users className="h-8 w-8 text-blue-500" />
+                <Users className="h-8 w-8 text-blue-400" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Пользователи</p>
-                  <p className="text-2xl font-bold text-gray-900">{users.length}</p>
+                  <p className="text-sm font-medium text-slate-300">Пользователи</p>
+                  <p className="text-2xl font-bold text-white">{users.length}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-slate-800 border-slate-700">
             <CardContent className="p-6">
               <div className="flex items-center">
-                <Eye className="h-8 w-8 text-yellow-500" />
+                <Eye className="h-8 w-8 text-yellow-400" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">На модерации</p>
-                  <p className="text-2xl font-bold text-gray-900">{pendingProducts.length}</p>
+                  <p className="text-sm font-medium text-slate-300">На модерации</p>
+                  <p className="text-2xl font-bold text-white">{pendingProducts.length}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-slate-800 border-slate-700">
             <CardContent className="p-6">
               <div className="flex items-center">
-                <MessageSquare className="h-8 w-8 text-green-500" />
+                <MessageSquare className="h-8 w-8 text-green-400" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Сообщения</p>
-                  <p className="text-2xl font-bold text-gray-900">{pendingMessages.length}</p>
+                  <p className="text-sm font-medium text-slate-300">Сообщения</p>
+                  <p className="text-2xl font-bold text-white">{pendingMessages.length}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-slate-800 border-slate-700">
             <CardContent className="p-6">
               <div className="flex items-center">
-                <BarChart3 className="h-8 w-8 text-purple-500" />
+                <BarChart3 className="h-8 w-8 text-purple-400" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">Всего товаров</p>
-                  <p className="text-2xl font-bold text-gray-900">-</p>
+                  <p className="text-sm font-medium text-slate-300">Всего товаров</p>
+                  <p className="text-2xl font-bold text-white">-</p>
                 </div>
               </div>
             </CardContent>
@@ -292,28 +292,28 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="users">Пользователи</TabsTrigger>
-            <TabsTrigger value="moderation">Модерация</TabsTrigger>
-            <TabsTrigger value="messages">Сообщения</TabsTrigger>
-            <TabsTrigger value="analytics">Аналитика</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 bg-slate-800 border-slate-700">
+            <TabsTrigger value="users" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-slate-300">Пользователи</TabsTrigger>
+            <TabsTrigger value="moderation" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-slate-300">Модерация</TabsTrigger>
+            <TabsTrigger value="messages" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-slate-300">Сообщения</TabsTrigger>
+            <TabsTrigger value="analytics" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-slate-300">Аналитика</TabsTrigger>
           </TabsList>
 
           {/* Users Management */}
           <TabsContent value="users">
-            <Card>
+            <Card className="bg-slate-800 border-slate-700">
               <CardHeader>
-                <CardTitle>Управление пользователями</CardTitle>
+                <CardTitle className="text-white">Управление пользователями</CardTitle>
               </CardHeader>
               <CardContent>
                 {usersLoading ? (
                   <div className="space-y-4">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <div key={i} className="flex items-center space-x-4 animate-pulse">
-                        <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                        <div className="w-10 h-10 bg-slate-700 rounded-full"></div>
                         <div className="flex-1 space-y-2">
-                          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                          <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+                          <div className="h-4 bg-slate-700 rounded w-1/4"></div>
+                          <div className="h-3 bg-slate-700 rounded w-1/3"></div>
                         </div>
                       </div>
                     ))}
@@ -321,29 +321,29 @@ export default function Admin() {
                 ) : (
                   <Table>
                     <TableHeader>
-                      <TableRow>
-                        <TableHead>Пользователь</TableHead>
-                        <TableHead>Роль</TableHead>
-                        <TableHead>Статус</TableHead>
-                        <TableHead>Действия</TableHead>
+                      <TableRow className="border-slate-700">
+                        <TableHead className="text-slate-300">Пользователь</TableHead>
+                        <TableHead className="text-slate-300">Роль</TableHead>
+                        <TableHead className="text-slate-300">Статус</TableHead>
+                        <TableHead className="text-slate-300">Действия</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {users.map((userData: any) => (
-                        <TableRow key={userData.id}>
+                        <TableRow key={userData.id} className="border-slate-700">
                           <TableCell>
                             <div className="flex items-center space-x-3">
                               <Avatar className="h-8 w-8">
                                 <AvatarImage src={userData.profileImageUrl} />
-                                <AvatarFallback>
+                                <AvatarFallback className="bg-slate-700 text-white">
                                   {getUserInitials(userData.firstName, userData.lastName)}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <p className="text-sm font-medium">
+                                <p className="text-sm font-medium text-white">
                                   {userData.firstName} {userData.lastName}
                                 </p>
-                                <p className="text-sm text-gray-500">{userData.email}</p>
+                                <p className="text-sm text-slate-400">{userData.email}</p>
                               </div>
                             </div>
                           </TableCell>
@@ -355,20 +355,20 @@ export default function Admin() {
                               }
                               disabled={userData.id === user?.id}
                             >
-                              <SelectTrigger className="w-32">
+                              <SelectTrigger className="w-32 bg-slate-700 border-slate-600 text-white">
                                 <SelectValue />
                               </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="user">Пользователь</SelectItem>
-                                <SelectItem value="moderator">Модератор</SelectItem>
+                              <SelectContent className="bg-slate-700 border-slate-600">
+                                <SelectItem value="user" className="text-white hover:bg-slate-600">Пользователь</SelectItem>
+                                <SelectItem value="moderator" className="text-white hover:bg-slate-600">Модератор</SelectItem>
                                 {user?.role === "admin" && (
-                                  <SelectItem value="admin">Администратор</SelectItem>
+                                  <SelectItem value="admin" className="text-white hover:bg-slate-600">Администратор</SelectItem>
                                 )}
                               </SelectContent>
                             </Select>
                           </TableCell>
                           <TableCell>
-                            <Badge className={userData.isBanned ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}>
+                            <Badge className={userData.isBanned ? "bg-red-600 text-white" : "bg-green-600 text-white"}>
                               {userData.isBanned ? "Заблокирован" : "Активен"}
                             </Badge>
                           </TableCell>
@@ -376,7 +376,7 @@ export default function Admin() {
                             <div className="flex space-x-2">
                               {userData.id !== user?.id && (
                                 <>
-                                  <Button variant="outline" size="sm">
+                                  <Button variant="outline" size="sm" className="border-slate-600 text-slate-300 hover:bg-slate-700">
                                     <Edit className="h-4 w-4" />
                                   </Button>
                                   {userData.isBanned ? (
@@ -385,7 +385,7 @@ export default function Admin() {
                                       size="sm"
                                       onClick={() => unbanUserMutation.mutate(userData.id)}
                                       disabled={unbanUserMutation.isPending}
-                                      className="text-green-600 hover:text-green-700"
+                                      className="text-green-400 hover:text-green-300 border-slate-600 hover:bg-slate-700"
                                     >
                                       <CheckCircle className="h-4 w-4" />
                                     </Button>
@@ -395,7 +395,7 @@ export default function Admin() {
                                       size="sm"
                                       onClick={() => handleBanUser(userData.id)}
                                       disabled={banUserMutation.isPending}
-                                      className="text-red-600 hover:text-red-700"
+                                      className="text-red-400 hover:text-red-300 border-slate-600 hover:bg-slate-700"
                                     >
                                       <Ban className="h-4 w-4" />
                                     </Button>
@@ -415,37 +415,37 @@ export default function Admin() {
 
           {/* Product Moderation */}
           <TabsContent value="moderation">
-            <Card>
+            <Card className="bg-slate-800 border-slate-700">
               <CardHeader>
-                <CardTitle>Модерация объявлений</CardTitle>
+                <CardTitle className="text-white">Модерация объявлений</CardTitle>
               </CardHeader>
               <CardContent>
                 {productsLoading ? (
                   <div className="space-y-4">
                     {Array.from({ length: 3 }).map((_, i) => (
-                      <div key={i} className="flex items-center space-x-4 p-4 border rounded-lg animate-pulse">
-                        <div className="w-16 h-16 bg-gray-200 rounded-lg"></div>
+                      <div key={i} className="flex items-center space-x-4 p-4 border border-slate-700 rounded-lg animate-pulse">
+                        <div className="w-16 h-16 bg-slate-700 rounded-lg"></div>
                         <div className="flex-1 space-y-2">
-                          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                          <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+                          <div className="h-4 bg-slate-700 rounded w-1/4"></div>
+                          <div className="h-3 bg-slate-700 rounded w-1/3"></div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : pendingProducts.length === 0 ? (
                   <div className="text-center py-12">
-                    <Eye className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <Eye className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+                    <h3 className="text-lg font-semibold text-white mb-2">
                       Нет объявлений на модерации
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-slate-300">
                       Все объявления прошли проверку
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {pendingProducts.map((product: any) => (
-                      <div key={product.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                      <div key={product.id} className="flex items-center justify-between p-4 border border-slate-700 rounded-lg bg-slate-700/50">
                         <div className="flex items-center space-x-4">
                           <img
                             src={product.images?.[0] || "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=60&h=60"}
@@ -453,14 +453,14 @@ export default function Admin() {
                             className="w-16 h-16 rounded-lg object-cover"
                           />
                           <div>
-                            <h4 className="font-medium text-gray-900">{product.title}</h4>
-                            <p className="text-sm text-gray-600">
+                            <h4 className="font-medium text-white">{product.title}</h4>
+                            <p className="text-sm text-slate-300">
                               Автор: {product.user?.firstName} {product.user?.lastName}
                             </p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-slate-400">
                               Категория: {product.category?.displayName}
                             </p>
-                            <p className="text-sm font-medium text-gray-900">
+                            <p className="text-sm font-medium text-white">
                               {new Intl.NumberFormat("ru-RU", {
                                 style: "currency",
                                 currency: "RUB",
@@ -482,7 +482,7 @@ export default function Admin() {
                           <Button
                             onClick={() => handleRejectProduct(product.id)}
                             disabled={updateProductStatusMutation.isPending}
-                            variant="destructive"
+                            className="bg-red-600 hover:bg-red-700"
                             size="sm"
                           >
                             <XCircle className="h-4 w-4 mr-1" />
@@ -499,56 +499,57 @@ export default function Admin() {
 
           {/* Message Moderation */}
           <TabsContent value="messages">
-            <Card>
+            <Card className="bg-slate-800 border-slate-700">
               <CardHeader>
-                <CardTitle>Модерация сообщений</CardTitle>
+                <CardTitle className="text-white">Модерация сообщений</CardTitle>
               </CardHeader>
               <CardContent>
                 {messagesLoading ? (
                   <div className="space-y-4">
                     {Array.from({ length: 3 }).map((_, i) => (
-                      <div key={i} className="p-4 border rounded-lg animate-pulse">
+                      <div key={i} className="p-4 border border-slate-700 rounded-lg animate-pulse">
                         <div className="flex items-center space-x-3 mb-2">
-                          <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
-                          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                          <div className="w-8 h-8 bg-slate-700 rounded-full"></div>
+                          <div className="h-4 bg-slate-700 rounded w-1/4"></div>
                         </div>
-                        <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                        <div className="h-3 bg-slate-700 rounded w-3/4"></div>
                       </div>
                     ))}
                   </div>
                 ) : pendingMessages.length === 0 ? (
                   <div className="text-center py-12">
-                    <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <MessageSquare className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+                    <h3 className="text-lg font-semibold text-white mb-2">
                       Нет сообщений на модерации
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-slate-300">
                       Все сообщения прошли проверку
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {pendingMessages.map((message: any) => (
-                      <div key={message.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                      <div key={message.id} className="flex items-center justify-between p-4 border border-slate-700 rounded-lg bg-slate-700/50">
                         <div className="flex-1">
                           <div className="flex items-center space-x-3 mb-2">
                             <Avatar className="h-8 w-8">
-                              <AvatarFallback>
+                              <AvatarFallback className="bg-slate-600 text-white">
                                 {getUserInitials(message.sender?.firstName, message.sender?.lastName)}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="font-medium">
+                            <span className="font-medium text-white">
                               {message.sender?.firstName} {message.sender?.lastName}
                             </span>
-                            <span className="text-sm text-gray-500">
+                            <span className="text-sm text-slate-400">
                               {new Date(message.createdAt).toLocaleString("ru-RU")}
                             </span>
                           </div>
-                          <p className="text-gray-900">{message.content}</p>
+                          <p className="text-slate-200">{message.content}</p>
                         </div>
                         <Button
                           onClick={() => moderateMessageMutation.mutate(message.id)}
                           disabled={moderateMessageMutation.isPending}
+                          className="bg-blue-600 hover:bg-blue-700"
                           size="sm"
                         >
                           <CheckCircle className="h-4 w-4 mr-1" />
@@ -564,17 +565,17 @@ export default function Admin() {
 
           {/* Analytics */}
           <TabsContent value="analytics">
-            <Card>
+            <Card className="bg-slate-800 border-slate-700">
               <CardHeader>
-                <CardTitle>Аналитика</CardTitle>
+                <CardTitle className="text-white">Аналитика</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-center py-12">
-                  <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <BarChart3 className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+                  <h3 className="text-lg font-semibold text-white mb-2">
                     Аналитика в разработке
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-slate-300">
                     Статистика и аналитика будут доступны в ближайшем обновлении
                   </p>
                 </div>

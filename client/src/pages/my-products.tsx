@@ -45,12 +45,12 @@ export default function MyProducts() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-slate-900">
         <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Доступ ограничен</h1>
-          <p className="text-gray-600 mb-6">Войдите в систему для просмотра ваших товаров</p>
-          <Button onClick={() => window.location.href = "/login"}>
+          <h1 className="text-2xl font-bold text-white mb-4">Доступ ограничен</h1>
+          <p className="text-slate-300 mb-6">Войдите в систему для просмотра ваших товаров</p>
+          <Button onClick={() => window.location.href = "/login"} className="bg-blue-600 hover:bg-blue-700">
             Войти
           </Button>
         </div>
@@ -61,11 +61,11 @@ export default function MyProducts() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "pending": return "bg-yellow-100 text-yellow-800";
-      case "approved": return "bg-green-100 text-green-800";
-      case "rejected": return "bg-red-100 text-red-800";
-      case "sold": return "bg-blue-100 text-blue-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "pending": return "bg-yellow-600 text-white";
+      case "approved": return "bg-green-600 text-white";
+      case "rejected": return "bg-red-600 text-white";
+      case "sold": return "bg-blue-600 text-white";
+      default: return "bg-slate-600 text-white";
     }
   };
 
@@ -98,7 +98,7 @@ export default function MyProducts() {
   const rejectedProducts = filterProductsByStatus("rejected");
 
   const ProductCard = ({ product }: { product: any }) => (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden bg-slate-800 border-slate-700">
       <div className="relative">
         <img 
           src={product.images?.[0] || "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200"}
@@ -111,29 +111,29 @@ export default function MyProducts() {
       </div>
       
       <CardContent className="p-4">
-        <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1">
+        <h3 className="font-semibold text-white mb-1 line-clamp-1">
           {product.title}
         </h3>
-        <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+        <p className="text-sm text-slate-300 mb-2 line-clamp-2">
           {product.description}
         </p>
-        <p className="text-lg font-bold text-gray-900 mb-3">
+        <p className="text-lg font-bold text-white mb-3">
           {formatPrice(product.price)}
         </p>
         
         <div className="flex space-x-2">
-          <Button variant="outline" size="sm" className="flex-1">
+          <Button variant="outline" size="sm" className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700">
             <Eye className="h-4 w-4 mr-1" />
             Просмотр
           </Button>
-          <Button variant="outline" size="sm" className="flex-1">
+          <Button variant="outline" size="sm" className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700">
             <Edit className="h-4 w-4 mr-1" />
             Редактировать
           </Button>
           <Button 
             variant="outline" 
             size="sm" 
-            className="text-red-600 hover:text-red-700"
+            className="text-red-400 hover:text-red-300 border-slate-600 hover:bg-slate-700"
             onClick={() => deleteProductMutation.mutate(product.id)}
             disabled={deleteProductMutation.isPending}
           >
@@ -142,8 +142,8 @@ export default function MyProducts() {
         </div>
 
         {product.status === "rejected" && product.moderatorNote && (
-          <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-800">
+          <div className="mt-3 p-2 bg-red-900/50 border border-red-700 rounded-lg">
+            <p className="text-sm text-red-200">
               <strong>Причина отклонения:</strong> {product.moderatorNote}
             </p>
           </div>
@@ -153,33 +153,33 @@ export default function MyProducts() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-900">
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Мои товары</h1>
-            <p className="text-gray-600">Управляйте вашими объявлениями</p>
+            <h1 className="text-3xl font-bold text-white">Мои товары</h1>
+            <p className="text-slate-300">Управляйте вашими объявлениями</p>
           </div>
-          <Button onClick={() => setShowCreateListing(true)}>
+          <Button onClick={() => setShowCreateListing(true)} className="bg-blue-600 hover:bg-blue-700">
             <Plus className="h-4 w-4 mr-2" />
             Добавить товар
           </Button>
         </div>
 
         <Tabs defaultValue="all" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="all">
+          <TabsList className="grid w-full grid-cols-4 bg-slate-800 border-slate-700">
+            <TabsTrigger value="all" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-slate-300">
               Все ({products.length})
             </TabsTrigger>
-            <TabsTrigger value="pending">
+            <TabsTrigger value="pending" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-slate-300">
               На модерации ({pendingProducts.length})
             </TabsTrigger>
-            <TabsTrigger value="approved">
+            <TabsTrigger value="approved" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-slate-300">
               Одобренные ({approvedProducts.length})
             </TabsTrigger>
-            <TabsTrigger value="rejected">
+            <TabsTrigger value="rejected" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-slate-300">
               Отклоненные ({rejectedProducts.length})
             </TabsTrigger>
           </TabsList>
@@ -188,24 +188,24 @@ export default function MyProducts() {
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
-                    <div className="bg-gray-200 rounded-lg h-32 mb-4"></div>
-                    <div className="bg-gray-200 rounded h-4 mb-2"></div>
-                    <div className="bg-gray-200 rounded h-3 mb-4"></div>
-                    <div className="bg-gray-200 rounded h-6"></div>
+                  <div key={i} className="bg-slate-800 border border-slate-700 rounded-xl shadow-sm p-4 animate-pulse">
+                    <div className="bg-slate-700 rounded-lg h-32 mb-4"></div>
+                    <div className="bg-slate-700 rounded h-4 mb-2"></div>
+                    <div className="bg-slate-700 rounded h-3 mb-4"></div>
+                    <div className="bg-slate-700 rounded h-6"></div>
                   </div>
                 ))}
               </div>
             ) : products.length === 0 ? (
               <div className="text-center py-16">
-                <Plus className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                <Plus className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">
                   У вас еще нет товаров
                 </h3>
-                <p className="text-gray-600 mb-6">
+                <p className="text-slate-300 mb-6">
                   Создайте ваше первое объявление
                 </p>
-                <Button onClick={() => setShowCreateListing(true)}>
+                <Button onClick={() => setShowCreateListing(true)} className="bg-blue-600 hover:bg-blue-700">
                   Создать первое объявление
                 </Button>
               </div>
@@ -221,13 +221,13 @@ export default function MyProducts() {
           <TabsContent value="pending">
             {pendingProducts.length === 0 ? (
               <div className="text-center py-16">
-                <div className="inline-flex p-4 rounded-full bg-yellow-100 mb-4">
-                  <Eye className="h-8 w-8 text-yellow-600" />
+                <div className="inline-flex p-4 rounded-full bg-yellow-600/20 mb-4">
+                  <Eye className="h-8 w-8 text-yellow-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                <h3 className="text-xl font-semibold text-white mb-2">
                   Нет товаров на модерации
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-slate-300">
                   Все ваши товары прошли модерацию
                 </p>
               </div>
@@ -243,13 +243,13 @@ export default function MyProducts() {
           <TabsContent value="approved">
             {approvedProducts.length === 0 ? (
               <div className="text-center py-16">
-                <div className="inline-flex p-4 rounded-full bg-green-100 mb-4">
-                  <Eye className="h-8 w-8 text-green-600" />
+                <div className="inline-flex p-4 rounded-full bg-green-600/20 mb-4">
+                  <Eye className="h-8 w-8 text-green-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                <h3 className="text-xl font-semibold text-white mb-2">
                   Нет одобренных товаров
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-slate-300">
                   Ваши товары еще не прошли модерацию
                 </p>
               </div>
@@ -265,13 +265,13 @@ export default function MyProducts() {
           <TabsContent value="rejected">
             {rejectedProducts.length === 0 ? (
               <div className="text-center py-16">
-                <div className="inline-flex p-4 rounded-full bg-red-100 mb-4">
-                  <Eye className="h-8 w-8 text-red-600" />
+                <div className="inline-flex p-4 rounded-full bg-red-600/20 mb-4">
+                  <Eye className="h-8 w-8 text-red-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                <h3 className="text-xl font-semibold text-white mb-2">
                   Нет отклоненных товаров
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-slate-300">
                   Все ваши товары соответствуют правилам
                 </p>
               </div>

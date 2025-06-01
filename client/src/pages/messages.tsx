@@ -126,13 +126,13 @@ export default function Messages() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-slate-900">
         <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <MessageCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Доступ ограничен</h1>
-          <p className="text-gray-600 mb-6">Войдите в систему для просмотра сообщений</p>
-          <Button onClick={() => window.location.href = "/login"}>
+          <MessageCircle className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-white mb-4">Доступ ограничен</h1>
+          <p className="text-slate-300 mb-6">Войдите в систему для просмотра сообщений</p>
+          <Button onClick={() => window.location.href = "/login"} className="bg-blue-600 hover:bg-blue-700">
             Войти
           </Button>
         </div>
@@ -142,27 +142,27 @@ export default function Messages() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-900">
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-4">
-            <MessageCircle className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-gray-900">Диалоги</h1>
+            <MessageCircle className="h-8 w-8 text-blue-400" />
+            <h1 className="text-3xl font-bold text-white">Диалоги</h1>
           </div>
-          <p className="text-gray-600">
+          <p className="text-slate-300">
             Общайтесь с продавцами и покупателями
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
           {/* Conversations List */}
-          <Card className="lg:col-span-1">
+          <Card className="lg:col-span-1 bg-slate-800 border-slate-700">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Диалоги</h2>
-                <Button size="sm" variant="ghost">
+                <h2 className="text-lg font-semibold text-white">Диалоги</h2>
+                <Button size="sm" variant="ghost" className="text-slate-300 hover:text-white hover:bg-slate-700">
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
@@ -173,19 +173,19 @@ export default function Messages() {
                   <div className="p-4 space-y-4">
                     {Array.from({ length: 3 }).map((_, i) => (
                       <div key={i} className="flex items-center space-x-3 animate-pulse">
-                        <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                        <div className="w-10 h-10 bg-slate-700 rounded-full"></div>
                         <div className="flex-1 space-y-2">
-                          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                          <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                          <div className="h-4 bg-slate-700 rounded w-3/4"></div>
+                          <div className="h-3 bg-slate-700 rounded w-1/2"></div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : conversations.length === 0 ? (
                   <div className="p-6 text-center">
-                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-500 text-sm">Нет диалогов</p>
-                    <p className="text-gray-400 text-xs mt-1">
+                    <Users className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+                    <p className="text-slate-300 text-sm">Нет диалогов</p>
+                    <p className="text-slate-400 text-xs mt-1">
                       Начните общение с продавцами
                     </p>
                   </div>
@@ -198,32 +198,32 @@ export default function Messages() {
                       <div
                         key={conversation.id}
                         onClick={() => setSelectedConversation(conversation.id)}
-                        className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
-                          isSelected ? "bg-primary/5 border-r-2 border-r-primary" : ""
+                        className={`p-4 border-b border-slate-700 hover:bg-slate-700 cursor-pointer transition-colors ${
+                          isSelected ? "bg-blue-900/20 border-r-2 border-r-blue-400" : ""
                         }`}
                       >
                         <div className="flex items-center space-x-3">
                           <Avatar className="h-10 w-10">
                             <AvatarImage src={otherUser.profileImageUrl} />
-                            <AvatarFallback>
+                            <AvatarFallback className="bg-slate-600 text-white">
                               {getUserInitials(otherUser.firstName, otherUser.lastName)}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
-                              <p className="text-sm font-medium text-gray-900 truncate">
+                              <p className="text-sm font-medium text-white truncate">
                                 {otherUser.firstName} {otherUser.lastName}
                               </p>
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-slate-400">
                                 {formatTime(conversation.updatedAt)}
                               </span>
                             </div>
-                            <p className="text-sm text-gray-600 truncate">
+                            <p className="text-sm text-slate-300 truncate">
                               {conversation.lastMessage || "Начните диалог"}
                             </p>
                           </div>
                           {conversation.unreadCount > 0 && (
-                            <div className="w-2 h-2 bg-primary rounded-full"></div>
+                            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
                           )}
                         </div>
                       </div>
@@ -235,10 +235,10 @@ export default function Messages() {
           </Card>
 
           {/* Messages Area */}
-          <Card className="lg:col-span-2">
+          <Card className="lg:col-span-2 bg-slate-800 border-slate-700">
             {selectedConversation ? (
               <>
-                <CardHeader className="pb-3 border-b border-gray-200">
+                <CardHeader className="pb-3 border-b border-slate-700">
                   {(() => {
                     const conversation = conversations.find((c: any) => c.id === selectedConversation);
                     if (!conversation) return null;
@@ -248,15 +248,15 @@ export default function Messages() {
                       <div className="flex items-center space-x-3">
                         <Avatar className="h-10 w-10">
                           <AvatarImage src={otherUser.profileImageUrl} />
-                          <AvatarFallback>
+                          <AvatarFallback className="bg-slate-600 text-white">
                             {getUserInitials(otherUser.firstName, otherUser.lastName)}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <h3 className="text-lg font-semibold">
+                          <h3 className="text-lg font-semibold text-white">
                             {otherUser.firstName} {otherUser.lastName}
                           </h3>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-slate-400">
                             {conversation.product && `По товару: ${conversation.product.title}`}
                           </p>
                         </div>
@@ -271,19 +271,19 @@ export default function Messages() {
                       <div className="space-y-4">
                         {Array.from({ length: 3 }).map((_, i) => (
                           <div key={i} className="flex space-x-3 animate-pulse">
-                            <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                            <div className="w-8 h-8 bg-slate-700 rounded-full"></div>
                             <div className="flex-1 space-y-2">
-                              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                              <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                              <div className="h-4 bg-slate-700 rounded w-3/4"></div>
+                              <div className="h-3 bg-slate-700 rounded w-1/4"></div>
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : messages.length === 0 ? (
                       <div className="text-center py-12">
-                        <MessageCircle className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                        <p className="text-gray-500">Нет сообщений</p>
-                        <p className="text-gray-400 text-sm mt-1">
+                        <MessageCircle className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+                        <p className="text-slate-300">Нет сообщений</p>
+                        <p className="text-slate-400 text-sm mt-1">
                           Начните диалог с сообщения
                         </p>
                       </div>
@@ -299,12 +299,12 @@ export default function Messages() {
                             >
                               <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                                 isOwn 
-                                  ? "bg-primary text-white" 
-                                  : "bg-gray-100 text-gray-900"
+                                  ? "bg-blue-600 text-white" 
+                                  : "bg-slate-700 text-slate-100"
                               }`}>
                                 <p className="text-sm">{message.content}</p>
                                 <p className={`text-xs mt-1 ${
-                                  isOwn ? "text-primary-foreground/70" : "text-gray-500"
+                                  isOwn ? "text-blue-100" : "text-slate-400"
                                 }`}>
                                   {formatTime(message.createdAt)}
                                 </p>
@@ -317,19 +317,20 @@ export default function Messages() {
                   </ScrollArea>
                   
                   {/* Message Input */}
-                  <div className="border-t border-gray-200 p-4">
+                  <div className="border-t border-slate-700 p-4">
                     <form onSubmit={handleSendMessage} className="flex space-x-2">
                       <Input
                         value={messageText}
                         onChange={(e) => setMessageText(e.target.value)}
                         placeholder="Введите сообщение..."
-                        className="flex-1"
+                        className="flex-1 bg-slate-700 border-slate-600 text-white placeholder:text-slate-400"
                         disabled={sendMessageMutation.isPending}
                       />
                       <Button 
                         type="submit" 
                         disabled={!messageText.trim() || sendMessageMutation.isPending}
                         size="sm"
+                        className="bg-blue-600 hover:bg-blue-700"
                       >
                         <Send className="h-4 w-4" />
                       </Button>
@@ -341,11 +342,11 @@ export default function Messages() {
               <CardContent className="p-0">
                 <div className="flex items-center justify-center h-[500px]">
                   <div className="text-center">
-                    <MessageCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <MessageCircle className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-white mb-2">
                       Выберите диалог
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-slate-300">
                       Выберите диалог из списка для просмотра сообщений
                     </p>
                   </div>

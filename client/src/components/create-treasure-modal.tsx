@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Gem, Star, Crown, Sparkles, Scroll, Shield, Loader2 } from "lucide-react";
+import { Gem, Star, Crown, Sparkles, Scroll, Shield, Loader2, Package, MessageCircle, Users, Phone } from "lucide-react";
 
 const createTreasureSchema = z.object({
   title: z.string().min(1, "Название обязательно"),

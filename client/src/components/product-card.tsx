@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Heart, MessageCircle, Copy, Phone, Star, Eye } from "lucide-react";
+import { Heart, MessageCircle, Copy, Phone, Star, Eye, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { ProductWithDetails } from "@/lib/types";
 
@@ -20,6 +20,7 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
   const queryClient = useQueryClient();
   const [isFavorite, setIsFavorite] = useState(product.isFavorite || false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   const toggleFavoriteMutation = useMutation({
     mutationFn: async () => {
@@ -148,33 +149,31 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
   const contacts = metadata.contacts || {};
 
   return (
-    <Card className="group overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 bg-gradient-to-br from-white to-gray-50 border-0 shadow-lg h-80">
-      <div className="flex h-full">
-        {/* Левая часть - изображение */}
-        <div className="relative w-2/5 overflow-hidden">
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent z-10" />
+    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-white border border-gray-200 rounded-xl">
+      {/* Основная карточка - компактный вид */}
+      <div className="relative">
+        {/* Изображение */}
+        <div className="relative h-48 overflow-hidden rounded-t-xl">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-10" />
           
-          {/* Image with loading effect */}
-          <div className="relative h-full bg-gray-200 overflow-hidden">
-            {!imageLoaded && (
-              <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-shimmer" />
-            )}
-            <img 
-              src={imageUrl} 
-              alt={product.title}
-              className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${
-                imageLoaded ? 'opacity-100' : 'opacity-0'
-              }`}
-              onLoad={() => setImageLoaded(true)}
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = defaultImage;
-                setImageLoaded(true);
-              }}
-            />
-          </div>
+          {!imageLoaded && (
+            <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 animate-shimmer" />
+          )}
           
-          {/* Floating favorite button */}
+          <img 
+            src={imageUrl} 
+            alt={product.title}
+            className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            onLoad={() => setImageLoaded(true)}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = defaultImage;
+              setImageLoaded(true);
+            }}
+          />
+          
+          {/* Кнопка избранного */}
           <div className="absolute top-3 right-3 z-20">
             <Button
               variant="ghost"
@@ -188,14 +187,21 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
               <Heart className={`h-4 w-4 ${isFavorite ? "fill-current" : ""} transition-all duration-200`} />
             </Button>
           </div>
+          
+          {/* Цена */}
+          <div className="absolute bottom-3 left-3 z-20">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg">
+              {formatPrice(product.price)}
+            </div>
+          </div>
         </div>
         
-        {/* Правая часть - контент */}
-        <div className="w-3/5 flex flex-col">
-          <CardContent className="p-4 flex-1 flex flex-col justify-between">
+        {/* Контент */}
+        <CardContent className="p-4">
+          <div className="space-y-3">
+            {/* Заголовок и категория */}
             <div className="space-y-2">
-              {/* Header with badge and price */}
-              <div className="flex items-start justify-between">
+              <div className="flex items-center justify-between">
                 <Badge className={`text-xs font-semibold px-2 py-1 rounded-full ${
                   product.category?.color === 'blue' ? 'bg-blue-500 text-white' :
                   product.category?.color === 'green' ? 'bg-green-500 text-white' :
@@ -205,71 +211,105 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
                 }`}>
                   {product.category?.displayName}
                 </Badge>
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-2 py-1 rounded-full text-xs font-bold">
-                  {formatPrice(product.price)}
-                </div>
               </div>
               
-              <h3 className="font-bold text-base text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors duration-200">
+              <h3 className="font-bold text-lg text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors duration-200">
                 {product.title}
               </h3>
+            </div>
+            
+            {/* Сервер */}
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <Eye className="h-4 w-4" />
+              <span className="font-medium">{product.server?.displayName}</span>
+            </div>
+            
+            {/* Кнопки действий */}
+            <div className="flex space-x-2">
+              <Button 
+                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-2 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl" 
+                onClick={handleContactSeller}
+              >
+                <MessageCircle className="h-4 w-4 mr-2" />
+                Написать
+              </Button>
               
-              {/* Car specific info - compact version */}
+              <Button 
+                variant="outline"
+                className="px-4 py-2 border-gray-300 hover:bg-gray-50 transition-all duration-200"
+                onClick={() => setShowDetails(!showDetails)}
+              >
+                {showDetails ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </div>
+      
+      {/* Детальная информация - раскрывающаяся секция */}
+      {showDetails && (
+        <div className="border-t border-gray-200 bg-gray-50">
+          <CardContent className="p-4">
+            <div className="space-y-4">
+              {/* Описание */}
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-2">Описание</h4>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {product.description}
+                </p>
+              </div>
+              
+              {/* Характеристики автомобиля */}
               {product.categoryId === 1 && metadata && (
-                <div className="space-y-1 text-xs text-gray-600">
-                  {metadata.category && (
-                    <div className="flex items-center space-x-1">
-                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
-                      <span>{getCategoryLabel(metadata.category)}</span>
-                    </div>
-                  )}
-                  {metadata.maxSpeed && (
-                    <div className="flex items-center space-x-1">
-                      <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                      <span>{metadata.maxSpeed} км/ч</span>
-                    </div>
-                  )}
-                  {metadata.tuning && (
-                    <div className="flex items-center space-x-1">
-                      <div className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
-                      <span>{getTuningLabel(metadata.tuning)}</span>
-                    </div>
-                  )}
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Характеристики</h4>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    {metadata.category && (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full" />
+                        <span className="text-gray-600">Категория:</span>
+                        <span className="font-medium">{getCategoryLabel(metadata.category)}</span>
+                      </div>
+                    )}
+                    {metadata.maxSpeed && (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full" />
+                        <span className="text-gray-600">Макс. скорость:</span>
+                        <span className="font-medium">{metadata.maxSpeed} км/ч</span>
+                      </div>
+                    )}
+                    {metadata.tuning && (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full" />
+                        <span className="text-gray-600">Тюнинг:</span>
+                        <span className="font-medium">{getTuningLabel(metadata.tuning)}</span>
+                      </div>
+                    )}
+                    {metadata.acceleration && (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full" />
+                        <span className="text-gray-600">Разгон:</span>
+                        <span className="font-medium">{metadata.acceleration}с</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
               
-              <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
-                {product.description}
-              </p>
-            </div>
-            
-            {/* Bottom section */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs text-gray-500 border-t border-gray-100 pt-2">
-                <div className="flex items-center space-x-1">
-                  <Eye className="h-3 w-3" />
-                  <span>{product.server?.displayName}</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-2.5 w-2.5 text-yellow-400 fill-current" />
-                  ))}
-                </div>
-              </div>
-              
-              {/* Contact info - compact */}
+              {/* Контактная информация */}
               {product.categoryId === 1 && contacts && Object.keys(contacts).some(key => contacts[key]) && (
-                <div className="space-y-1">
-                  <div className="flex flex-wrap gap-1">
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">Контакты продавца</h4>
+                  <div className="flex flex-wrap gap-2">
                     {contacts.discord && (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => copyToClipboard(contacts.discord, 'Discord')}
-                        className="text-xs h-6 px-2 bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100"
+                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100"
                       >
-                        <Copy className="h-2.5 w-2.5 mr-1" />
-                        Discord
+                        <Copy className="h-3 w-3 mr-1" />
+                        Discord: {contacts.discord}
                       </Button>
                     )}
                     {contacts.telegram && (
@@ -277,9 +317,9 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
                         variant="outline"
                         size="sm"
                         onClick={() => openTelegram(contacts.telegram)}
-                        className="text-xs h-6 px-2 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                        className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
                       >
-                        TG
+                        Telegram: {contacts.telegram}
                       </Button>
                     )}
                     {contacts.phone && (
@@ -287,27 +327,30 @@ export default function ProductCard({ product, onContact }: ProductCardProps) {
                         variant="outline"
                         size="sm"
                         onClick={() => copyToClipboard(contacts.phone, 'Телефон')}
-                        className="text-xs h-6 px-2 bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                        className="bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
                       >
-                        <Phone className="h-2.5 w-2.5 mr-1" />
-                        Тел
+                        <Phone className="h-3 w-3 mr-1" />
+                        {contacts.phone}
                       </Button>
                     )}
                   </div>
                 </div>
               )}
               
-              <Button 
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-1.5 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl text-xs" 
-                onClick={handleContactSeller}
-              >
-                <MessageCircle className="h-3 w-3 mr-1" />
-                Написать
-              </Button>
+              {/* Рейтинг */}
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-2">Рейтинг</h4>
+                <div className="flex items-center space-x-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
+                  ))}
+                  <span className="text-sm text-gray-600 ml-2">(5.0)</span>
+                </div>
+              </div>
             </div>
           </CardContent>
         </div>
-      </div>
+      )}
     </Card>
   );
 }

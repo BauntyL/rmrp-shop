@@ -1,21 +1,16 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { db } from "./db";
+import { users } from "../shared/schema";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // ДОБАВЛЯЕМ HEALTHCHECK ENDPOINT В САМОМ НАЧАЛЕ
-app.get('/', async (req, res) => {
-  try {
-    // Простая проверка подключения к БД
-    await db.select().from(users).limit(1);
-    res.status(200).json({ status: 'OK', message: 'Server is running', database: 'connected' });
-  } catch (error) {
-    // Даже если БД недоступна, сервер должен отвечать
-    res.status(200).json({ status: 'OK', message: 'Server is running', database: 'disconnected' });
-  }
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
 
 app.get('/health', (req, res) => {

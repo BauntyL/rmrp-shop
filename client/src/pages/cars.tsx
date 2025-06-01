@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Plus, Car, Filter } from "lucide-react";
 import type { ProductWithDetails } from "@/lib/types";
+import CreateCarModal from "@/components/create-car-modal";
 
 export default function Cars() {
   const { isAuthenticated } = useAuth();
@@ -193,7 +194,7 @@ export default function Cars() {
       <Footer />
       
       {isCreateModalOpen && (
-        <CreateListingModal 
+        <CreateCarModal 
           open={isCreateModalOpen}
           onOpenChange={(open) => setIsCreateModalOpen(open)}
         />

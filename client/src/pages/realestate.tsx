@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Plus, Home, Filter } from "lucide-react";
 import type { ProductWithDetails } from "@/lib/types";
+import CreateRealEstateModal from "@/components/create-realestate-modal";
 
 export default function RealEstate() {
   const { isAuthenticated } = useAuth();
@@ -193,7 +194,7 @@ export default function RealEstate() {
       <Footer />
       
       {isCreateModalOpen && (
-        <CreateListingModal 
+        <CreateRealEstateModal 
           open={isCreateModalOpen}
           onOpenChange={(open) => setIsCreateModalOpen(open)}
         />

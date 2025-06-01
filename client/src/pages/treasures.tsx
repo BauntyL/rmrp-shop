@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Plus, Gem, Filter } from "lucide-react";
 import type { ProductWithDetails } from "@/lib/types";
+import CreateTreasureModal from "@/components/create-treasure-modal";
 
 export default function Treasures() {
   const { isAuthenticated } = useAuth();
@@ -193,7 +194,7 @@ export default function Treasures() {
       <Footer />
       
       {isCreateModalOpen && (
-        <CreateListingModal 
+        <CreateTreasureModal 
           open={isCreateModalOpen}
           onOpenChange={(open) => setIsCreateModalOpen(open)}
         />

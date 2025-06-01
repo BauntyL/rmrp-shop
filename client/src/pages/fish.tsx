@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Plus, Fish, Filter } from "lucide-react";
 import type { ProductWithDetails } from "@/lib/types";
+import CreateFishModal from "@/components/create-fish-modal";
 
 export default function FishPage() {
   const { isAuthenticated } = useAuth();
@@ -193,7 +194,7 @@ export default function FishPage() {
       <Footer />
       
       {isCreateModalOpen && (
-        <CreateListingModal 
+        <CreateFishModal 
           open={isCreateModalOpen}
           onOpenChange={(open) => setIsCreateModalOpen(open)}
         />

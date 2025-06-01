@@ -13,16 +13,30 @@ import { ArrowRight } from "lucide-react";
 export default function Home() {
   const { isAuthenticated } = useAuth();
   const [showCreateListing, setShowCreateListing] = useState(false);
-
-  const { data: categories = [] } = useQuery({
-    queryKey: ["/api/categories"],
-  });
+  const [categories, setCategories] = useState([]);
 
   const { data: featuredProducts = [] } = useQuery({
     queryKey: ["/api/products"],
   });
 
+  // Перемещаем useEffect ВНУТРЬ компонента
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const response = await fetch('/api/categories');
+        const data = await response.json();
+        console.log('Raw categories from API:', data);
+        setCategories(data);
+      } catch (error) {
+        console.error('Error loading categories:', error);
+      }
+    };
+    loadCategories();
+  }, []);
+
+  // Используем локальное состояние вместо данных из useQuery
   const mainCategories = categories.filter((cat: any) => !cat.parentId);
+  console.log('Filtered main categories:', mainCategories);
 
   const handleCreateListing = () => {
     if (!isAuthenticated) {
@@ -145,20 +159,13 @@ export default function Home() {
   );
 }
 
-// В useEffect где загружаются категории
-useEffect(() => {
-  const loadCategories = async () => {
-    try {
-      const response = await fetch('/api/categories');
-      const data = await response.json();
-      console.log('Raw categories from API:', data); // Добавить эту строку
-      setCategories(data);
-    } catch (error) {
-      console.error('Error loading categories:', error);
-    }
-  };
-  loadCategories();
-}, []);
+// УДАЛЯЕМ этот блок - он должен быть внутри компонента:
+// useEffect(() => {
+//   const loadCategories = async () => {
+//     ...
+//   };
+//   loadCategories();
+// }, []);
 
 // Перед return в компоненте
 const mainCategories = categories.filter(cat => !cat.parentId);

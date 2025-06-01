@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "wouter";
 
 export default function Footer() {
   return (
@@ -15,10 +15,10 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-gray-900 mb-4">Категории</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/category/cars"><a className="text-gray-600 hover:text-primary transition-colors">Автомобили</a></Link></li>
-              <li><Link href="/category/realestate"><a className="text-gray-600 hover:text-primary transition-colors">Недвижимость</a></Link></li>
-              <li><Link href="/category/fish"><a className="text-gray-600 hover:text-primary transition-colors">Рыба</a></Link></li>
-              <li><Link href="/category/treasures"><a className="text-gray-600 hover:text-primary transition-colors">Клады</a></Link></li>
+              <li><Link href="/category/cars" className="text-gray-600 hover:text-primary transition-colors">Автомобили</Link></li>
+              <li><Link href="/category/realestate" className="text-gray-600 hover:text-primary transition-colors">Недвижимость</Link></li>
+              <li><Link href="/category/fish" className="text-gray-600 hover:text-primary transition-colors">Рыба</Link></li>
+              <li><Link href="/category/treasures" className="text-gray-600 hover:text-primary transition-colors">Клады</Link></li>
             </ul>
           </div>
 

@@ -76,24 +76,24 @@
     margin: 1px 2px !important;
   }
   
-  /* Мягкое выделение при наведении */
-  [data-radix-select-content] [data-highlighted],
-  [data-radix-dropdown-menu-content] [data-highlighted],
-  [data-radix-select-item]:hover,
-  [data-radix-dropdown-menu-item]:hover {
-    background-color: hsl(var(--accent)) !important;
-    color: hsl(var(--accent-foreground)) !important;
-    transform: scale(1.02) !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-  }
-  
-  /* Выбранный элемент - тонкая граница */
-  [data-radix-select-item][data-state="checked"],
-  [data-radix-dropdown-menu-item][data-state="checked"] {
-    background-color: hsl(var(--accent)) !important;
-    border-left: 2px solid hsl(var(--primary)) !important;
-    font-weight: 500 !important;
-  }
+    /* Мягкое выделение при наведении */
+    [data-radix-select-content] [data-highlighted],
+    [data-radix-dropdown-menu-content] [data-highlighted],
+    [data-radix-select-item]:hover,
+    [data-radix-dropdown-menu-item]:hover {
+      background-color: rgba(59, 130, 246, 0.1) !important; /* Мягкий синий вместо accent */
+      color: hsl(var(--foreground)) !important; /* Обычный цвет текста */
+      transform: scale(1.02) !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    /* Выбранный элемент - тонкая граница */
+    [data-radix-select-item][data-state="checked"],
+    [data-radix-dropdown-menu-item][data-state="checked"] {
+      background-color: rgba(59, 130, 246, 0.15) !important; /* Мягкий синий вместо accent */
+      border-left: 2px solid hsl(var(--primary)) !important;
+      font-weight: 500 !important;
+    }
   
   /* Плавное появление dropdown */
   [data-radix-select-content],

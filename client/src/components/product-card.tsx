@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Heart, MessageCircle, Copy, Phone, Star, Eye, Info, Send, MessageSquare, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { ProductWithDetails } from "@/lib/types";
+import { Check, X, Settings, AlertTriangle } from "lucide-react";
 
 interface ProductCardProps {
   product: ProductWithDetails;
@@ -26,6 +27,8 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditPriceOpen, setIsEditPriceOpen] = useState(false);
+  const [isEditProductOpen, setIsEditProductOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [newPrice, setNewPrice] = useState(product.price);
 
   // Добавляем определения прав доступа
@@ -330,34 +333,62 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                           <Edit className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Изменить цену</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div>
-                            <Label htmlFor="price">Новая цена (₽)</Label>
-                            <Input
-                              id="price"
-                              type="number"
-                              value={newPrice}
-                              onChange={(e) => setNewPrice(Number(e.target.value))}
-                              min="1"
-                            />
+                      <DialogContent className="sm:max-w-md bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200">
+                        <DialogHeader className="text-center pb-4">
+                          <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
+                            <Edit className="h-8 w-8 text-emerald-600" />
                           </div>
-                          <div className="flex space-x-2">
+                          <DialogTitle className="text-2xl font-bold text-emerald-800">
+                            Изменить цену
+                          </DialogTitle>
+                          <p className="text-emerald-600 mt-2">
+                            Установите новую цену для товара
+                          </p>
+                        </DialogHeader>
+                        <div className="space-y-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="price" className="text-emerald-700 font-semibold">
+                              Новая цена (₽)
+                            </Label>
+                            <div className="relative">
+                              <Input
+                                id="price"
+                                type="number"
+                                value={newPrice}
+                                onChange={(e) => setNewPrice(Number(e.target.value))}
+                                min="1"
+                                className="pl-8 border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400 bg-white"
+                                placeholder="Введите цену"
+                              />
+                              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-emerald-600 font-semibold">
+                                ₽
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex space-x-3">
                             <Button 
                               onClick={handleUpdatePrice}
                               disabled={updatePriceMutation.isPending}
-                              className="flex-1"
+                              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
                             >
-                              {updatePriceMutation.isPending ? "Обновление..." : "Обновить"}
+                              {updatePriceMutation.isPending ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                  Обновление...
+                                </>
+                              ) : (
+                                <>
+                                  <Check className="h-4 w-4 mr-2" />
+                                  Обновить
+                                </>
+                              )}
                             </Button>
                             <Button 
                               variant="outline" 
                               onClick={() => setIsEditPriceOpen(false)}
-                              className="flex-1"
+                              className="flex-1 border-emerald-300 text-emerald-700 hover:bg-emerald-50 font-semibold py-3 rounded-xl transition-all duration-300"
                             >
+                              <X className="h-4 w-4 mr-2" />
                               Отмена
                             </Button>
                           </div>
@@ -367,33 +398,123 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                   )}
                   
                   {canEdit && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-10 h-10 p-0 rounded-full border-2 border-blue-300 bg-blue-50 hover:bg-blue-100 hover:border-blue-400 text-blue-600 hover:text-blue-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
-                      title="Редактировать товар"
-                      onClick={() => {
-                        toast({
-                          title: "Редактирование",
-                          description: "Функция полного редактирования будет добавлена в следующем обновлении",
-                        });
-                      }}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                    <Dialog open={isEditProductOpen} onOpenChange={setIsEditProductOpen}>
+                      <DialogTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-10 h-10 p-0 rounded-full border-2 border-blue-300 bg-blue-50 hover:bg-blue-100 hover:border-blue-400 text-blue-600 hover:text-blue-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                          title="Редактировать товар"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-lg bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+                        <DialogHeader className="text-center pb-4">
+                          <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                            <Edit className="h-8 w-8 text-blue-600" />
+                          </div>
+                          <DialogTitle className="text-2xl font-bold text-blue-800">
+                            Редактировать товар
+                          </DialogTitle>
+                          <p className="text-blue-600 mt-2">
+                            Функция полного редактирования
+                          </p>
+                        </DialogHeader>
+                        <div className="space-y-6">
+                          <div className="bg-blue-100 border border-blue-200 rounded-xl p-6 text-center">
+                            <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center mx-auto mb-3">
+                              <Settings className="h-6 w-6 text-blue-600" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                              В разработке
+                            </h3>
+                            <p className="text-blue-600 text-sm">
+                              Функция полного редактирования товара будет добавлена в следующем обновлении
+                            </p>
+                          </div>
+                          <div className="flex justify-center">
+                            <Button 
+                              onClick={() => setIsEditProductOpen(false)}
+                              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+                            >
+                              <Check className="h-4 w-4 mr-2" />
+                              Понятно
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   )}
                   
                   {canManage && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-10 h-10 p-0 rounded-full border-2 border-red-300 bg-red-50 hover:bg-red-100 hover:border-red-400 text-red-600 hover:text-red-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
-                      title="Удалить товар"
-                      onClick={handleDeleteProduct}
-                      disabled={deleteProductMutation.isPending}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <Dialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+                      <DialogTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-10 h-10 p-0 rounded-full border-2 border-red-300 bg-red-50 hover:bg-red-100 hover:border-red-400 text-red-600 hover:text-red-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                          title="Удалить товар"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md bg-gradient-to-br from-red-50 to-pink-50 border-red-200">
+                        <DialogHeader className="text-center pb-4">
+                          <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                            <Trash2 className="h-8 w-8 text-red-600" />
+                          </div>
+                          <DialogTitle className="text-2xl font-bold text-red-800">
+                            Удалить товар
+                          </DialogTitle>
+                          <p className="text-red-600 mt-2">
+                            Это действие нельзя отменить
+                          </p>
+                        </DialogHeader>
+                        <div className="space-y-6">
+                          <div className="bg-red-100 border border-red-200 rounded-xl p-4">
+                            <div className="flex items-start space-x-3">
+                              <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                              <div>
+                                <h3 className="font-semibold text-red-800 mb-1">
+                                  Внимание!
+                                </h3>
+                                <p className="text-red-700 text-sm">
+                                  Вы собираетесь удалить товар "{product.title}". Это действие необратимо и все данные о товаре будут потеряны.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex space-x-3">
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setIsDeleteConfirmOpen(false)}
+                              className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold py-3 rounded-xl transition-all duration-300"
+                            >
+                              <X className="h-4 w-4 mr-2" />
+                              Отмена
+                            </Button>
+                            <Button 
+                              onClick={handleDeleteProduct}
+                              disabled={deleteProductMutation.isPending}
+                              className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+                            >
+                              {deleteProductMutation.isPending ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                  Удаление...
+                                </>
+                              ) : (
+                                <>
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Удалить
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   )}
                 </div>
               )}

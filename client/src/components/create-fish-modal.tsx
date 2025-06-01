@@ -44,10 +44,7 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: subcategories = [] } = useQuery({
-    queryKey: ["/api/categories", { parentId: 3 }],
-  });
-
+  // Полностью убираем запрос подкатегорий
   const { data: servers = [] } = useQuery({
     queryKey: ["/api/servers"],
   });
@@ -122,39 +119,32 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            {/* Category Selection */}
-            {subcategories.length > 0 && (
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20">
-                <h3 className="text-lg font-semibold text-blue-300 mb-4 flex items-center gap-2">
-                  <Fish className="h-5 w-5" />
-                  Рыба на продажу
-                </h3>
-                <FormField
-                  control={form.control}
-                  name="subcategoryId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-blue-200 font-medium">Тип рыбы</FormLabel>
-                      <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
-                        <FormControl>
-                          <SelectTrigger className="bg-slate-700/50 border-blue-500/30 text-white focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200">
-                            <SelectValue placeholder="Выберите тип рыбы" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-slate-800 border-blue-500/30">
-                          {subcategories.map((subcategory: any) => (
-                            <SelectItem key={subcategory.id} value={subcategory.id.toString()} className="text-white hover:bg-blue-600/20">
-                              {subcategory.displayName}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage className="text-red-400" />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
+            {/* Убираем весь блок Category Selection */}
+            
+            {/* Тип рыбы - перемещаем в начало */}
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20">
+              <h3 className="text-lg font-semibold text-blue-300 mb-4 flex items-center gap-2">
+                <Fish className="h-5 w-5" />
+                Рыба на продажу
+              </h3>
+              <FormField
+                control={form.control}
+                name="metadata.fishType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-blue-200 font-medium">Тип рыбы</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Введите тип рыбы (например: Плотва, Щука, Лещ)" 
+                        {...field} 
+                        className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-400" />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* Quantity */}
             <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20">

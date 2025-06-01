@@ -367,9 +367,8 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                   </DialogTrigger>
                 </Dialog>
                 </div>
-              </div> 
 
-              {/* Кнопки управления для владельца/модератора/админа */
+              {/* Кнопки управления для владельца/модератора/админа */}
               {(showManageButtons || canManage) && (
                 <div className="flex justify-center space-x-3 pt-4 border-t border-gray-100">
                   {canEditPrice && (

@@ -18,7 +18,9 @@ export default function Home() {
   const { data: featuredProducts = [] } = useQuery({
     queryKey: ["/api/products"],
   });
-е
+  // УДАЛИТЬ ЭТУ СТРОКУ:
+  // е
+  
   useEffect(() => {
     const loadCategories = async () => {
       try {

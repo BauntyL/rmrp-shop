@@ -33,9 +33,10 @@ export default function Header() {
 
   const navigation = [
     { name: "Главная", href: "/" },
-    { name: "Товары", href: "/products" },
-    { name: "Избранное", href: "/favorites" },
-    { name: "Диалоги", href: "/messages" },
+    { name: "Авто", href: "/products?category=auto" },
+    { name: "Недвижимость", href: "/products?category=realty" },
+    { name: "Рыба", href: "/products?category=fish" },
+    { name: "Клады", href: "/products?category=treasures" },
   ];
 
   return (
@@ -45,19 +46,26 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">R</span>
-                </div>
-                <span className="text-white font-bold text-xl hidden sm:block">RMRP Shop</span>
-              </div>
+              <span className="text-white font-bold text-xl">RMRP SHOP</span>
             </Link>
           </div>
 
-          {/* Server Selection */}
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Navigation */}
+          <nav className="hidden md:flex space-x-8">
+            {navigation.map((item) => (
+              <Link key={item.name} href={item.href}>
+                <span className="text-slate-300 hover:text-white px-3 py-2 text-sm font-medium cursor-pointer transition-colors">
+                  {item.name}
+                </span>
+              </Link>
+            ))}
+          </nav>
+
+          {/* Right side */}
+          <div className="flex items-center space-x-4">
+            {/* Server Selection */}
             <Select value={selectedServer} onValueChange={setSelectedServer}>
-              <SelectTrigger className="w-32 bg-slate-800 border-slate-600 text-slate-300">
+              <SelectTrigger className="w-20 bg-slate-800 border-slate-600 text-slate-300 text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-600">
@@ -68,18 +76,15 @@ export default function Header() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
 
-          {/* Navigation & User Menu */}
-          <div className="flex items-center space-x-4">
             {isAuthenticated ? (
               <>
                 {/* Favorites */}
                 <Link href="/favorites">
                   <Button variant="ghost" size="sm" className="relative text-slate-300 hover:text-white hover:bg-slate-800">
-                    <Heart className="h-5 w-5" />
+                    <Heart className="h-4 w-4" />
                     {favorites.length > 0 && (
-                      <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-600 hover:bg-red-700">
+                      <Badge className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-xs bg-red-600 hover:bg-red-700">
                         {favorites.length}
                       </Badge>
                     )}
@@ -89,9 +94,9 @@ export default function Header() {
                 {/* Messages */}
                 <Link href="/messages">
                   <Button variant="ghost" size="sm" className="relative text-slate-300 hover:text-white hover:bg-slate-800">
-                    <MessageCircle className="h-5 w-5" />
+                    <MessageCircle className="h-4 w-4" />
                     {unreadCount > 0 && (
-                      <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-blue-600 hover:bg-blue-700">
+                      <Badge className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-xs bg-blue-600 hover:bg-blue-700">
                         {unreadCount}
                       </Badge>
                     )}
@@ -102,13 +107,7 @@ export default function Header() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="flex items-center space-x-2 text-slate-300 hover:text-white hover:bg-slate-800">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.profileImageUrl} alt={user?.firstName} />
-                        <AvatarFallback className="bg-slate-700 text-white">{userInitials}</AvatarFallback>
-                      </Avatar>
-                      <span className="hidden md:block text-sm font-medium">
-                        {user?.firstName} {user?.lastName}
-                      </span>
+                      <span className="text-sm">{user?.firstName}</span>
                       <ChevronDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>

@@ -1,3 +1,23 @@
+import { Pool } from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import * as schema from "@shared/schema";
+
+if (!process.env.DATABASE_URL) {
+  throw new Error(
+    "DATABASE_URL must be set. Did you forget to provision a database?",
+  );
+}
+
+export const pool = new Pool({ 
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
+export const db = drizzle({ client: pool, schema });
+
+## Обновление конфигурации базы данных
+
+Вот исправленный <mcfile name="db.ts" path="e:\RMRPTP\rmrp-shop\rmrp-shop\server\db.ts"></mcfile>:
+```typescript
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";

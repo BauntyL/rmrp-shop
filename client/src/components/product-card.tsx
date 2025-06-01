@@ -368,7 +368,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                 </Dialog>
                 </div>
 
-              {/* Кнопки управления для владельца/модератора/админа */}
+              {/* Кнопки управления для владельца/модератора/админа */
               {(showManageButtons || canManage) && (
                 <div className="flex justify-center space-x-3 pt-4 border-t border-gray-100">
                   {canEditPrice && (
@@ -638,7 +638,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
           </DialogHeader>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Левая колонка - изображение и контакты */
+            {/* Левая колонка - изображение и контакты */}
             <div className="space-y-4">
               <div className="relative h-80 rounded-xl overflow-hidden shadow-lg">
                 <img 

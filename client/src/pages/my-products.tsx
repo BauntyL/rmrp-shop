@@ -43,6 +43,28 @@ export default function MyProducts() {
     },
   });
 
+  // Функция для просмотра товара
+  const handleViewProduct = (productId: number) => {
+    window.open(`/product/${productId}`, '_blank');
+  };
+
+  // Функция для редактирования товара
+  const handleEditProduct = (productId: number) => {
+    // Здесь можно добавить логику для открытия модального окна редактирования
+    // или перенаправления на страницу редактирования
+    toast({
+      title: "Редактирование",
+      description: "Функция редактирования будет добавлена в следующем обновлении",
+    });
+  };
+
+  // Функция для удаления товара с подтверждением
+  const handleDeleteProduct = (productId: number, productTitle: string) => {
+    if (window.confirm(`Вы уверены, что хотите удалить товар "${productTitle}"?`)) {
+      deleteProductMutation.mutate(productId);
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-slate-900">
@@ -103,7 +125,8 @@ export default function MyProducts() {
         <img 
           src={product.images?.[0] || "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200"}
           alt={product.title}
-          className="w-full h-32 object-cover"
+          className="w-full h-32 object-cover cursor-pointer"
+          onClick={() => handleViewProduct(product.id)}
         />
         <Badge className={`absolute top-2 right-2 ${getStatusColor(product.status)}`}>
           {getStatusText(product.status)}
@@ -111,7 +134,8 @@ export default function MyProducts() {
       </div>
       
       <CardContent className="p-4">
-        <h3 className="font-semibold text-white mb-1 line-clamp-1">
+        <h3 className="font-semibold text-white mb-1 line-clamp-1 cursor-pointer hover:text-blue-400" 
+            onClick={() => handleViewProduct(product.id)}>
           {product.title}
         </h3>
         <p className="text-sm text-slate-300 mb-2 line-clamp-2">
@@ -122,11 +146,21 @@ export default function MyProducts() {
         </p>
         
         <div className="flex space-x-2">
-          <Button variant="outline" size="sm" className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+            onClick={() => handleViewProduct(product.id)}
+          >
             <Eye className="h-4 w-4 mr-1" />
             Просмотр
           </Button>
-          <Button variant="outline" size="sm" className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-700"
+            onClick={() => handleEditProduct(product.id)}
+          >
             <Edit className="h-4 w-4 mr-1" />
             Редактировать
           </Button>
@@ -134,7 +168,7 @@ export default function MyProducts() {
             variant="outline" 
             size="sm" 
             className="text-red-400 hover:text-red-300 border-slate-600 hover:bg-slate-700"
-            onClick={() => deleteProductMutation.mutate(product.id)}
+            onClick={() => handleDeleteProduct(product.id, product.title)}
             disabled={deleteProductMutation.isPending}
           >
             <Trash2 className="h-4 w-4" />

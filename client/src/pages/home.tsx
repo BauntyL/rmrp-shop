@@ -39,7 +39,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-800">
       <Header />
 
       {/* Hero Section */}
@@ -61,8 +61,7 @@ export default function Home() {
                 Разместить объявление
               </Button>
               <Button 
-                variant="outline"
-                className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 font-semibold text-lg transition-all duration-200"
+                className="bg-blue-500 text-white hover:bg-blue-400 px-8 py-4 font-semibold text-lg transition-all duration-200 border-0"
                 size="lg"
                 asChild
               >
@@ -80,11 +79,11 @@ export default function Home() {
       </section>
 
       {/* Categories Section */}
-      <section id="categories" className="py-20 bg-white relative">
+      <section id="categories" className="py-20 bg-slate-700 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Категории товаров</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <h2 className="text-4xl font-bold text-white mb-4">Категории товаров</h2>
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
               Выберите категорию и найдите именно то, что вам нужно
             </p>
           </div>
@@ -93,11 +92,11 @@ export default function Home() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-20 bg-gradient-to-br from-slate-50 to-blue-50">
+      <section className="py-20 bg-gradient-to-br from-slate-800 to-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-16">
             <div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">Рекомендуемые товары</h2>
+              <h2 className="text-4xl font-bold text-white mb-4">Рекомендуемые товары</h2>
               <p className="text-xl text-gray-600">Популярные предложения от наших продавцов</p>
             </div>
             <Button 

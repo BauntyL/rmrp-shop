@@ -45,17 +45,18 @@ const requireRole = (roles: string[]) => {
 export async function registerRoutes(app: Express): Promise<Server> {
   console.log('Initializing routes...');
   
-  try {
-    // Initialize default data
-    console.log('Initializing servers...');
-    await storage.initializeServers();
-    console.log('Initializing categories...');
-    await storage.initializeCategories();
-    console.log('Database initialization complete');
-  } catch (error) {
-    console.error('Database initialization failed:', error);
-    // Don't throw error, let healthcheck work
-  }
+  // Запускаем инициализацию в фоне, не блокируя сервер
+  Promise.resolve().then(async () => {
+    try {
+      console.log('Initializing servers...');
+      await storage.initializeServers();
+      console.log('Initializing categories...');
+      await storage.initializeCategories();
+      console.log('Database initialization complete');
+    } catch (error) {
+      console.error('Database initialization failed:', error);
+    }
+  });
 
   // Auth routes
   app.post('/api/auth/register', async (req, res) => {

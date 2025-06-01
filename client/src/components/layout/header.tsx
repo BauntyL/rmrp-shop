@@ -24,6 +24,15 @@ export default function Header() {
     enabled: isAuthenticated,
   });
 
+  // Добавляем запрос для получения количества непрочитанных сообщений
+  const { data: unreadData } = useQuery({
+    queryKey: ["/api/messages/unread-count"],
+    enabled: isAuthenticated,
+    refetchInterval: 30000, // Обновляем каждые 30 секунд
+  });
+
+  const unreadCount = unreadData?.count || 0;
+
   const navigation = [
     { name: "Главная", href: "/" },
     { name: "Авто", href: "/category/cars" },
@@ -96,9 +105,11 @@ export default function Header() {
                 <Link href="/messages">
                   <Button variant="ghost" size="sm" className="relative text-slate-300 hover:text-white hover:bg-slate-800">
                     <MessageCircle className="h-5 w-5" />
-                    <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-blue-600 hover:bg-blue-700">
-                      2
-                    </Badge>
+                    {unreadCount > 0 && (
+                      <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-blue-600 hover:bg-blue-700">
+                        {unreadCount}
+                      </Badge>
+                    )}
                   </Button>
                 </Link>
 

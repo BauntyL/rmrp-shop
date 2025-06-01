@@ -39,7 +39,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       <Header />
 
       {/* Hero Section */}
@@ -61,8 +61,7 @@ export default function Home() {
                 Разместить объявление
               </Button>
               <Button 
-                variant="outline"
-                className="border-2 border-white text-white hover:bg-white hover:text-primary px-8 py-3 font-semibold"
+                className="bg-white text-primary px-8 py-3 hover:bg-gray-50 font-semibold"
                 size="lg"
                 asChild
               >
@@ -82,7 +81,7 @@ export default function Home() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900">Рекомендуемые товары</h2>

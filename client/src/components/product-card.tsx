@@ -317,17 +317,17 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
 
               {/* Кнопки управления для владельца/модератора/админа */}
               {(showManageButtons || canManage) && (
-                <div className="flex space-x-2 pt-3 border-t border-gray-200">
+                <div className="flex justify-center space-x-3 pt-4 border-t border-gray-100">
                   {canEditPrice && (
                     <Dialog open={isEditPriceOpen} onOpenChange={setIsEditPriceOpen}>
                       <DialogTrigger asChild>
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="flex-1 border-green-300 text-green-700 hover:bg-green-50"
+                          className="w-10 h-10 p-0 rounded-full border-2 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 hover:border-emerald-400 text-emerald-600 hover:text-emerald-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                          title="Изменить цену"
                         >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Цена
+                          <Edit className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
                       <DialogContent>
@@ -370,7 +370,8 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="flex-1 border-blue-300 text-blue-700 hover:bg-blue-50"
+                      className="w-10 h-10 p-0 rounded-full border-2 border-blue-300 bg-blue-50 hover:bg-blue-100 hover:border-blue-400 text-blue-600 hover:text-blue-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                      title="Редактировать товар"
                       onClick={() => {
                         toast({
                           title: "Редактирование",
@@ -378,8 +379,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                         });
                       }}
                     >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Редактировать
+                      <Edit className="h-4 w-4" />
                     </Button>
                   )}
                   
@@ -387,7 +387,8 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      className="text-red-600 hover:text-red-700 border-red-300 hover:bg-red-50"
+                      className="w-10 h-10 p-0 rounded-full border-2 border-red-300 bg-red-50 hover:bg-red-100 hover:border-red-400 text-red-600 hover:text-red-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
+                      title="Удалить товар"
                       onClick={handleDeleteProduct}
                       disabled={deleteProductMutation.isPending}
                     >

@@ -194,9 +194,8 @@ export default function FishPage() {
       
       {isCreateModalOpen && (
         <CreateListingModal 
-          isOpen={isCreateModalOpen} 
-          onClose={() => setIsCreateModalOpen(false)}
-          defaultCategory="fish"
+          open={isCreateModalOpen}
+          onOpenChange={(open) => setIsCreateModalOpen(open)}
         />
       )}
     </div>

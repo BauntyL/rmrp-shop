@@ -194,9 +194,8 @@ export default function Cars() {
       
       {isCreateModalOpen && (
         <CreateListingModal 
-          isOpen={isCreateModalOpen} 
-          onClose={() => setIsCreateModalOpen(false)}
-          defaultCategory="cars"
+          open={isCreateModalOpen}
+          onOpenChange={(open) => setIsCreateModalOpen(open)}
         />
       )}
     </div>

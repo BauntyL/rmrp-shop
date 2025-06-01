@@ -194,9 +194,8 @@ export default function RealEstate() {
       
       {isCreateModalOpen && (
         <CreateListingModal 
-          isOpen={isCreateModalOpen} 
-          onClose={() => setIsCreateModalOpen(false)}
-          defaultCategory="realestate"
+          open={isCreateModalOpen}
+          onOpenChange={(open) => setIsCreateModalOpen(open)}
         />
       )}
     </div>

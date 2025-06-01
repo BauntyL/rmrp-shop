@@ -194,9 +194,8 @@ export default function Treasures() {
       
       {isCreateModalOpen && (
         <CreateListingModal 
-          isOpen={isCreateModalOpen} 
-          onClose={() => setIsCreateModalOpen(false)}
-          defaultCategory="treasures"
+          open={isCreateModalOpen}
+          onOpenChange={(open) => setIsCreateModalOpen(open)}
         />
       )}
     </div>

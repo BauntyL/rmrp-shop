@@ -340,3 +340,11 @@ export default function MyProducts() {
     </div>
   );
 }
+
+<Button 
+  onClick={() => alert('Кнопка работает!')} 
+  className="bg-blue-600 hover:bg-blue-700"
+>
+  <Plus className="h-4 w-4 mr-2" />
+  Добавить товар
+</Button>

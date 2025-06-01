@@ -30,10 +30,17 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
   const [isEditProductOpen, setIsEditProductOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [newPrice, setNewPrice] = useState(product.price);
+  
+  // Добавляем состояние для формы редактирования
+  const [editForm, setEditForm] = useState({
+    title: product.title,
+    description: product.description,
+    price: product.price,
+  });
 
   // Добавляем определения прав доступа
   const canManage = user && (user.role === 'admin' || user.role === 'moderator' || user.id === product.userId);
-  const canEdit = user && (user.role === 'admin' || user.role === 'moderator' || user.id === product.userId);
+  const canEdit = user && (user.role === 'admin' || user.role === 'moderator'); // Убираем владельца товара
   const canEditPrice = user && (user.role === 'admin' || user.role === 'moderator' || user.id === product.userId);
 
   // Добавляем мутацию для обновления цены
@@ -89,9 +96,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
   };
 
   const handleDeleteProduct = () => {
-    if (window.confirm('Вы уверены, что хотите удалить этот товар?')) {
-      deleteProductMutation.mutate();
-    }
+    setIsDeleteConfirmOpen(true);
   };
 
   const toggleFavoriteMutation = useMutation({

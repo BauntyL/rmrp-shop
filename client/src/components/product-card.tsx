@@ -472,33 +472,17 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                           </p>
                         </DialogHeader>
                         <div className="space-y-6">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="edit-title" className="text-blue-800 font-semibold">
-                                Название товара
-                              </Label>
-                              <Input
-                                id="edit-title"
-                                value={editForm.title}
-                                onChange={(e) => setEditForm({...editForm, title: e.target.value})}
-                                className="border-blue-300 focus:border-blue-500 focus:ring-blue-500 bg-white text-gray-900 placeholder-gray-500"
-                                placeholder="Введите название"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor="edit-price" className="text-blue-800 font-semibold">
-                                Цена (₽)
-                              </Label>
-                              <Input
-                                id="edit-price"
-                                type="number"
-                                value={editForm.price}
-                                onChange={(e) => setEditForm({...editForm, price: Number(e.target.value)})}
-                                min="1"
-                                className="border-blue-300 focus:border-blue-500 focus:ring-blue-500 bg-white text-gray-900 placeholder-gray-500"
-                                placeholder="Введите цену"
-                              />
-                            </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-title" className="text-blue-800 font-semibold">
+                              Название товара
+                            </Label>
+                            <Input
+                              id="edit-title"
+                              value={editForm.title}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+                              className="border-blue-300 focus:border-blue-500 focus:ring-blue-500 bg-white text-gray-900"
+                              placeholder="Введите название товара"
+                            />
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="edit-description" className="text-blue-800 font-semibold">
@@ -507,10 +491,29 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                             <textarea
                               id="edit-description"
                               value={editForm.description}
-                              onChange={(e) => setEditForm({...editForm, description: e.target.value})}
-                              className="w-full min-h-[100px] p-3 border border-blue-300 rounded-lg focus:border-blue-500 focus:ring-blue-500 bg-white text-gray-900 placeholder-gray-500 resize-none"
+                              onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                              className="w-full min-h-[100px] px-3 py-2 border border-blue-300 rounded-md focus:border-blue-500 focus:ring-blue-500 bg-white text-gray-900 resize-none"
                               placeholder="Введите описание товара"
                             />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-price" className="text-blue-800 font-semibold">
+                              Цена (₽)
+                            </Label>
+                            <div className="relative">
+                              <Input
+                                id="edit-price"
+                                type="number"
+                                value={editForm.price}
+                                onChange={(e) => setEditForm(prev => ({ ...prev, price: Number(e.target.value) }))}
+                                min="1"
+                                className="pl-8 border-blue-300 focus:border-blue-500 focus:ring-blue-500 bg-white text-gray-900"
+                                placeholder="Введите цену"
+                              />
+                              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-700 font-semibold">
+                                ₽
+                              </span>
+                            </div>
                           </div>
                           <div className="flex space-x-3">
                             <Button 
@@ -532,16 +535,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                             </Button>
                             <Button 
                               variant="outline" 
-                              onClick={() => {
-                                setIsEditProductOpen(false);
-                                setEditForm({
-                                  title: product.title,
-                                  description: product.description,
-                                  price: product.price,
-                                  categoryId: product.categoryId,
-                                  serverId: product.serverId
-                                });
-                              }}
+                              onClick={() => setIsEditProductOpen(false)}
                               className="flex-1 border-gray-400 text-gray-800 hover:bg-gray-100 hover:text-gray-900 font-semibold py-3 rounded-xl transition-all duration-300"
                             >
                               <X className="h-4 w-4 mr-2" />
@@ -561,6 +555,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                           size="sm" 
                           className="w-10 h-10 p-0 rounded-full border-2 border-red-300 bg-red-50 hover:bg-red-100 hover:border-red-400 text-red-600 hover:text-red-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
                           title="Удалить товар"
+                          onClick={handleDeleteProduct}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -568,28 +563,20 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                       <DialogContent className="sm:max-w-md bg-gradient-to-br from-red-50 to-pink-50 border-red-200">
                         <DialogHeader className="text-center pb-4">
                           <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                            <Trash2 className="h-8 w-8 text-red-600" />
+                            <AlertTriangle className="h-8 w-8 text-red-600" />
                           </div>
                           <DialogTitle className="text-2xl font-bold text-red-800">
-                            Удалить товар
+                            Удалить товар?
                           </DialogTitle>
                           <p className="text-red-700 mt-2">
-                            Это действие нельзя отменить
+                            Это действие нельзя отменить. Товар будет удален навсегда.
                           </p>
                         </DialogHeader>
                         <div className="space-y-6">
-                          <div className="bg-red-100 border border-red-200 rounded-xl p-4">
-                            <div className="flex items-start space-x-3">
-                              <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-                              <div>
-                                <h3 className="font-semibold text-red-800 mb-1">
-                                  Внимание!
-                                </h3>
-                                <p className="text-red-800 text-sm">
-                                  Вы собираетесь удалить товар "{product.title}". Это действие необратимо и все данные о товаре будут потеряны.
-                                </p>
-                              </div>
-                            </div>
+                          <div className="bg-red-100 p-4 rounded-lg border border-red-200">
+                            <h4 className="font-semibold text-red-800 mb-2">Удаляемый товар:</h4>
+                            <p className="text-red-700 font-medium">{product.title}</p>
+                            <p className="text-red-600 text-sm mt-1">{formatPrice(product.price)}</p>
                           </div>
                           <div className="flex space-x-3">
                             <Button 
@@ -680,7 +667,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                 </div>
               )}
               
-              {/* Контактная информация */
+              {/* Контактная информация */}
               {contacts && Object.keys(contacts).some(key => contacts[key]) && (
                 <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Контакты продавца</h3>
@@ -721,7 +708,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                 </div>
               )}
               
-              {/* Кнопка связи */
+              {/* Кнопка связи */}
               <Button 
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl text-lg" 
                 onClick={() => {
@@ -734,9 +721,9 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
               </Button>
             </div>
             
-            {/* Правая колонка - информация */
+            {/* Правая колонка - информация */}
             <div className="space-y-6">
-              {/* Основная информация */
+              {/* Основная информация */}
               <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Основная информация</h3>
                 <div className="space-y-3">
@@ -768,7 +755,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                 </div>
               </div>
               
-              {/* Описание */
+              {/* Описание */}
               <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Описание</h3>
                 <p className="text-gray-700 leading-relaxed">
@@ -776,7 +763,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                 </p>
               </div>
               
-              {/* Характеристики автомобиля */
+              {/* Характеристики автомобиля */}
               {product.categoryId === 1 && metadata && Object.keys(metadata).length > 0 && (
                 <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Характеристики</h3>

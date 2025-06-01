@@ -43,25 +43,26 @@ export default function Home() {
       <Header />
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary to-secondary text-white py-16">
+      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
               RMRP SHOP
             </h1>
-            <p className="text-xl md:text-2xl mb-8 opacity-90">
+            <p className="text-xl md:text-2xl mb-10 opacity-90 max-w-2xl mx-auto">
               Торговая площадка для игровых товаров
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-lg mx-auto">
               <Button 
                 onClick={handleCreateListing}
-                className="bg-white text-primary px-8 py-3 hover:bg-gray-50 font-semibold"
+                className="bg-white text-blue-600 px-8 py-4 hover:bg-blue-50 font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200"
                 size="lg"
               >
                 Разместить объявление
               </Button>
               <Button 
-                className="bg-white text-primary px-8 py-3 hover:bg-gray-50 font-semibold"
+                variant="outline"
+                className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 font-semibold text-lg transition-all duration-200"
                 size="lg"
                 asChild
               >
@@ -70,37 +71,64 @@ export default function Home() {
             </div>
           </div>
         </div>
+        {/* Декоративные элементы */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 pointer-events-none"></div>
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-300/10 rounded-full blur-3xl"></div>
+        </div>
       </section>
 
       {/* Categories Section */}
-      <section id="categories" className="py-16 bg-white">
+      <section id="categories" className="py-20 bg-white relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">Категории товаров</h2>
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Категории товаров</h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Выберите категорию и найдите именно то, что вам нужно
+            </p>
+          </div>
           <CategoryGrid categories={mainCategories} />
         </div>
       </section>
 
       {/* Featured Products */}
-      <section className="py-16 bg-slate-100">
+      <section className="py-20 bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900">Рекомендуемые товары</h2>
-            <Button variant="ghost" className="text-primary hover:text-secondary font-semibold" asChild>
+          <div className="flex justify-between items-center mb-16">
+            <div>
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">Рекомендуемые товары</h2>
+              <p className="text-xl text-gray-600">Популярные предложения от наших продавцов</p>
+            </div>
+            <Button 
+              variant="ghost" 
+              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-semibold text-lg px-6 py-3" 
+              asChild
+            >
               <Link href="/category/all">
-                Смотреть все <ArrowRight className="ml-1 h-4 w-4" />
+                Смотреть все <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
           </div>
 
           {featuredProducts.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-gray-500 text-lg mb-4">Товары еще не добавлены</p>
-              <Button onClick={handleCreateListing}>
-                Стать первым продавцом
-              </Button>
+            <div className="text-center py-20 bg-white rounded-2xl shadow-sm border">
+              <div className="max-w-md mx-auto">
+                <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <ArrowRight className="w-12 h-12 text-blue-600" />
+                </div>
+                <h3 className="text-2xl font-semibold text-gray-900 mb-4">Товары еще не добавлены</h3>
+                <p className="text-gray-600 mb-8">Станьте первым продавцом на нашей платформе!</p>
+                <Button 
+                  onClick={handleCreateListing}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 font-semibold"
+                >
+                  Стать первым продавцом
+                </Button>
+              </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {featuredProducts.slice(0, 8).map((product: any) => (
                 <ProductCard 
                   key={product.id} 

@@ -88,6 +88,33 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
     },
   });
 
+  // Добавляем мутацию для редактирования товара
+  const editProductMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("PUT", `/api/products/${product.id}`, {
+        title: editForm.title,
+        description: editForm.description,
+        price: editForm.price,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/my-products"] });
+      setIsEditProductOpen(false);
+      toast({
+        title: "Успешно",
+        description: "Товар обновлен",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить товар",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Добавляем обработчики
   const handleUpdatePrice = () => {
     if (newPrice && newPrice > 0) {
@@ -97,6 +124,13 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
 
   const handleDeleteProduct = () => {
     setIsDeleteConfirmOpen(true);
+  };
+
+  // Добавляем недостающую функцию handleEditProduct
+  const handleEditProduct = () => {
+    if (editForm.title && editForm.price > 0) {
+      editProductMutation.mutate();
+    }
   };
 
   const toggleFavoriteMutation = useMutation({

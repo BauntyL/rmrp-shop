@@ -2609,38 +2609,46 @@
   animation: fade-in 0.3s ease-out;
 }
 
-.animate-float {
-  animation: float 3s ease-in-out infinite;
+/* Car Modal Animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
-.animate-float-delayed {
-  animation: float-delayed 3s ease-in-out infinite 1.5s;
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.6), 0 0 30px rgba(59, 130, 246, 0.4);
+  }
 }
 
-.animate-fade-in {
-  animation: fade-in 0.3s ease-out;
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.animate-float {
-  animation: float 3s ease-in-out infinite;
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
 }
 
-.animate-float-delayed {
-  animation: float-delayed 3s ease-in-out infinite 1.5s;
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
 }
 
-.animate-fade-in {
-  animation: fade-in 0.3s ease-out;
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-.animate-float-delayed {
-  animation: float-delayed 3s ease-in-out infinite 1.5s;
-}
-
-.animate-fade-in {
-  animation: fade-in 0.3s ease-out;
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
 }

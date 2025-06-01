@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
@@ -30,6 +30,11 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
   const [isEditProductOpen, setIsEditProductOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [newPrice, setNewPrice] = useState(product.price);
+  
+  // Добавляем useEffect для синхронизации newPrice с product.price
+  useEffect(() => {
+    setNewPrice(product.price);
+  }, [product.price]);
   
   // Добавляем состояние для формы редактирования
   const [editForm, setEditForm] = useState({
@@ -118,7 +123,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
 
   // Добавляем обработчики
   const handleUpdatePrice = () => {
-    if (newPrice && newPrice > 0) {
+    if (newPrice && newPrice > 0 && newPrice !== product.price) {
       updatePriceMutation.mutate(newPrice);
     }
   };
@@ -623,7 +628,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
         </div>
       </Card>
       
-      {/* Модальное окно */}
+      {/* Модальное окно */
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] bg-gradient-to-br from-white to-gray-50">
           <DialogHeader>
@@ -633,7 +638,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
           </DialogHeader>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Левая колонка - изображение и контакты */}
+            {/* Левая колонка - изображение и контакты */
             <div className="space-y-4">
               <div className="relative h-80 rounded-xl overflow-hidden shadow-lg">
                 <img 
@@ -654,7 +659,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                 </div>
               </div>
               
-              {/* Дополнительные изображения */}
+              {/* Дополнительные изображения */
               {product.images && product.images.length > 1 && (
                 <div className="grid grid-cols-3 gap-2">
                   {product.images.slice(1, 4).map((img, index) => (
@@ -675,7 +680,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                 </div>
               )}
               
-              {/* Контактная информация */}
+              {/* Контактная информация */
               {contacts && Object.keys(contacts).some(key => contacts[key]) && (
                 <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Контакты продавца</h3>
@@ -716,7 +721,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                 </div>
               )}
               
-              {/* Кнопка связи */}
+              {/* Кнопка связи */
               <Button 
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl text-lg" 
                 onClick={() => {
@@ -729,9 +734,9 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
               </Button>
             </div>
             
-            {/* Правая колонка - информация */}
+            {/* Правая колонка - информация */
             <div className="space-y-6">
-              {/* Основная информация */}
+              {/* Основная информация */
               <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Основная информация</h3>
                 <div className="space-y-3">
@@ -763,7 +768,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                 </div>
               </div>
               
-              {/* Описание */}
+              {/* Описание */
               <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Описание</h3>
                 <p className="text-gray-700 leading-relaxed">
@@ -771,7 +776,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                 </p>
               </div>
               
-              {/* Характеристики автомобиля */}
+              {/* Характеристики автомобиля */
               {product.categoryId === 1 && metadata && Object.keys(metadata).length > 0 && (
                 <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Характеристики</h3>

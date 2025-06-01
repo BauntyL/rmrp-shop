@@ -5,14 +5,15 @@ import type {
   ToastProps,
 } from "@/components/ui/toast"
 
-const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_LIMIT = 3
+const TOAST_REMOVE_DELAY = 5000
 
 type ToasterToast = ToastProps & {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
+  variant?: "default" | "destructive" | "success" | "warning" | "info"
 }
 
 const actionTypes = {
@@ -21,13 +22,6 @@ const actionTypes = {
   DISMISS_TOAST: "DISMISS_TOAST",
   REMOVE_TOAST: "REMOVE_TOAST",
 } as const
-
-let count = 0
-
-function genId() {
-  count = (count + 1) % Number.MAX_SAFE_INTEGER
-  return count.toString()
-}
 
 type ActionType = typeof actionTypes
 
@@ -140,7 +134,7 @@ function dispatch(action: Action) {
 type Toast = Omit<ToasterToast, "id">
 
 function toast({ ...props }: Toast) {
-  const id = genId()
+  const id = Math.random().toString(36).substr(2, 9)
 
   const update = (props: ToasterToast) =>
     dispatch({
@@ -168,6 +162,12 @@ function toast({ ...props }: Toast) {
   }
 }
 
+// Helper functions for different toast types
+toast.success = (props: Omit<Toast, "variant">) => toast({ ...props, variant: "success" })
+toast.error = (props: Omit<Toast, "variant">) => toast({ ...props, variant: "destructive" })
+toast.warning = (props: Omit<Toast, "variant">) => toast({ ...props, variant: "warning" })
+toast.info = (props: Omit<Toast, "variant">) => toast({ ...props, variant: "info" })
+
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
 
@@ -179,7 +179,7 @@ function useToast() {
         listeners.splice(index, 1)
       }
     }
-  }, [state])
+  }, [])
 
   return {
     ...state,

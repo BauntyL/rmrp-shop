@@ -130,7 +130,6 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
   // Добавляем функцию для подтверждения удаления
   const handleConfirmDelete = () => {
     deleteProductMutation.mutate();
-    setIsDeleteConfirmOpen(false);
   };
 
   const handleEditProduct = () => {
@@ -596,7 +595,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                               Отмена
                             </Button>
                             <Button 
-                              onClick={handleDeleteProduct}
+                              onClick={handleConfirmDelete}
                               disabled={deleteProductMutation.isPending}
                               className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
                             >

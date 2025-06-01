@@ -2,34 +2,16 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Heart, MessageCircle, Menu, ChevronDown } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
   const [location] = useLocation();
   const [selectedServer, setSelectedServer] = useState("arbat");
-
-  const { data: servers = [] } = useQuery({
-    queryKey: ["/api/servers"],
-  });
-
-  const { data: favorites = [] } = useQuery({
-    queryKey: ["/api/favorites"],
-    enabled: isAuthenticated,
-  });
-
-  const { data: unreadCount = 0 } = useQuery({
-    queryKey: ["/api/unread-messages-count"],
-    enabled: isAuthenticated,
-  });
-
-  const userInitials = user ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}` : '';
 
   const navigation = [
     { name: "Главная", href: "/" },
@@ -69,11 +51,12 @@ export default function Header() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-600">
-                {servers.map((server: any) => (
-                  <SelectItem key={server.id} value={server.name} className="text-slate-300 hover:bg-slate-700">
-                    {server.name}
-                  </SelectItem>
-                ))}
+                <SelectItem value="arbat" className="text-slate-300 hover:bg-slate-700">
+                  arbat
+                </SelectItem>
+                <SelectItem value="server2" className="text-slate-300 hover:bg-slate-700">
+                  server2
+                </SelectItem>
               </SelectContent>
             </Select>
 
@@ -81,25 +64,15 @@ export default function Header() {
               <>
                 {/* Favorites */}
                 <Link href="/favorites">
-                  <Button variant="ghost" size="sm" className="relative text-slate-300 hover:text-white hover:bg-slate-800">
+                  <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white hover:bg-slate-800">
                     <Heart className="h-4 w-4" />
-                    {favorites.length > 0 && (
-                      <Badge className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-xs bg-red-600 hover:bg-red-700">
-                        {favorites.length}
-                      </Badge>
-                    )}
                   </Button>
                 </Link>
 
                 {/* Messages */}
                 <Link href="/messages">
-                  <Button variant="ghost" size="sm" className="relative text-slate-300 hover:text-white hover:bg-slate-800">
+                  <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white hover:bg-slate-800">
                     <MessageCircle className="h-4 w-4" />
-                    {unreadCount > 0 && (
-                      <Badge className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 text-xs bg-blue-600 hover:bg-blue-700">
-                        {unreadCount}
-                      </Badge>
-                    )}
                   </Button>
                 </Link>
 
@@ -107,6 +80,12 @@ export default function Header() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="flex items-center space-x-2 text-slate-300 hover:text-white hover:bg-slate-800">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={user?.avatar} />
+                        <AvatarFallback className="bg-slate-700 text-slate-300 text-xs">
+                          {user?.firstName?.[0]}{user?.lastName?.[0]}
+                        </AvatarFallback>
+                      </Avatar>
                       <span className="text-sm">{user?.firstName}</span>
                       <ChevronDown className="h-4 w-4" />
                     </Button>

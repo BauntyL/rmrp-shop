@@ -3,22 +3,27 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Button } from '../ui/button';
 import { Upload, X, Image } from 'lucide-react';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
 
 interface ListingStep2Props {
   data: any;
   onDataChange: (data: any) => void;
   onValidationChange: (isValid: boolean) => void;
+  servers?: any[];
 }
 
 export const ListingStep2: React.FC<ListingStep2Props> = ({ 
   data, 
   onDataChange, 
-  onValidationChange 
+  onValidationChange,
+  servers
 }) => {
   const [formData, setFormData] = useState({
     imageUrl: data.imageUrl || '',
     images: data.images || [],
     additionalInfo: data.additionalInfo || '',
+    price: data.price || 0,
+    serverId: data.serverId || 0,
     ...data
   });
 
@@ -59,21 +64,57 @@ export const ListingStep2: React.FC<ListingStep2Props> = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold text-violet-400 mb-2">Детали товара</h3>
-        <p className="text-slate-400">Добавьте изображения и дополнительную информацию</p>
+    <div className="space-y-4 h-full">
+      <div className="space-y-2">
+        <Label htmlFor="imageUrl" className="text-slate-300">Ссылка на изображение</Label>
+        <div className="relative">
+          <Input
+            id="imageUrl"
+            type="text"
+            value={formData.imageUrl}
+            onChange={(e) => updateData('imageUrl', e.target.value)}
+            className="bg-slate-800 border-slate-600 text-white pl-10"
+            placeholder="https://"
+          />
+          <Image className="absolute left-3 top-2.5 h-5 w-5 text-slate-400" />
+        </div>
       </div>
 
-      {/* Image URL */}
-      <div className="space-y-2">
-        <Label className="text-white font-medium">Ссылка на изображение (необязательно)</Label>
-        <Input 
-          placeholder="https://example.com/image.jpg" 
-          value={formData.imageUrl}
-          onChange={(e) => updateData('imageUrl', e.target.value)}
-          className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400 focus:border-violet-500/50 transition-colors"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="price" className="text-slate-300">Цена *</Label>
+          <Input
+            id="price"
+            type="number"
+            min="0"
+            value={formData.price}
+            onChange={(e) => updateData('price', parseInt(e.target.value) || 0)}
+            className="bg-slate-800 border-slate-600 text-white"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="server" className="text-slate-300">Сервер *</Label>
+          <Select
+            value={formData.serverId?.toString()}
+            onValueChange={(value) => updateData('serverId', parseInt(value))}
+          >
+            <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+              <SelectValue placeholder="Выберите сервер" />
+            </SelectTrigger>
+            <SelectContent className="bg-slate-800 border-slate-600">
+              {servers?.map((server) => (
+                <SelectItem 
+                  key={server.id} 
+                  value={server.id.toString()}
+                  className="text-white hover:bg-slate-700"
+                >
+                  {server.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Image Upload */}

@@ -459,7 +459,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
                           <Edit className="h-4 w-4" />
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="sm:max-w-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 max-h-[90vh] overflow-y-auto">
+                      <DialogContent className="sm:max-w-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
                         <DialogHeader className="text-center pb-4">
                           <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
                             <Edit className="h-8 w-8 text-blue-600" />
@@ -617,7 +617,7 @@ export default function ProductCard({ product, onContact, showManageButtons = fa
 
         {/* Модальное окно */}
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] bg-gradient-to-br from-white to-gray-50">
+          <DialogContent className="max-w-4xl bg-gradient-to-br from-white to-gray-50">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-gray-900 mb-4">
               {product.title}

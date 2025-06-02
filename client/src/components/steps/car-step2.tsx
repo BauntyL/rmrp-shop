@@ -46,85 +46,57 @@ export const CarStep2: React.FC<CarStep2Props> = ({ data, onDataChange, onValida
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold text-red-400 mb-2">Характеристики автомобиля</h3>
-        <p className="text-slate-400">Укажите цену, тип автомобиля и изображение</p>
+    <div className="space-y-4 h-full">
+      <div className="space-y-2">
+        <Label htmlFor="imageUrl" className="text-slate-300">Ссылка на изображение</Label>
+        <div className="relative">
+          <Input
+            id="imageUrl"
+            type="text"
+            value={formData.imageUrl}
+            onChange={(e) => updateData('imageUrl', e.target.value)}
+            className="bg-slate-800 border-slate-600 text-white pl-10"
+            placeholder="https://"
+          />
+          <Image className="absolute left-3 top-2.5 h-5 w-5 text-slate-400" />
+        </div>
       </div>
 
-      <div className="space-y-6">
-        <div className="bg-white/5 rounded-lg p-4 space-y-4">
-          <h4 className="text-white font-medium mb-4">💰 Цена и тип</h4>
-          
-          <div className="space-y-2">
-            <Label htmlFor="price" className="text-slate-300">Цена (₽) <span className="text-red-400">*</span></Label>
-            <Input
-              id="price"
-              type="number"
-              min="0"
-              value={formData.price}
-              onChange={(e) => updateData('price', parseInt(e.target.value) || 0)}
-              placeholder="1500000"
-              className="bg-slate-800 border-slate-600 text-white"
-            />
-            <p className="text-xs text-slate-400">Укажите цену в рублях</p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="carType" className="text-slate-300">Тип автомобиля <span className="text-red-400">*</span></Label>
-            <Select value={formData.carType} onValueChange={(value) => updateData('carType', value)}>
-              <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-                <SelectValue placeholder="Выберите тип автомобиля" />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-600">
-                {carTypes.map((type) => (
-                  <SelectItem key={type} value={type} className="text-white hover:bg-slate-700">
-                    {type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="discord" className="text-slate-300">Discord</Label>
+          <Input
+            id="discord"
+            type="text"
+            value={formData.contacts.discord}
+            onChange={(e) => updateContacts('discord', e.target.value)}
+            className="bg-slate-800 border-slate-600 text-white"
+            placeholder="Ваш Discord"
+          />
         </div>
 
-        <div className="bg-white/5 rounded-lg p-4 space-y-4">
-          <h4 className="text-white font-medium mb-4">🖼️ Изображение автомобиля</h4>
-          
-          <div className="space-y-2">
-            <Label htmlFor="imageUrl" className="text-slate-300">Ссылка на изображение</Label>
-            <Input
-              id="imageUrl"
-              type="url"
-              value={formData.imageUrl}
-              onChange={(e) => updateData('imageUrl', e.target.value)}
-              placeholder="https://example.com/car-image.jpg"
-              className="bg-slate-800 border-slate-600 text-white"
-            />
-            <p className="text-xs text-slate-400">Вставьте ссылку на изображение вашего автомобиля</p>
-          </div>
-          
-          {formData.imageUrl && (
-            <div className="border border-slate-600 rounded-lg p-4">
-              <div className="flex items-center space-x-2 mb-2">
-                <Image className="h-4 w-4 text-red-400" />
-                <span className="text-sm text-slate-300">Предварительный просмотр:</span>
-              </div>
-              <img
-                src={formData.imageUrl}
-                alt="Preview"
-                className="w-full max-w-xs h-48 object-cover rounded-lg"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                }}
-              />
-            </div>
-          )}
+        <div className="space-y-2">
+          <Label htmlFor="telegram" className="text-slate-300">Telegram</Label>
+          <Input
+            id="telegram"
+            type="text"
+            value={formData.contacts.telegram}
+            onChange={(e) => updateContacts('telegram', e.target.value)}
+            className="bg-slate-800 border-slate-600 text-white"
+            placeholder="@username"
+          />
         </div>
 
-        <div className="bg-slate-800 p-4 rounded-lg border border-slate-600">
-          <p className="text-sm text-slate-400">
-            <span className="text-red-400">*</span> Обязательные поля для заполнения
-          </p>
+        <div className="space-y-2">
+          <Label htmlFor="phone" className="text-slate-300">Телефон</Label>
+          <Input
+            id="phone"
+            type="tel"
+            value={formData.contacts.phone}
+            onChange={(e) => updateContacts('phone', e.target.value)}
+            className="bg-slate-800 border-slate-600 text-white"
+            placeholder="+7 (999) 999-99-99"
+          />
         </div>
       </div>
     </div>

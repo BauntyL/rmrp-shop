@@ -48,7 +48,7 @@ export const RealEstateStep1: React.FC<RealEstateStep1Props> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 h-full">
       <div className="text-center mb-6">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Home className="w-5 h-5 text-blue-400" />
@@ -58,18 +58,22 @@ export const RealEstateStep1: React.FC<RealEstateStep1Props> = ({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="subcategoryId" className="text-white">Тип недвижимости <span className="text-red-400">*</span></Label>
-          <Select 
-            value={formData.subcategoryId.toString()} 
+        <div className="space-y-2">
+          <Label htmlFor="subcategory" className="text-slate-300">Тип недвижимости *</Label>
+          <Select
+            value={formData.subcategoryId?.toString()}
             onValueChange={(value) => updateData('subcategoryId', parseInt(value))}
           >
-            <SelectTrigger className="bg-white/10 border-white/20 text-white">
-              <SelectValue placeholder="Выберите тип недвижимости" />
+            <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+              <SelectValue placeholder="Выберите тип" />
             </SelectTrigger>
-            <SelectContent>
-              {realEstateSubcategories.map((subcategory) => (
-                <SelectItem key={subcategory.id} value={subcategory.id.toString()}>
+            <SelectContent className="bg-slate-800 border-slate-600">
+              {subcategories?.map((subcategory) => (
+                <SelectItem 
+                  key={subcategory.id} 
+                  value={subcategory.id.toString()}
+                  className="text-white hover:bg-slate-700"
+                >
                   {subcategory.name}
                 </SelectItem>
               ))}
@@ -77,51 +81,49 @@ export const RealEstateStep1: React.FC<RealEstateStep1Props> = ({
           </Select>
         </div>
 
-        <div>
-          <Label htmlFor="serverId" className="text-white">Сервер <span className="text-red-400">*</span></Label>
-          <Select 
-            value={formData.serverId.toString()} 
+        <div className="space-y-2">
+          <Label htmlFor="server" className="text-slate-300">Сервер *</Label>
+          <Select
+            value={formData.serverId?.toString()}
             onValueChange={(value) => updateData('serverId', parseInt(value))}
           >
-            <SelectTrigger className="bg-white/10 border-white/20 text-white">
+            <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
               <SelectValue placeholder="Выберите сервер" />
             </SelectTrigger>
-            <SelectContent>
-              {servers.map((server) => (
-                <SelectItem key={server.id} value={server.id.toString()}>
+            <SelectContent className="bg-slate-800 border-slate-600">
+              {servers?.map((server) => (
+                <SelectItem 
+                  key={server.id} 
+                  value={server.id.toString()}
+                  className="text-white hover:bg-slate-700"
+                >
                   {server.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-      </div>
 
-      <div>
-        <Label htmlFor="title" className="text-white">Название <span className="text-red-400">*</span></Label>
-        <Input
-          id="title"
-          type="text"
-          value={formData.title}
-          onChange={(e) => updateData('title', e.target.value)}
-          placeholder="Например: Продается 3-комнатная квартира в центре"
-          className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-        />
-      </div>
+        <div className="space-y-2">
+          <Label htmlFor="title" className="text-slate-300">Название *</Label>
+          <Input
+            id="title"
+            value={formData.title}
+            onChange={(e) => updateData('title', e.target.value)}
+            className="bg-slate-800 border-slate-600 text-white"
+            placeholder="Введите название"
+          />
+        </div>
 
-      <div>
-        <Label htmlFor="price" className="text-white">Цена <span className="text-red-400">*</span></Label>
-        <div className="relative">
-          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/50" />
+        <div className="space-y-2">
+          <Label htmlFor="price" className="text-slate-300">Цена *</Label>
           <Input
             id="price"
             type="number"
-            value={formData.price}
-            onChange={(e) => updateData('price', e.target.value)}
-            placeholder="1000000"
             min="0"
-            step="1000"
-            className="bg-white/10 border-white/20 text-white placeholder:text-white/50 pl-10"
+            value={formData.price}
+            onChange={(e) => updateData('price', parseInt(e.target.value) || 0)}
+            className="bg-slate-800 border-slate-600 text-white"
           />
         </div>
       </div>

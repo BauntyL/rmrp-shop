@@ -37,7 +37,7 @@ export default function FishStep1({ data, onDataChange, onValidationChange, serv
   }, [formData, onValidationChange]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 h-full">
       <div className="text-center mb-4">
         <h3 className="text-lg font-semibold text-cyan-400 mb-2">Основная информация</h3>
         <p className="text-slate-400 text-sm">Тип рыбы, количество, описание, цена и сервер</p>
@@ -45,13 +45,36 @@ export default function FishStep1({ data, onDataChange, onValidationChange, serv
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="fishType" className="text-slate-300">Тип рыбы *</Label>
+          <Label htmlFor="server" className="text-slate-300">Сервер *</Label>
+          <Select
+            value={formData.serverId?.toString()}
+            onValueChange={(value) => updateData('serverId', parseInt(value))}
+          >
+            <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+              <SelectValue placeholder="Выберите сервер" />
+            </SelectTrigger>
+            <SelectContent className="bg-slate-800 border-slate-600">
+              {servers.map((server) => (
+                <SelectItem 
+                  key={server.id} 
+                  value={server.id.toString()}
+                  className="text-white hover:bg-slate-700"
+                >
+                  {server.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="title" className="text-slate-300">Название *</Label>
           <Input
-            id="fishType"
-            value={formData.fishType}
-            onChange={(e) => updateData('fishType', e.target.value)}
-            placeholder="Например: Лосось, Окунь, Щука"
+            id="title"
+            value={formData.title}
+            onChange={(e) => updateData('title', e.target.value)}
             className="bg-slate-800 border-slate-600 text-white"
+            placeholder="Введите название"
           />
         </div>
 
@@ -73,28 +96,10 @@ export default function FishStep1({ data, onDataChange, onValidationChange, serv
             id="price"
             type="number"
             min="0"
-            step="0.01"
             value={formData.price}
-            onChange={(e) => updateData('price', parseFloat(e.target.value) || 0)}
-            placeholder="0.00"
+            onChange={(e) => updateData('price', parseInt(e.target.value) || 0)}
             className="bg-slate-800 border-slate-600 text-white"
           />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="serverId" className="text-slate-300">Сервер *</Label>
-          <Select value={formData.serverId.toString()} onValueChange={(value) => updateData('serverId', parseInt(value))}>
-            <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-              <SelectValue placeholder="Выберите сервер" />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-slate-600">
-              {servers.map((server) => (
-                <SelectItem key={server.id} value={server.id.toString()} className="text-white hover:bg-slate-700">
-                  {server.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
@@ -104,9 +109,8 @@ export default function FishStep1({ data, onDataChange, onValidationChange, serv
           id="description"
           value={formData.description}
           onChange={(e) => updateData('description', e.target.value)}
-          placeholder="Опишите вашу рыбу (минимум 10 символов)"
-          className="bg-slate-800 border-slate-600 text-white min-h-[80px] resize-none"
-          rows={3}
+          className="bg-slate-800 border-slate-600 text-white h-24"
+          placeholder="Опишите вашу рыбу..."
         />
       </div>
     </div>

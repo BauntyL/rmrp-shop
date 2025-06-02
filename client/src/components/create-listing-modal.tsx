@@ -159,7 +159,7 @@ export default function CreateListingModal({ open, onOpenChange }: CreateListing
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-violet-500/20 text-white shadow-2xl shadow-violet-500/10">
+      <DialogContent className="max-w-5xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-violet-500/20 text-white shadow-2xl shadow-violet-500/10">
         <StepWizard
           steps={steps}
           form={form}

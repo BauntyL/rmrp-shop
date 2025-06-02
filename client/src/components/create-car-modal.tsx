@@ -103,7 +103,7 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
+      <DialogContent className="max-w-2xl bg-slate-900 border-slate-700">
         <StepWizard
           steps={steps}
           onComplete={handleComplete}

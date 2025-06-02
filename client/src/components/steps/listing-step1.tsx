@@ -66,97 +66,77 @@ export const ListingStep1: React.FC<ListingStep1Props> = ({
   const currentSubcategories = subcategories.filter((sub: any) => sub.parentId === formData.categoryId);
 
   return (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold text-violet-400 mb-2">Основная информация</h3>
-        <p className="text-slate-400">Выберите категорию и опишите ваш товар</p>
-      </div>
+    <div className="space-y-4 h-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="title" className="text-slate-300">Название *</Label>
+          <Input
+            id="title"
+            value={formData.title}
+            onChange={(e) => updateData('title', e.target.value)}
+            className="bg-slate-800 border-slate-600 text-white"
+            placeholder="Введите название"
+          />
+        </div>
 
-      {/* Category Selection */}
-      <div className="space-y-4">
-        <Label className="text-white font-medium">Категория товара</Label>
-        <RadioGroup
-          value={formData.categoryId?.toString()}
-          onValueChange={(value) => {
-            const categoryId = parseInt(value);
-            updateData('categoryId', categoryId);
-            updateData('subcategoryId', 0); // Reset subcategory
-          }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4"
-        >
-          {mainCategories.map((category: any) => (
-            <div key={category.id} className="relative group">
-              <RadioGroupItem 
-                value={category.id.toString()} 
-                id={category.id.toString()} 
-                className="sr-only" 
-              />
-              <Label 
-                htmlFor={category.id.toString()} 
-                className={`flex items-center space-x-3 cursor-pointer p-4 rounded-xl border-2 transition-all duration-300 hover:scale-105 ${
-                  formData.categoryId === category.id 
-                    ? `bg-gradient-to-r ${getCategoryGradient(category.name)} border-opacity-100` 
-                    : 'bg-slate-800/30 border-slate-600/50 hover:border-slate-500/70'
-                }`}
-              >
-                <div className={`p-2 rounded-lg ${
-                  formData.categoryId === category.id 
-                    ? 'bg-white/10' 
-                    : 'bg-slate-700/50'
-                }`}>
-                  {getCategoryIcon(category.name)}
-                </div>
-                <span className="font-medium text-white">{category.displayName}</span>
-              </Label>
-            </div>
-          ))}
-        </RadioGroup>
-      </div>
-
-      {/* Subcategory Selection */}
-      {formData.categoryId > 0 && currentSubcategories.length > 0 && (
-        <div className="space-y-4">
-          <Label className="text-white font-medium">Подкатегория</Label>
-          <Select 
-            onValueChange={(value) => updateData('subcategoryId', parseInt(value))} 
-            value={formData.subcategoryId?.toString()}
+        <div className="space-y-2">
+          <Label htmlFor="category" className="text-slate-300">Категория *</Label>
+          <Select
+            value={formData.categoryId?.toString()}
+            onValueChange={(value) => updateData('categoryId', parseInt(value))}
           >
-            <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white hover:border-purple-500/50 transition-colors">
-              <SelectValue placeholder="Выберите подкатегорию" />
+            <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+              <SelectValue placeholder="Выберите категорию" />
             </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-slate-700">
-              {currentSubcategories.map((subcategory: any) => (
-                <SelectItem key={subcategory.id} value={subcategory.id.toString()} className="text-white hover:bg-slate-700">
-                  {subcategory.displayName}
+            <SelectContent className="bg-slate-800 border-slate-600">
+              {categories?.map((category) => (
+                <SelectItem 
+                  key={category.id} 
+                  value={category.id.toString()}
+                  className="text-white hover:bg-slate-700"
+                >
+                  {category.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-      )}
 
-      {/* Title */}
-      <div className="space-y-2">
-        <Label className="text-white font-medium">Название товара</Label>
-        <Input 
-          placeholder="Краткое описание товара" 
-          value={formData.title}
-          onChange={(e) => updateData('title', e.target.value)}
-          className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400 focus:border-emerald-500/50 transition-colors"
-        />
+        {formData.categoryId && subcategories?.length > 0 && (
+          <div className="space-y-2">
+            <Label htmlFor="subcategory" className="text-slate-300">Подкатегория</Label>
+            <Select
+              value={formData.subcategoryId?.toString()}
+              onValueChange={(value) => updateData('subcategoryId', parseInt(value))}
+            >
+              <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                <SelectValue placeholder="Выберите подкатегорию" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-800 border-slate-600">
+                {subcategories.map((subcategory) => (
+                  <SelectItem 
+                    key={subcategory.id} 
+                    value={subcategory.id.toString()}
+                    className="text-white hover:bg-slate-700"
+                  >
+                    {subcategory.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
-      {/* Description */}
       <div className="space-y-2">
-        <Label className="text-white font-medium">Описание</Label>
-        <Textarea 
-          placeholder="Подробное описание товара" 
-          rows={4}
+        <Label htmlFor="description" className="text-slate-300">Описание *</Label>
+        <Textarea
+          id="description"
           value={formData.description}
           onChange={(e) => updateData('description', e.target.value)}
-          className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400 focus:border-emerald-500/50 transition-colors resize-none"
+          className="bg-slate-800 border-slate-600 text-white h-24"
+          placeholder="Опишите ваш товар..."
         />
-        <p className="text-xs text-slate-400">Минимум 10 символов</p>
       </div>
     </div>
   );

@@ -59,7 +59,7 @@ export const ListingStep3: React.FC<ListingStep3Props> = ({
   }, [formData, onValidationChange]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 h-full">
       <div className="text-center mb-6">
         <h3 className="text-lg font-semibold text-violet-400 mb-2">Контакты, цена и сервер</h3>
         <p className="text-slate-400">Укажите цену, выберите сервер и контактную информацию</p>

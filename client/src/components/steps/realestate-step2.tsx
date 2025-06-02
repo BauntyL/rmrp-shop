@@ -32,92 +32,65 @@ export const RealEstateStep2: React.FC<RealEstateStep2Props> = ({ data, onDataCh
   const isBusiness = data.subcategoryId === 3;
 
   return (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <Info className="w-5 h-5 text-green-400" />
-          <h3 className="text-lg font-semibold text-white">Дополнительная информация</h3>
-        </div>
-        <p className="text-white/80 text-sm">Укажите дополнительные характеристики недвижимости</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <Label htmlFor="garageSpaces" className="text-white flex items-center gap-2">
-            <Car className="w-4 h-4" />
-            Количество гаражных мест
-          </Label>
+    <div className="space-y-4 h-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="parkingSpaces" className="text-slate-300">Парковочные места</Label>
           <Input
-            id="garageSpaces"
+            id="parkingSpaces"
             type="number"
-            value={formData.garageSpaces}
-            onChange={(e) => updateData('garageSpaces', e.target.value)}
-            placeholder="0"
             min="0"
-            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+            value={formData.parkingSpaces}
+            onChange={(e) => updateData('parkingSpaces', parseInt(e.target.value) || 0)}
+            className="bg-slate-800 border-slate-600 text-white"
           />
         </div>
 
-        <div>
-          <Label htmlFor="warehouses" className="text-white flex items-center gap-2">
-            <Warehouse className="w-4 h-4" />
-            Количество складов
-          </Label>
+        <div className="space-y-2">
+          <Label htmlFor="storageRooms" className="text-slate-300">Складские помещения</Label>
           <Input
-            id="warehouses"
+            id="storageRooms"
             type="number"
-            value={formData.warehouses}
-            onChange={(e) => updateData('warehouses', e.target.value)}
-            placeholder="0"
             min="0"
-            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+            value={formData.storageRooms}
+            onChange={(e) => updateData('storageRooms', parseInt(e.target.value) || 0)}
+            className="bg-slate-800 border-slate-600 text-white"
           />
         </div>
 
-        <div>
-          <Label htmlFor="helipads" className="text-white flex items-center gap-2">
-            <Plane className="w-4 h-4" />
-            Количество вертолетных площадок
-          </Label>
+        <div className="space-y-2">
+          <Label htmlFor="helipadCount" className="text-slate-300">Вертолетные площадки</Label>
           <Input
-            id="helipads"
+            id="helipadCount"
             type="number"
-            value={formData.helipads}
-            onChange={(e) => updateData('helipads', e.target.value)}
-            placeholder="0"
             min="0"
-            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+            value={formData.helipadCount}
+            onChange={(e) => updateData('helipadCount', parseInt(e.target.value) || 0)}
+            className="bg-slate-800 border-slate-600 text-white"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="monthlyIncome" className="text-slate-300">Ежемесячный доход</Label>
+          <Input
+            id="monthlyIncome"
+            type="number"
+            min="0"
+            value={formData.monthlyIncome}
+            onChange={(e) => updateData('monthlyIncome', parseInt(e.target.value) || 0)}
+            className="bg-slate-800 border-slate-600 text-white"
           />
         </div>
       </div>
 
-      {isBusiness && (
-        <div>
-          <Label htmlFor="income" className="text-white flex items-center gap-2">
-            <TrendingUp className="w-4 h-4" />
-            Доход (только для бизнеса)
-          </Label>
-          <Input
-            id="income"
-            type="number"
-            value={formData.income}
-            onChange={(e) => updateData('income', e.target.value)}
-            placeholder="50000"
-            min="0"
-            step="1000"
-            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-          />
-        </div>
-      )}
-
-      <div>
-        <Label htmlFor="description" className="text-white">Описание</Label>
+      <div className="space-y-2">
+        <Label htmlFor="description" className="text-slate-300">Описание *</Label>
         <Textarea
           id="description"
           value={formData.description}
           onChange={(e) => updateData('description', e.target.value)}
-          placeholder="Подробное описание недвижимости, особенности, преимущества..."
-          className="bg-white/10 border-white/20 text-white placeholder:text-white/50 min-h-[120px]"
+          className="bg-slate-800 border-slate-600 text-white h-24"
+          placeholder="Опишите вашу недвижимость..."
         />
       </div>
     </div>

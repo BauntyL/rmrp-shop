@@ -94,7 +94,7 @@ export default function StepWizard<T>({
   const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (
-    <div className={cn('relative flex flex-col h-[90vh] overflow-hidden', className)}>
+    <div className={cn('relative flex flex-col min-h-[500px] max-h-[80vh]', className)}>
       {/* Animated Background */}
       <div className={cn(
         'absolute inset-0 bg-gradient-to-br opacity-30',
@@ -102,7 +102,7 @@ export default function StepWizard<T>({
       )} />
       
       {/* Floating Orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="relative">
         <motion.div
           animate={{
             x: [0, 100, 0],
@@ -139,7 +139,7 @@ export default function StepWizard<T>({
       </div>
 
       {/* Header */}
-      <div className="relative z-10 p-8 bg-white/5 backdrop-blur-sm border-b border-white/10">
+      <div className="relative z-10 p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">
             <motion.div 
@@ -182,7 +182,7 @@ export default function StepWizard<T>({
         </div>
 
         {/* Step indicators */}
-        <div className="flex justify-center mt-8 space-x-4">
+        <div className="flex justify-center mt-6 space-x-2">
           {steps.map((step, index) => (
             <motion.div
               key={step.id}
@@ -219,7 +219,7 @@ export default function StepWizard<T>({
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex-1 overflow-y-auto">
+      <div className="relative z-10 flex-1 overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
@@ -227,7 +227,7 @@ export default function StepWizard<T>({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="p-8 min-h-full bg-white/5 backdrop-blur-sm"
+            className="h-full p-6 bg-white/5 backdrop-blur-sm"
           >
             {React.cloneElement(steps[currentStep].component as React.ReactElement, {
               data: formData,
@@ -241,7 +241,7 @@ export default function StepWizard<T>({
       </div>
 
       {/* Footer */}
-      <div className="relative z-10 p-8 bg-white/5 backdrop-blur-sm border-t border-white/10">
+      <div className="relative z-10 p-6 bg-white/5 backdrop-blur-sm border-t border-white/10">
         <div className="flex justify-between">
           <Button
             variant="outline"

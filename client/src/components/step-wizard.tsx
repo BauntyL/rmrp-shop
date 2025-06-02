@@ -92,8 +92,8 @@ export default function StepWizard({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       className={cn(
-        'relative w-full overflow-hidden',
-        'bg-transparent rounded-2xl',
+        'relative w-full h-[80vh] max-h-[600px] flex flex-col',
+        'bg-slate-900 rounded-xl border border-slate-700',
         'bg-gradient-to-br', theme.gradient,
         className
       )}
@@ -166,7 +166,7 @@ export default function StepWizard({
       </div>
     
       {/* Content */}
-      <div className="relative h-[60vh] overflow-hidden">
+      <div className="relative flex-1 min-h-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
@@ -174,7 +174,7 @@ export default function StepWizard({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="absolute inset-0 p-6 overflow-y-auto scrollbar-hide"
+            className="h-full p-6"
           >
             {steps[currentStep].component}
           </motion.div>

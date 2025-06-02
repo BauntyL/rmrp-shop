@@ -9,18 +9,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import StepWizard from "@/components/step-wizard";
 
 const createTreasureSchema = z.object({
-  // Основная информация
-  name: z.string().min(1, "Название обязательно"),
-  description: z.string().min(10, "Описание должно содержать минимум 10 символов"),
-  categoryId: z.literal(4), // Только клады
-  
-  // Детали клада
-  treasureType: z.string().min(1, "Укажите тип клада"),
+  // Шаг 1: Основная информация
+  treasureType: z.string().min(1, "Укажите тип сокровища"),
   quantity: z.coerce.number().min(1, "Количество должно быть больше 0"),
-  rarity: z.string().min(1, "Укажите редкость"),
-  condition: z.string().min(1, "Укажите состояние"),
+  description: z.string().min(10, "Описание должно содержать минимум 10 символов"),
+  price: z.coerce.number().min(1, "Цена должна быть больше 0"),
+  serverId: z.coerce.number().min(1, "Выберите сервер"),
   
-  // Контакты, цена и сервер
+  // Шаг 2: Изображение и контакты
+  imageUrl: z.string().url("Введите корректную ссылку на изображение").optional().or(z.literal("")),
   contacts: z.object({
     discord: z.string().optional(),
     telegram: z.string().optional(),
@@ -32,13 +29,10 @@ const createTreasureSchema = z.object({
       path: ["contacts"]
     }
   ),
-  contact: z.string().optional(),
-  price: z.coerce.number().min(1, "Цена должна быть больше 0"),
-  serverId: z.coerce.number().min(1, "Выберите сервер"),
-  location: z.string().min(1, "Укажите местоположение"),
-  images: z.array(z.any()).optional(),
-  additionalInfo: z.string().optional(),
-  notes: z.string().optional(),
+  
+  // Системные поля
+  categoryId: z.literal(4), // Только клады
+  name: z.string().default("Сокровище"), // Автоматически генерируется
 });
 
 type CreateTreasureFormData = z.infer<typeof createTreasureSchema>;
@@ -59,21 +53,17 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
   const handleComplete = async (data: CreateTreasureFormData) => {
     try {
       const productData = {
-        name: data.name,
+        name: `${data.treasureType} (${data.quantity} шт.)`,
         description: data.description,
         price: data.price,
         categoryId: data.categoryId,
         serverId: data.serverId,
-        images: data.images || [],
+        images: data.imageUrl ? [data.imageUrl] : [],
         metadata: {
           treasureType: data.treasureType,
           quantity: data.quantity,
-          rarity: data.rarity,
-          condition: data.condition,
           contacts: data.contacts,
-          location: data.location,
-          additionalInfo: data.additionalInfo,
-          notes: data.notes,
+          imageUrl: data.imageUrl,
         },
       };
       
@@ -86,7 +76,7 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
       
       toast({
         title: "Объявление создано",
-        description: "Ваше объявление о кладе отправлено на модерацию",
+        description: "Ваше объявление о сокровище отправлено на модерацию",
       });
       onOpenChange(false);
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
@@ -101,25 +91,19 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
   };
 
   const defaultValues: CreateTreasureFormData = {
-    name: "",
-    description: "",
-    categoryId: 4,
     treasureType: "",
     quantity: 1,
-    rarity: "",
-    condition: "",
+    description: "",
+    price: 0,
+    serverId: 0,
+    imageUrl: "",
     contacts: {
       discord: "",
       telegram: "",
       phone: "",
     },
-    contact: "",
-    price: 0,
-    serverId: 0,
-    location: "",
-    images: [],
-    additionalInfo: "",
-    notes: "",
+    categoryId: 4,
+    name: "Сокровище",
   };
 
   return (

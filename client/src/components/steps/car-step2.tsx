@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Image } from 'lucide-react';
 
 interface CarStep2Props {
   data: any;
@@ -12,7 +13,8 @@ interface CarStep2Props {
 export const CarStep2: React.FC<CarStep2Props> = ({ data, onDataChange, onValidationChange }) => {
   const [formData, setFormData] = useState({
     price: data.price || 0,
-    carType: data.metadata?.carType || '',
+    carType: data.carType || '',
+    imageUrl: data.imageUrl || '',
     ...data
   });
 
@@ -20,21 +22,10 @@ export const CarStep2: React.FC<CarStep2Props> = ({ data, onDataChange, onValida
     const newData = { ...formData, [field]: value };
     setFormData(newData);
     
-    let updatedData;
-    if (field === 'carType') {
-      updatedData = {
-        ...data,
-        metadata: {
-          ...data.metadata,
-          carType: value
-        }
-      };
-    } else {
-      updatedData = {
-        ...data,
-        [field]: value
-      };
-    }
+    const updatedData = {
+      ...data,
+      [field]: value
+    };
     
     onDataChange(updatedData);
   };
@@ -47,7 +38,7 @@ export const CarStep2: React.FC<CarStep2Props> = ({ data, onDataChange, onValida
 
   const carTypes = [
     'Стандарт',
-    'Купе',
+    'Купе', 
     'Спорт',
     'Внедорожник',
     'Мотоцикл',
@@ -58,7 +49,7 @@ export const CarStep2: React.FC<CarStep2Props> = ({ data, onDataChange, onValida
     <div className="space-y-6">
       <div className="text-center mb-6">
         <h3 className="text-lg font-semibold text-red-400 mb-2">Характеристики автомобиля</h3>
-        <p className="text-slate-400">Укажите цену и тип автомобиля</p>
+        <p className="text-slate-400">Укажите цену, тип автомобиля и изображение</p>
       </div>
 
       <div className="space-y-6">
@@ -76,6 +67,7 @@ export const CarStep2: React.FC<CarStep2Props> = ({ data, onDataChange, onValida
               placeholder="1500000"
               className="bg-slate-800 border-slate-600 text-white"
             />
+            <p className="text-xs text-slate-400">Укажите цену в рублях</p>
           </div>
 
           <div className="space-y-2">
@@ -93,6 +85,40 @@ export const CarStep2: React.FC<CarStep2Props> = ({ data, onDataChange, onValida
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        <div className="bg-white/5 rounded-lg p-4 space-y-4">
+          <h4 className="text-white font-medium mb-4">🖼️ Изображение автомобиля</h4>
+          
+          <div className="space-y-2">
+            <Label htmlFor="imageUrl" className="text-slate-300">Ссылка на изображение</Label>
+            <Input
+              id="imageUrl"
+              type="url"
+              value={formData.imageUrl}
+              onChange={(e) => updateData('imageUrl', e.target.value)}
+              placeholder="https://example.com/car-image.jpg"
+              className="bg-slate-800 border-slate-600 text-white"
+            />
+            <p className="text-xs text-slate-400">Вставьте ссылку на изображение вашего автомобиля</p>
+          </div>
+          
+          {formData.imageUrl && (
+            <div className="border border-slate-600 rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <Image className="h-4 w-4 text-red-400" />
+                <span className="text-sm text-slate-300">Предварительный просмотр:</span>
+              </div>
+              <img
+                src={formData.imageUrl}
+                alt="Preview"
+                className="w-full max-w-xs h-48 object-cover rounded-lg"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </div>
+          )}
         </div>
 
         <div className="bg-slate-800 p-4 rounded-lg border border-slate-600">

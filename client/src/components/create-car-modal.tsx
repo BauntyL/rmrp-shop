@@ -9,48 +9,29 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import StepWizard from "@/components/step-wizard";
 
 const createCarSchema = z.object({
+  // Шаг 1: Основная информация
   title: z.string().min(1, "Название автомобиля обязательно"),
   description: z.string().min(1, "Описание обязательно"),
-  price: z.number().min(1, "Цена должна быть больше 0"),
   serverId: z.number().min(1, "Выберите сервер"),
+  contacts: z.object({
+    discord: z.string().optional(),
+    telegram: z.string().optional(),
+    phone: z.string().optional(),
+  }).refine(
+    (data) => data.discord || data.telegram || data.phone,
+    {
+      message: "Укажите хотя бы один способ связи",
+      path: ["contacts"]
+    }
+  ),
+  
+  // Шаг 2: Характеристики автомобиля
+  price: z.number().min(1, "Цена должна быть больше 0"),
+  carType: z.string().min(1, "Выберите тип автомобиля"),
   imageUrl: z.string().url("Введите корректную ссылку на изображение").optional().or(z.literal("")),
-  metadata: z.object({
-    // Step 1 - Основная информация
-    brand: z.string().min(1, "Марка обязательна"),
-    model: z.string().min(1, "Модель обязательна"),
-    year: z.number().min(1900, "Некорректный год").max(new Date().getFullYear() + 1, "Некорректный год"),
-    category: z.enum(["sedan", "hatchback", "suv", "coupe", "wagon", "convertible", "pickup", "van", "motorcycle"], {
-      required_error: "Выберите категорию автомобиля"
-    }),
-    
-    // Step 2 - Детали автомобиля
-    engineType: z.string().min(1, "Тип двигателя обязателен"),
-    engineVolume: z.number().min(0.1, "Объем двигателя должен быть больше 0"),
-    horsepower: z.number().min(1, "Мощность должна быть больше 0"),
-    transmission: z.enum(["manual", "automatic", "cvt", "robot"], {
-      required_error: "Выберите тип коробки передач"
-    }),
-    driveType: z.enum(["front", "rear", "all"], {
-      required_error: "Выберите тип привода"
-    }),
-    fuelType: z.enum(["gasoline", "diesel", "hybrid", "electric", "gas"], {
-      required_error: "Выберите тип топлива"
-    }),
-    mileage: z.number().min(0, "Пробег не может быть отрицательным"),
-    condition: z.enum(["new", "excellent", "good", "fair", "poor"], {
-      required_error: "Выберите состояние автомобиля"
-    }),
-    color: z.string().min(1, "Цвет обязателен"),
-    
-    // Step 3 - Контакты
-    contacts: z.object({
-      discord: z.string().optional(),
-      telegram: z.string().optional(),
-      phone: z.string().optional(),
-    }).refine(data => data.discord || data.telegram || data.phone, {
-      message: "Необходимо указать хотя бы один способ связи"
-    })
-  })
+  
+  // Системные поля
+  categoryId: z.literal(1), // Автомобили
 });
 
 type CreateCarFormData = z.infer<typeof createCarSchema>;
@@ -68,6 +49,21 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
     queryKey: ["/api/servers"],
   });
 
+  const defaultValues: CreateCarFormData = {
+    title: "",
+    description: "",
+    serverId: 0,
+    contacts: {
+      discord: "",
+      telegram: "",
+      phone: "",
+    },
+    price: 0,
+    carType: "",
+    imageUrl: "",
+    categoryId: 1,
+  };
+
   const handleComplete = async (data: CreateCarFormData) => {
     try {
       const productData = {
@@ -77,7 +73,11 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
         categoryId: 1, // Cars category
         serverId: data.serverId,
         images: data.imageUrl ? [data.imageUrl] : [],
-        metadata: data.metadata
+        metadata: {
+          carType: data.carType,
+          contacts: data.contacts,
+          imageUrl: data.imageUrl,
+        }
       };
       
       const response = await apiRequest("POST", "/api/products", productData);
@@ -96,34 +96,6 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
         variant: "destructive",
       });
       throw error;
-    }
-  };
-
-  const defaultValues: CreateCarFormData = {
-    title: "",
-    description: "",
-    price: 0,
-    serverId: 0,
-    imageUrl: "",
-    metadata: {
-      brand: "",
-      model: "",
-      year: new Date().getFullYear(),
-      category: "sedan",
-      engineType: "",
-      engineVolume: 0,
-      horsepower: 0,
-      transmission: "manual",
-      driveType: "front",
-      fuelType: "gasoline",
-      mileage: 0,
-      condition: "good",
-      color: "",
-      contacts: {
-        discord: "",
-        telegram: "",
-        phone: "",
-      }
     }
   };
 
@@ -176,4 +148,3 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
     </Dialog>
   );
 }
-import { CarStep1, CarStep2 } from "./steps";

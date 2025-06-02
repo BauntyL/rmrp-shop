@@ -197,14 +197,27 @@ export const insertUserSchema = createInsertSchema(users).omit({
   updatedAt: true,
 });
 
-export const insertProductSchema = createInsertSchema(products).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  status: true,
-  moderatorId: true,
-  moderatorNote: true,
-});
+export const insertProductSchema = createInsertSchema(products)
+  .extend({
+    metadata: z.object({
+      treasureType: z.string().optional(),
+      quantity: z.number().optional(),
+      contacts: z.object({
+        discord: z.string().optional(),
+        telegram: z.string().optional(),
+        phone: z.string().optional(),
+      }).optional(),
+      imageUrl: z.string().optional(),
+    }).optional(),
+  })
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+    status: true,
+    moderatorId: true,
+    moderatorNote: true,
+  });
 
 export const insertFavoriteSchema = createInsertSchema(favorites).omit({
   id: true,

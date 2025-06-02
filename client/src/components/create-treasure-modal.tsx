@@ -88,28 +88,30 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
           imageUrl: data.imageUrl,
         },
       };
+
+      console.log('Sending product data:', JSON.stringify(productData, null, 2));
       
       const response = await apiRequest("POST", "/api/products", productData);
-      let errorMessage;
+      const responseData = await response.json();
       
-      try {
-        const responseData = await response.json();
-        if (!response.ok) {
-          errorMessage = responseData.message || "Не удалось создать объявление";
-          throw new Error(errorMessage);
-        }
-        
-        toast({
-          title: "Объявление создано",
-          description: "Ваше объявление о сокровище отправлено на модерацию",
-        });
-        onOpenChange(false);
-        queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      } catch (parseError) {
-        console.error("Error parsing response:", parseError);
-        throw new Error("Ошибка при обработке ответа от сервера");
+      console.log('Server response:', JSON.stringify(responseData, null, 2));
+
+      if (!response.ok) {
+        const message = responseData.message || 
+          (responseData.errors && responseData.errors.length > 0 
+            ? responseData.errors.map((e: any) => e.message).join(", ") 
+            : "Не удалось создать объявление");
+        throw new Error(message);
       }
+      
+      toast({
+        title: "Объявление создано",
+        description: "Ваше объявление о сокровище отправлено на модерацию",
+      });
+      onOpenChange(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
     } catch (error: any) {
+      console.error('Error creating product:', error);
       toast({
         title: "Ошибка",
         description: error.message || "Не удалось создать объявление",

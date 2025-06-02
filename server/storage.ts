@@ -349,8 +349,44 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createProduct(product: InsertProduct): Promise<Product> {
-    const [newProduct] = await db.insert(products).values(product).returning();
-    return newProduct;
+    console.log('🗄️ Storage createProduct called with:', JSON.stringify(product, null, 2));
+    
+    // Проверяем обязательные поля
+    if (!product.title || !product.description || !product.price || !product.categoryId || !product.serverId || !product.userId) {
+      throw new Error('Missing required fields');
+    }
+
+    // Проверяем, что цена положительная
+    if (product.price <= 0) {
+      throw new Error('Price must be positive');
+    }
+
+    // Проверяем существование категории
+    const categoryResult = await db.select().from(categories).where(eq(categories.id, product.categoryId));
+    if (!categoryResult.length) {
+      throw new Error('Category not found');
+    }
+
+    // Проверяем существование сервера
+    const serverResult = await db.select().from(servers).where(eq(servers.id, product.serverId));
+    if (!serverResult.length) {
+      throw new Error('Server not found');
+    }
+
+    // Проверяем существование пользователя
+    const userResult = await db.select().from(users).where(eq(users.id, product.userId));
+    if (!userResult.length) {
+      throw new Error('User not found');
+    }
+
+    try {
+      const [newProduct] = await db.insert(products).values(product).returning();
+      console.log('🗄️ Created product:', JSON.stringify(newProduct, null, 2));
+      return newProduct;
+    } catch (error) {
+      console.error('🗄️ Error creating product:', error);
+      throw error;
+    }
   }
 
   async updateProductStatus(id: number, status: string, moderatorId?: number, note?: string): Promise<Product> {

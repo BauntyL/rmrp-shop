@@ -54,7 +54,10 @@ export interface IStorage {
   createProduct(product: InsertProduct): Promise<Product>;
   updateProductStatus(id: number, status: string, moderatorId?: number, note?: string): Promise<Product>;
   getUserProducts(userId: number): Promise<Product[]>;
-  getPendingProducts(): Promise<Product[]>;
+  getPendingProducts(filters?: {
+    categoryId?: string;
+    serverId?: string;
+  }): Promise<any[]>;
   // Новые методы для редактирования и удаления
   updateProduct(id: number, updates: Partial<InsertProduct>): Promise<Product>;
   updateProductPrice(id: number, price: number): Promise<Product>;
@@ -82,12 +85,66 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   // User operations
   async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
+    const [user] = await db
+      .select({
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        email: users.email,
+        username: users.username,
+        password: users.password,
+        role: users.role,
+        isBanned: users.isBanned,
+        banReason: users.banReason,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+        profileImageUrl: users.profileImageUrl,
+        productsCount: sql<number>`(
+          select count(*)
+          from ${products}
+          where ${products.userId} = ${users.id}
+        )`,
+        messagesCount: sql<number>`(
+          select count(*)
+          from ${messages}
+          where ${messages.senderId} = ${users.id}
+        )`,
+      })
+      .from(users)
+      .where(eq(users.id, id));
+
     return user;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
+    const [user] = await db
+      .select({
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        email: users.email,
+        username: users.username,
+        password: users.password,
+        role: users.role,
+        isBanned: users.isBanned,
+        banReason: users.banReason,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+        profileImageUrl: users.profileImageUrl,
+        productsCount: sql<number>`(
+          select count(*)
+          from ${products}
+          where ${products.userId} = ${users.id}
+        )`,
+        messagesCount: sql<number>`(
+          select count(*)
+          from ${messages}
+          where ${messages.senderId} = ${users.id}
+        )`,
+      })
+      .from(users)
+      .where(eq(users.email, email));
+
     return user;
   }
 
@@ -97,7 +154,34 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(user: InsertUser): Promise<User> {
-    const [newUser] = await db.insert(users).values(user).returning();
+    const [newUser] = await db
+      .insert(users)
+      .values(user)
+      .returning({
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        email: users.email,
+        username: users.username,
+        password: users.password,
+        role: users.role,
+        isBanned: users.isBanned,
+        banReason: users.banReason,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+        profileImageUrl: users.profileImageUrl,
+        productsCount: sql<number>`(
+          select count(*)
+          from ${products}
+          where ${products.userId} = ${users.id}
+        )`,
+        messagesCount: sql<number>`(
+          select count(*)
+          from ${messages}
+          where ${messages.senderId} = ${users.id}
+        )`,
+      });
+
     return newUser;
   }
 
@@ -106,7 +190,31 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ role, updatedAt: new Date() })
       .where(eq(users.id, id))
-      .returning();
+      .returning({
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        email: users.email,
+        username: users.username,
+        password: users.password,
+        role: users.role,
+        isBanned: users.isBanned,
+        banReason: users.banReason,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+        profileImageUrl: users.profileImageUrl,
+        productsCount: sql<number>`(
+          select count(*)
+          from ${products}
+          where ${products.userId} = ${users.id}
+        )`,
+        messagesCount: sql<number>`(
+          select count(*)
+          from ${messages}
+          where ${messages.senderId} = ${users.id}
+        )`,
+      });
+
     return user;
   }
 
@@ -115,7 +223,31 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ isBanned: true, banReason: reason, updatedAt: new Date() })
       .where(eq(users.id, id))
-      .returning();
+      .returning({
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        email: users.email,
+        username: users.username,
+        password: users.password,
+        role: users.role,
+        isBanned: users.isBanned,
+        banReason: users.banReason,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+        profileImageUrl: users.profileImageUrl,
+        productsCount: sql<number>`(
+          select count(*)
+          from ${products}
+          where ${products.userId} = ${users.id}
+        )`,
+        messagesCount: sql<number>`(
+          select count(*)
+          from ${messages}
+          where ${messages.senderId} = ${users.id}
+        )`,
+      });
+
     return user;
   }
 
@@ -124,12 +256,62 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ isBanned: false, banReason: null, updatedAt: new Date() })
       .where(eq(users.id, id))
-      .returning();
+      .returning({
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        email: users.email,
+        username: users.username,
+        password: users.password,
+        role: users.role,
+        isBanned: users.isBanned,
+        banReason: users.banReason,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+        profileImageUrl: users.profileImageUrl,
+        productsCount: sql<number>`(
+          select count(*)
+          from ${products}
+          where ${products.userId} = ${users.id}
+        )`,
+        messagesCount: sql<number>`(
+          select count(*)
+          from ${messages}
+          where ${messages.senderId} = ${users.id}
+        )`,
+      });
+
     return user;
   }
 
   async getAllUsers(): Promise<User[]> {
-    return await db.select().from(users).orderBy(asc(users.createdAt));
+    return await db
+      .select({
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        email: users.email,
+        username: users.username,
+        password: users.password,
+        role: users.role,
+        isBanned: users.isBanned,
+        banReason: users.banReason,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+        profileImageUrl: users.profileImageUrl,
+        productsCount: sql<number>`(
+          select count(*)
+          from ${products}
+          where ${products.userId} = ${users.id}
+        )`,
+        messagesCount: sql<number>`(
+          select count(*)
+          from ${messages}
+          where ${messages.senderId} = ${users.id}
+        )`,
+      })
+      .from(users)
+      .orderBy(asc(users.createdAt));
   }
 
   // Server operations
@@ -176,10 +358,10 @@ export class DatabaseStorage implements IStorage {
   async initializeCategories(): Promise<void> {
     // Main categories
     const mainCategories = [
-      { name: "cars", displayName: "Автомобили", icon: "fas fa-car", color: "blue" },
-      { name: "realestate", displayName: "Недвижимость", icon: "fas fa-home", color: "green" },
-      { name: "fish", displayName: "Рыба", icon: "fas fa-fish", color: "cyan" },
-      { name: "treasures", displayName: "Клады", icon: "fas fa-gem", color: "purple" },
+      { name: "cars", displayName: "Автомобили", icon: "fas fa-car", color: "59, 130, 246" },
+      { name: "realestate", displayName: "Недвижимость", icon: "fas fa-home", color: "16, 185, 129" },
+      { name: "fish", displayName: "Рыба", icon: "fas fa-fish", color: "6, 182, 212" },
+      { name: "treasures", displayName: "Клады", icon: "fas fa-gem", color: "139, 92, 246" },
     ];
 
     const categoryMap = new Map();
@@ -204,28 +386,28 @@ export class DatabaseStorage implements IStorage {
     // Subcategories
     const subcategories = [
       // Car subcategories
-      { name: "cars_standard", displayName: "Стандарт", icon: "fas fa-car", color: "blue", parentId: categoryMap.get("cars") },
-      { name: "cars_sport", displayName: "Спорт", icon: "fas fa-car-side", color: "blue", parentId: categoryMap.get("cars") },
-      { name: "cars_suv", displayName: "Внедорожники", icon: "fas fa-truck", color: "blue", parentId: categoryMap.get("cars") },
-      { name: "cars_coupe", displayName: "Купе", icon: "fas fa-car", color: "blue", parentId: categoryMap.get("cars") },
-      { name: "cars_motorcycle", displayName: "Мотоциклы", icon: "fas fa-motorcycle", color: "blue", parentId: categoryMap.get("cars") },
-      { name: "cars_special", displayName: "Специальные", icon: "fas fa-truck-monster", color: "blue", parentId: categoryMap.get("cars") },
+      { name: "cars_standard", displayName: "Стандарт", icon: "fas fa-car", color: "59, 130, 246", parentId: categoryMap.get("cars") },
+      { name: "cars_sport", displayName: "Спорт", icon: "fas fa-car-side", color: "59, 130, 246", parentId: categoryMap.get("cars") },
+      { name: "cars_suv", displayName: "Внедорожники", icon: "fas fa-truck", color: "59, 130, 246", parentId: categoryMap.get("cars") },
+      { name: "cars_coupe", displayName: "Купе", icon: "fas fa-car", color: "59, 130, 246", parentId: categoryMap.get("cars") },
+      { name: "cars_motorcycle", displayName: "Мотоциклы", icon: "fas fa-motorcycle", color: "59, 130, 246", parentId: categoryMap.get("cars") },
+      { name: "cars_special", displayName: "Специальные", icon: "fas fa-truck-monster", color: "59, 130, 246", parentId: categoryMap.get("cars") },
       
       // Fish subcategories
-      { name: "fish_roach", displayName: "Плотва", icon: "fas fa-fish", color: "cyan", parentId: categoryMap.get("fish") },
-      { name: "fish_ruff", displayName: "Ерш", icon: "fas fa-fish", color: "cyan", parentId: categoryMap.get("fish") },
-      { name: "fish_trout", displayName: "Форель", icon: "fas fa-fish", color: "cyan", parentId: categoryMap.get("fish") },
-      { name: "fish_bream", displayName: "Лещ", icon: "fas fa-fish", color: "cyan", parentId: categoryMap.get("fish") },
-      { name: "fish_ide", displayName: "Язь", icon: "fas fa-fish", color: "cyan", parentId: categoryMap.get("fish") },
-      { name: "fish_catfish", displayName: "Сом", icon: "fas fa-fish", color: "cyan", parentId: categoryMap.get("fish") },
-      { name: "fish_pike", displayName: "Щука", icon: "fas fa-fish", color: "cyan", parentId: categoryMap.get("fish") },
-      { name: "fish_sturgeon", displayName: "Осетр", icon: "fas fa-fish", color: "cyan", parentId: categoryMap.get("fish") },
+      { name: "fish_roach", displayName: "Плотва", icon: "fas fa-fish", color: "6, 182, 212", parentId: categoryMap.get("fish") },
+      { name: "fish_ruff", displayName: "Ерш", icon: "fas fa-fish", color: "6, 182, 212", parentId: categoryMap.get("fish") },
+      { name: "fish_trout", displayName: "Форель", icon: "fas fa-fish", color: "6, 182, 212", parentId: categoryMap.get("fish") },
+      { name: "fish_bream", displayName: "Лещ", icon: "fas fa-fish", color: "6, 182, 212", parentId: categoryMap.get("fish") },
+      { name: "fish_ide", displayName: "Язь", icon: "fas fa-fish", color: "6, 182, 212", parentId: categoryMap.get("fish") },
+      { name: "fish_catfish", displayName: "Сом", icon: "fas fa-fish", color: "6, 182, 212", parentId: categoryMap.get("fish") },
+      { name: "fish_pike", displayName: "Щука", icon: "fas fa-fish", color: "6, 182, 212", parentId: categoryMap.get("fish") },
+      { name: "fish_sturgeon", displayName: "Осетр", icon: "fas fa-fish", color: "6, 182, 212", parentId: categoryMap.get("fish") },
       
       // Real estate subcategories
-      { name: "realestate_house", displayName: "Дом", icon: "fas fa-home", color: "green", parentId: categoryMap.get("realestate") },
-      { name: "realestate_cottage", displayName: "Коттедж", icon: "fas fa-house-chimney", color: "green", parentId: categoryMap.get("realestate") },
-      { name: "realestate_apartment", displayName: "Квартира", icon: "fas fa-building", color: "green", parentId: categoryMap.get("realestate") },
-      { name: "realestate_business", displayName: "Бизнес", icon: "fas fa-briefcase", color: "green", parentId: categoryMap.get("realestate") },
+      { name: "realestate_house", displayName: "Дом", icon: "fas fa-home", color: "16, 185, 129", parentId: categoryMap.get("realestate") },
+      { name: "realestate_cottage", displayName: "Коттедж", icon: "fas fa-house-chimney", color: "16, 185, 129", parentId: categoryMap.get("realestate") },
+      { name: "realestate_apartment", displayName: "Квартира", icon: "fas fa-building", color: "16, 185, 129", parentId: categoryMap.get("realestate") },
+      { name: "realestate_business", displayName: "Бизнес", icon: "fas fa-briefcase", color: "16, 185, 129", parentId: categoryMap.get("realestate") },
     ];
 
     for (const subcategory of subcategories) {
@@ -237,43 +419,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Product operations
-  async getProducts(filters: {
+  async getProducts(filters?: {
     categoryId?: number;
     serverId?: number;
     status?: string;
     search?: string;
     userId?: number;
-  }): Promise<any[]> {
+  }): Promise<Product[]> {
     console.log('🗄️ Storage getProducts called with filters:', JSON.stringify(filters, null, 2));
-    
-    let query = db
-      .select({
-        id: products.id,
-        title: products.title,
-        description: products.description,
-        price: products.price,
-        categoryId: products.categoryId,
-        subcategoryId: products.subcategoryId,
-        serverId: products.serverId,
-        userId: products.userId,
-        images: products.images,
-        metadata: products.metadata,
-        status: products.status,
-        moderatorId: products.moderatorId,
-        moderatorNote: products.moderatorNote,
-        createdAt: products.createdAt,
-        updatedAt: products.updatedAt,
-        category: {
-          displayName: categories.displayName,
-          color: categories.color,
-        },
-        server: {
-          displayName: servers.displayName,
-        },
-      })
-      .from(products)
-      .leftJoin(categories, eq(products.categoryId, categories.id))
-      .leftJoin(servers, eq(products.serverId, servers.id));
     
     const conditions = [];
     
@@ -304,18 +457,52 @@ export class DatabaseStorage implements IStorage {
         )
       );
     }
-    
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
-    
-    const result = await query.orderBy(desc(products.createdAt));
-    console.log('📊 Query result count:', result.length);
-    
-    return result;
+
+    return await db
+      .select({
+        id: products.id,
+        title: products.title,
+        description: products.description,
+        price: products.price,
+        categoryId: products.categoryId,
+        subcategoryId: products.subcategoryId,
+        serverId: products.serverId,
+        userId: products.userId,
+        images: products.images,
+        metadata: products.metadata,
+        status: products.status,
+        moderatorId: products.moderatorId,
+        moderatorNote: products.moderatorNote,
+        createdAt: products.createdAt,
+        updatedAt: products.updatedAt,
+        category: {
+          id: categories.id,
+          name: categories.name,
+          displayName: categories.displayName,
+          color: categories.color,
+        },
+        server: {
+          id: servers.id,
+          name: servers.name,
+          displayName: servers.displayName,
+        },
+        user: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          profileImageUrl: users.profileImageUrl,
+          username: users.username,
+        },
+      })
+      .from(products)
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .leftJoin(servers, eq(products.serverId, servers.id))
+      .leftJoin(users, eq(products.userId, users.id))
+      .where(and(...conditions))
+      .orderBy(desc(products.createdAt));
   }
 
-  async getProduct(id: number): Promise<any | undefined> {
+  async getProduct(id: number): Promise<Product | undefined> {
     const [product] = await db
       .select({
         id: products.id,
@@ -336,15 +523,25 @@ export class DatabaseStorage implements IStorage {
         category: {
           displayName: categories.displayName,
           color: categories.color,
+          name: categories.name,
         },
         server: {
           displayName: servers.displayName,
+          name: servers.name,
+        },
+        user: {
+          firstName: users.firstName,
+          lastName: users.lastName,
+          profileImageUrl: users.profileImageUrl,
+          username: users.username,
         },
       })
       .from(products)
       .leftJoin(categories, eq(products.categoryId, categories.id))
       .leftJoin(servers, eq(products.serverId, servers.id))
+      .leftJoin(users, eq(products.userId, users.id))
       .where(eq(products.id, id));
+
     return product;
   }
 
@@ -424,18 +621,105 @@ export class DatabaseStorage implements IStorage {
 
   async getUserProducts(userId: number): Promise<Product[]> {
     return await db
-      .select()
+      .select({
+        id: products.id,
+        title: products.title,
+        description: products.description,
+        price: products.price,
+        categoryId: products.categoryId,
+        subcategoryId: products.subcategoryId,
+        serverId: products.serverId,
+        userId: products.userId,
+        images: products.images,
+        metadata: products.metadata,
+        status: products.status,
+        moderatorId: products.moderatorId,
+        moderatorNote: products.moderatorNote,
+        createdAt: products.createdAt,
+        updatedAt: products.updatedAt,
+        category: {
+          id: categories.id,
+          name: categories.name,
+          displayName: categories.displayName,
+          color: categories.color,
+        },
+        server: {
+          id: servers.id,
+          name: servers.name,
+          displayName: servers.displayName,
+        },
+        user: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          profileImageUrl: users.profileImageUrl,
+          username: users.username,
+        },
+      })
       .from(products)
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .leftJoin(servers, eq(products.serverId, servers.id))
+      .leftJoin(users, eq(products.userId, users.id))
       .where(eq(products.userId, userId))
       .orderBy(desc(products.createdAt));
   }
 
-  async getPendingProducts(): Promise<Product[]> {
+  async getPendingProducts(filters: {
+    categoryId?: string;
+    serverId?: string;
+  } = {}): Promise<any[]> {
+    const conditions = [eq(products.status, "pending")];
+
+    if (filters.categoryId && filters.categoryId !== "all") {
+      conditions.push(eq(products.categoryId, parseInt(filters.categoryId)));
+    }
+
+    if (filters.serverId && filters.serverId !== "all") {
+      conditions.push(eq(products.serverId, parseInt(filters.serverId)));
+    }
+
     return await db
-      .select()
+      .select({
+        id: products.id,
+        title: products.title,
+        description: products.description,
+        price: products.price,
+        categoryId: products.categoryId,
+        subcategoryId: products.subcategoryId,
+        serverId: products.serverId,
+        userId: products.userId,
+        images: products.images,
+        metadata: products.metadata,
+        status: products.status,
+        moderatorId: products.moderatorId,
+        moderatorNote: products.moderatorNote,
+        createdAt: products.createdAt,
+        updatedAt: products.updatedAt,
+        category: {
+          id: categories.id,
+          name: categories.name,
+          displayName: categories.displayName,
+          color: categories.color,
+        },
+        server: {
+          id: servers.id,
+          name: servers.name,
+          displayName: servers.displayName,
+        },
+        user: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          profileImageUrl: users.profileImageUrl,
+          username: users.username,
+        },
+      })
       .from(products)
-      .where(eq(products.status, "pending"))
-      .orderBy(asc(products.createdAt));
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .leftJoin(servers, eq(products.serverId, servers.id))
+      .leftJoin(users, eq(products.userId, users.id))
+      .where(and(...conditions))
+      .orderBy(desc(products.createdAt));
   }
 
   // Новые методы для редактирования и удаления продуктов
@@ -486,9 +770,27 @@ export class DatabaseStorage implements IStorage {
         moderatorNote: products.moderatorNote,
         createdAt: products.createdAt,
         updatedAt: products.updatedAt,
+        category: {
+          displayName: categories.displayName,
+          color: categories.color,
+          name: categories.name,
+        },
+        server: {
+          displayName: servers.displayName,
+          name: servers.name,
+        },
+        user: {
+          firstName: users.firstName,
+          lastName: users.lastName,
+          profileImageUrl: users.profileImageUrl,
+          username: users.username,
+        },
       })
       .from(favorites)
       .innerJoin(products, eq(favorites.productId, products.id))
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .leftJoin(servers, eq(products.serverId, servers.id))
+      .leftJoin(users, eq(products.userId, users.id))
       .where(eq(favorites.userId, userId))
       .orderBy(desc(favorites.createdAt));
     
@@ -517,14 +819,126 @@ export class DatabaseStorage implements IStorage {
   // Conversation operations
   async getConversations(userId: number): Promise<Conversation[]> {
     return await db
-      .select()
+      .select({
+        id: conversations.id,
+        user1Id: conversations.user1Id,
+        user2Id: conversations.user2Id,
+        productId: conversations.productId,
+        createdAt: conversations.createdAt,
+        updatedAt: conversations.updatedAt,
+        user1: sql<any>`(
+          select json_build_object(
+            'id', u1.id,
+            'firstName', u1.first_name,
+            'lastName', u1.last_name,
+            'profileImageUrl', u1.profile_image_url,
+            'username', u1.username
+          )
+          from ${users} u1
+          where u1.id = ${conversations.user1Id}
+        )`,
+        user2: sql<any>`(
+          select json_build_object(
+            'id', u2.id,
+            'firstName', u2.first_name,
+            'lastName', u2.last_name,
+            'profileImageUrl', u2.profile_image_url,
+            'username', u2.username
+          )
+          from ${users} u2
+          where u2.id = ${conversations.user2Id}
+        )`,
+        product: sql<any>`(
+          select json_build_object(
+            'id', p.id,
+            'title', p.title,
+            'description', p.description,
+            'price', p.price,
+            'images', p.images,
+            'status', p.status,
+            'category', json_build_object(
+              'id', c.id,
+              'displayName', c.display_name,
+              'color', c.color,
+              'name', c.name
+            ),
+            'server', json_build_object(
+              'id', s.id,
+              'displayName', s.display_name,
+              'name', s.name
+            )
+          )
+          from ${products} p
+          left join ${categories} c on c.id = p.category_id
+          left join ${servers} s on s.id = p.server_id
+          where p.id = ${conversations.productId}
+        )`,
+      })
       .from(conversations)
       .where(or(eq(conversations.user1Id, userId), eq(conversations.user2Id, userId)))
       .orderBy(desc(conversations.updatedAt));
   }
 
   async getConversation(id: number): Promise<Conversation | undefined> {
-    const [conversation] = await db.select().from(conversations).where(eq(conversations.id, id));
+    const [conversation] = await db
+      .select({
+        id: conversations.id,
+        user1Id: conversations.user1Id,
+        user2Id: conversations.user2Id,
+        productId: conversations.productId,
+        createdAt: conversations.createdAt,
+        updatedAt: conversations.updatedAt,
+        user1: sql<any>`(
+          select json_build_object(
+            'id', u1.id,
+            'firstName', u1.first_name,
+            'lastName', u1.last_name,
+            'profileImageUrl', u1.profile_image_url,
+            'username', u1.username
+          )
+          from ${users} u1
+          where u1.id = ${conversations.user1Id}
+        )`,
+        user2: sql<any>`(
+          select json_build_object(
+            'id', u2.id,
+            'firstName', u2.first_name,
+            'lastName', u2.last_name,
+            'profileImageUrl', u2.profile_image_url,
+            'username', u2.username
+          )
+          from ${users} u2
+          where u2.id = ${conversations.user2Id}
+        )`,
+        product: sql<any>`(
+          select json_build_object(
+            'id', p.id,
+            'title', p.title,
+            'description', p.description,
+            'price', p.price,
+            'images', p.images,
+            'status', p.status,
+            'category', json_build_object(
+              'id', c.id,
+              'displayName', c.display_name,
+              'color', c.color,
+              'name', c.name
+            ),
+            'server', json_build_object(
+              'id', s.id,
+              'displayName', s.display_name,
+              'name', s.name
+            )
+          )
+          from ${products} p
+          left join ${categories} c on c.id = p.category_id
+          left join ${servers} s on s.id = p.server_id
+          where p.id = ${conversations.productId}
+        )`,
+      })
+      .from(conversations)
+      .where(eq(conversations.id, id));
+
     return conversation;
   }
 
@@ -534,29 +948,76 @@ export class DatabaseStorage implements IStorage {
   }
 
   async findExistingConversation(user1Id: number, user2Id: number, productId?: number): Promise<Conversation | undefined> {
-    let query = db
-      .select()
-      .from(conversations)
-      .where(
-        or(
-          and(eq(conversations.user1Id, user1Id), eq(conversations.user2Id, user2Id)),
-          and(eq(conversations.user1Id, user2Id), eq(conversations.user2Id, user1Id))
-        )
-      );
+    const conditions = [
+      or(
+        and(eq(conversations.user1Id, user1Id), eq(conversations.user2Id, user2Id)),
+        and(eq(conversations.user1Id, user2Id), eq(conversations.user2Id, user1Id))
+      )
+    ];
 
     if (productId) {
-      query = query.where(eq(conversations.productId, productId));
+      conditions.push(eq(conversations.productId, productId));
     }
 
-    const [conversation] = await query;
+    const [conversation] = await db
+      .select()
+      .from(conversations)
+      .where(and(...conditions));
+
     return conversation;
   }
 
   // Message operations
   async getMessages(conversationId: number): Promise<Message[]> {
     return await db
-      .select()
+      .select({
+        id: messages.id,
+        content: messages.content,
+        createdAt: messages.createdAt,
+        isModerated: messages.isModerated,
+        moderatorId: messages.moderatorId,
+        senderId: messages.senderId,
+        conversationId: messages.conversationId,
+        readAt: messages.readAt,
+        user: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          profileImageUrl: users.profileImageUrl,
+          username: users.username,
+        },
+        conversation: {
+          id: conversations.id,
+          user1Id: conversations.user1Id,
+          user2Id: conversations.user2Id,
+          productId: conversations.productId,
+          product: sql<any>`(
+            select json_build_object(
+              'title', p.title,
+              'description', p.description,
+              'price', p.price,
+              'images', p.images,
+              'status', p.status,
+              'category', json_build_object(
+                'displayName', c.display_name,
+                'color', c.color,
+                'name', c.name
+              ),
+              'server', json_build_object(
+                'displayName', s.display_name,
+                'name', s.name
+              )
+            )
+            from ${products} p
+            left join ${categories} c on c.id = p.category_id
+            left join ${servers} s on s.id = p.server_id
+            where p.id = ${conversations.productId}
+          )`,
+        },
+      })
       .from(messages)
+      .leftJoin(users, eq(messages.senderId, users.id))
+      .leftJoin(conversations, eq(messages.conversationId, conversations.id))
       .where(eq(messages.conversationId, conversationId))
       .orderBy(asc(messages.createdAt));
   }
@@ -584,8 +1045,53 @@ export class DatabaseStorage implements IStorage {
 
   async getPendingMessages(): Promise<Message[]> {
     return await db
-      .select()
+      .select({
+        id: messages.id,
+        content: messages.content,
+        createdAt: messages.createdAt,
+        isModerated: messages.isModerated,
+        moderatorId: messages.moderatorId,
+        senderId: messages.senderId,
+        conversationId: messages.conversationId,
+        readAt: messages.readAt,
+        user: {
+          firstName: users.firstName,
+          lastName: users.lastName,
+          profileImageUrl: users.profileImageUrl,
+          username: users.username,
+        },
+        conversation: {
+          id: conversations.id,
+          user1Id: conversations.user1Id,
+          user2Id: conversations.user2Id,
+          productId: conversations.productId,
+          product: sql<any>`(
+            select json_build_object(
+              'title', p.title,
+              'description', p.description,
+              'price', p.price,
+              'images', p.images,
+              'status', p.status,
+              'category', json_build_object(
+                'displayName', c.display_name,
+                'color', c.color,
+                'name', c.name
+              ),
+              'server', json_build_object(
+                'displayName', s.display_name,
+                'name', s.name
+              )
+            )
+            from ${products} p
+            left join ${categories} c on c.id = p.category_id
+            left join ${servers} s on s.id = p.server_id
+            where p.id = ${conversations.productId}
+          )`,
+        },
+      })
       .from(messages)
+      .leftJoin(users, eq(messages.senderId, users.id))
+      .leftJoin(conversations, eq(messages.conversationId, conversations.id))
       .where(eq(messages.isModerated, false))
       .orderBy(asc(messages.createdAt));
   }
@@ -633,12 +1139,61 @@ export class DatabaseStorage implements IStorage {
         updatedAt: conversations.updatedAt,
         unreadCount: sql<number>`count(case when ${messages.senderId} != ${userId} and ${messages.readAt} is null then 1 end)`,
         lastMessage: sql<string>`(
-          select ${messages.content} 
-          from ${messages} 
-          where ${messages.conversationId} = ${conversations.id} 
-          order by ${messages.createdAt} desc 
+          select content 
+          from ${messages} m2 
+          where m2.conversation_id = ${conversations.id} 
+          order by m2.created_at desc 
           limit 1
-        )`
+        )`,
+        lastMessageAt: sql<string>`(
+          select created_at 
+          from ${messages} m2 
+          where m2.conversation_id = ${conversations.id} 
+          order by m2.created_at desc 
+          limit 1
+        )`,
+        user1: sql<any>`(
+          select json_build_object(
+            'firstName', u1.first_name,
+            'lastName', u1.last_name,
+            'profileImageUrl', u1.profile_image_url,
+            'username', u1.username
+          )
+          from ${users} u1
+          where u1.id = ${conversations.user1Id}
+        )`,
+        user2: sql<any>`(
+          select json_build_object(
+            'firstName', u2.first_name,
+            'lastName', u2.last_name,
+            'profileImageUrl', u2.profile_image_url,
+            'username', u2.username
+          )
+          from ${users} u2
+          where u2.id = ${conversations.user2Id}
+        )`,
+        product: sql<any>`(
+          select json_build_object(
+            'title', p.title,
+            'description', p.description,
+            'price', p.price,
+            'images', p.images,
+            'status', p.status,
+            'category', json_build_object(
+              'displayName', c.display_name,
+              'color', c.color,
+              'name', c.name
+            ),
+            'server', json_build_object(
+              'displayName', s.display_name,
+              'name', s.name
+            )
+          )
+          from ${products} p
+          left join ${categories} c on c.id = p.category_id
+          left join ${servers} s on s.id = p.server_id
+          where p.id = ${conversations.productId}
+        )`,
       })
       .from(conversations)
       .leftJoin(messages, eq(messages.conversationId, conversations.id))

@@ -17,6 +17,14 @@ const createFishSchema = z.object({
   metadata: z.object({
     fishType: z.string().min(1, "Укажите тип рыбы"),
     quantity: z.coerce.number().min(1, "Количество должно быть больше 0"),
+    species: z.string().optional(),
+    weight: z.string().optional(),
+    length: z.string().optional(),
+    catchMethod: z.string().optional(),
+    bait: z.string().optional(),
+    weatherConditions: z.string().optional(),
+    waterTemperature: z.string().optional(),
+    notes: z.string().optional(),
     contacts: z.object({
       discord: z.string().optional(),
       telegram: z.string().optional(),
@@ -52,6 +60,14 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
         metadata: {
           fishType: formData.fishType || '',
           quantity: formData.quantity || 1,
+          species: formData.species || '',
+          weight: formData.weight || '',
+          length: formData.length || '',
+          catchMethod: formData.catchMethod || '',
+          bait: formData.bait || '',
+          weatherConditions: formData.weatherConditions || '',
+          waterTemperature: formData.waterTemperature || '',
+          notes: formData.notes || '',
           contacts: {
             discord: formData.discord || '',
             telegram: formData.telegram || '',
@@ -63,11 +79,15 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
       const productData = {
         ...apiData,
         images: apiData.imageUrl ? [apiData.imageUrl] : [],
+        title: `${formData.fishType} (${formData.quantity} шт.)`,
+        userId: user?.id,
       };
-      
-      const response = await apiRequest("POST", "/api/products", productData);
-      await response.json();
-      
+
+      await apiRequest('/api/products', {
+        method: 'POST',
+        body: JSON.stringify(productData),
+      });
+
       await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       
       toast({

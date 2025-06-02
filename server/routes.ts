@@ -4,11 +4,12 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { insertUserSchema, insertProductSchema, insertMessageSchema } from "@shared/schema";
+import type { Request, Response, NextFunction } from "express";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 // Middleware to verify JWT token
-const authenticateToken = async (req: any, res: any, next: any) => {
+const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -24,7 +25,7 @@ const authenticateToken = async (req: any, res: any, next: any) => {
       return res.status(401).json({ message: 'User not found or banned' });
     }
     
-    req.user = user;
+    (req as any).user = user;
     next();
   } catch (error) {
     return res.status(403).json({ message: 'Invalid token' });
@@ -33,8 +34,8 @@ const authenticateToken = async (req: any, res: any, next: any) => {
 
 // Middleware to check admin/moderator role
 const requireRole = (roles: string[]) => {
-  return (req: any, res: any, next: any) => {
-    if (!roles.includes(req.user.role)) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!roles.includes((req as any).user.role)) {
       return res.status(403).json({ message: 'Insufficient permissions' });
     }
     next();
@@ -135,8 +136,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/auth/me', authenticateToken, async (req: any, res) => {
-    res.json({ ...req.user, password: undefined });
+  app.get('/api/auth/me', authenticateToken, async (req: Request, res) => {
+    res.json({ ...(req as any).user, password: undefined });
   });
 
   // Server routes
@@ -201,7 +202,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/admin/products/:id/status', authenticateToken, requireRole(['admin', 'moderator']), async (req: any, res) => {
+  app.patch('/api/admin/products/:id/status', authenticateToken, requireRole(['admin', 'moderator']), async (req: Request, res: Response) => {
     try {
       const productId = parseInt(req.params.id);
       const { status, note } = req.body;
@@ -210,7 +211,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Invalid status' });
       }
   
-      const product = await storage.updateProductStatus(productId, status, req.user.id, note);
+      const product = await storage.updateProductStatus(productId, status, (req as any).user.id, note);
       res.json(product);
     } catch (error) {
       res.status(500).json({ message: 'Failed to update product status' });
@@ -226,11 +227,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/admin/messages/:id/moderate', authenticateToken, requireRole(['admin', 'moderator']), async (req: any, res) => {
+  app.patch('/api/admin/messages/:id/moderate', authenticateToken, requireRole(['admin', 'moderator']), async (req: Request, res: Response) => {
     try {
       const messageId = parseInt(req.params.id);
   
-      const message = await storage.moderateMessage(messageId, req.user.id);
+      const message = await storage.moderateMessage(messageId, (req as any).user.id);
       res.json(message);
     } catch (error) {
       res.status(500).json({ message: 'Failed to moderate message' });
@@ -238,12 +239,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Обновление цены продукта (только владелец)
-  app.patch('/api/products/:id/price', authenticateToken, async (req: any, res) => {
+  app.patch('/api/products/:id/price', authenticateToken, async (req: Request, res: Response) => {
     try {
       const productId = parseInt(req.params.id);
       const { price } = req.body;
-      const userId = req.user.id;
-      const userRole = req.user.role;
+      const userId = (req as any).user.id;
+      const userRole = (req as any).user.role;
   
       if (!price || price <= 0) {
         return res.status(400).json({ message: 'Invalid price' });
@@ -268,7 +269,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Полное редактирование продукта (модераторы и админы)
-  app.put('/api/products/:id', authenticateToken, requireRole(['moderator', 'admin']), async (req: any, res) => {
+  app.put('/api/products/:id', authenticateToken, requireRole(['moderator', 'admin']), async (req: Request, res: Response) => {
     try {
       const productId = parseInt(req.params.id);
       const updates = req.body;
@@ -287,11 +288,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Удаление продукта
-  app.delete('/api/products/:id', authenticateToken, async (req: any, res) => {
+  app.delete('/api/products/:id', authenticateToken, async (req: Request, res: Response) => {
     try {
       const productId = parseInt(req.params.id);
-      const userId = req.user.id;
-      const userRole = req.user.role;
+      const userId = (req as any).user.id;
+      const userRole = (req as any).user.role;
   
       const product = await storage.getProduct(productId);
       if (!product) {
@@ -312,9 +313,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Создание продукта
-  app.post('/api/products', authenticateToken, async (req: any, res) => {
+  app.post('/api/products', authenticateToken, async (req: Request, res: Response) => {
     try {
-      const userId = req.user.id;
+      const userId = (req as any).user.id;
       const productData = {
         ...req.body,
         userId,
@@ -323,14 +324,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updatedAt: new Date()
       };
 
-      // Валидация данных
-      const validatedData = insertProductSchema.parse(productData);
-      
-      const product = await storage.createProduct(validatedData);
-      res.status(201).json(product);
+      console.log('Creating product with data:', JSON.stringify(productData, null, 2));
+
+      try {
+        // Валидация данных
+        const validatedData = insertProductSchema.parse(productData);
+        console.log('Validated data:', JSON.stringify(validatedData, null, 2));
+        
+        const product = await storage.createProduct(validatedData);
+        console.log('Created product:', JSON.stringify(product, null, 2));
+        
+        res.status(201).json(product);
+      } catch (validationError) {
+        console.error('Validation error:', validationError);
+        if (validationError instanceof z.ZodError) {
+          return res.status(400).json({
+            message: 'Validation error',
+            errors: validationError.errors.map(err => ({
+              path: err.path.join('.'),
+              message: err.message
+            }))
+          });
+        }
+        throw validationError;
+      }
     } catch (error) {
       console.error('Create product error:', error);
-      res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to create product' });
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to create product',
+        error: process.env.NODE_ENV === 'development' ? error : undefined
+      });
     }
   });
 
@@ -343,7 +366,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/admin/products/:id/status', authenticateToken, requireRole(['admin', 'moderator']), async (req: any, res) => {
+  app.patch('/api/admin/products/:id/status', authenticateToken, requireRole(['admin', 'moderator']), async (req: Request, res: Response) => {
     try {
       const productId = parseInt(req.params.id);
       const { status, note } = req.body;
@@ -352,7 +375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Invalid status' });
       }
   
-      const product = await storage.updateProductStatus(productId, status, req.user.id, note);
+      const product = await storage.updateProductStatus(productId, status, (req as any).user.id, note);
       res.json(product);
     } catch (error) {
       res.status(500).json({ message: 'Failed to update product status' });
@@ -368,11 +391,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/admin/messages/:id/moderate', authenticateToken, requireRole(['admin', 'moderator']), async (req: any, res) => {
+  app.patch('/api/admin/messages/:id/moderate', authenticateToken, requireRole(['admin', 'moderator']), async (req: Request, res: Response) => {
     try {
       const messageId = parseInt(req.params.id);
   
-      const message = await storage.moderateMessage(messageId, req.user.id);
+      const message = await storage.moderateMessage(messageId, (req as any).user.id);
       res.json(message);
     } catch (error) {
       res.status(500).json({ message: 'Failed to moderate message' });
@@ -380,12 +403,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Обновление цены продукта (только владелец)
-  app.patch('/api/products/:id/price', authenticateToken, async (req: any, res) => {
+  app.patch('/api/products/:id/price', authenticateToken, async (req: Request, res: Response) => {
     try {
       const productId = parseInt(req.params.id);
       const { price } = req.body;
-      const userId = req.user.id;
-      const userRole = req.user.role;
+      const userId = (req as any).user.id;
+      const userRole = (req as any).user.role;
   
       if (!price || price <= 0) {
         return res.status(400).json({ message: 'Invalid price' });
@@ -410,7 +433,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Полное редактирование продукта (модераторы и админы)
-  app.put('/api/products/:id', authenticateToken, requireRole(['moderator', 'admin']), async (req: any, res) => {
+  app.put('/api/products/:id', authenticateToken, requireRole(['moderator', 'admin']), async (req: Request, res: Response) => {
     try {
       const productId = parseInt(req.params.id);
       const updates = req.body;
@@ -429,11 +452,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Удаление продукта
-  app.delete('/api/products/:id', authenticateToken, async (req: any, res) => {
+  app.delete('/api/products/:id', authenticateToken, async (req: Request, res: Response) => {
     try {
       const productId = parseInt(req.params.id);
-      const userId = req.user.id;
-      const userRole = req.user.role;
+      const userId = (req as any).user.id;
+      const userRole = (req as any).user.role;
   
       const product = await storage.getProduct(productId);
       if (!product) {

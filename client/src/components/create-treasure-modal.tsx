@@ -69,10 +69,15 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
 
   const handleComplete = async (data: CreateTreasureFormData) => {
     try {
+      // Проверяем наличие всех обязательных полей
+      if (!data.treasureType || !data.quantity || !data.description || !data.price || !data.serverId) {
+        throw new Error("Пожалуйста, заполните все обязательные поля");
+      }
+
       const productData = {
         title: `${data.treasureType} (${data.quantity} шт.)`,
         description: data.description,
-        price: data.price,
+        price: Math.round(data.price),
         categoryId: data.categoryId,
         serverId: data.serverId,
         images: data.imageUrl ? [data.imageUrl] : [],
@@ -85,14 +90,25 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
       };
       
       const response = await apiRequest("POST", "/api/products", productData);
-      const result = (await response.json()) as ProductWithDetails;
+      let errorMessage;
       
-      toast({
-        title: "Объявление создано",
-        description: "Ваше объявление о сокровище отправлено на модерацию",
-      });
-      onOpenChange(false);
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      try {
+        const responseData = await response.json();
+        if (!response.ok) {
+          errorMessage = responseData.message || "Не удалось создать объявление";
+          throw new Error(errorMessage);
+        }
+        
+        toast({
+          title: "Объявление создано",
+          description: "Ваше объявление о сокровище отправлено на модерацию",
+        });
+        onOpenChange(false);
+        queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      } catch (parseError) {
+        console.error("Error parsing response:", parseError);
+        throw new Error("Ошибка при обработке ответа от сервера");
+      }
     } catch (error: any) {
       toast({
         title: "Ошибка",

@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import StepWizard from './step-wizard';
-import { FishStep1, FishStep2 } from './steps';
+import { FishStep1, FishStep2, FishStep3 } from './steps';
 
 const createFishSchema = z.object({
   description: z.string().min(10, "Описание должно содержать минимум 10 символов"),
@@ -90,12 +90,17 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
     {
       component: FishStep1,
       title: "Основная информация",
-      description: "Тип рыбы, количество, описание, цена и сервер"
+      description: "Тип рыбы, количество и базовая информация"
     },
     {
       component: FishStep2,
-      title: "Изображение и контакты",
-      description: "Ссылка на изображение и контактная информация"
+      title: "Детали и характеристики",
+      description: "Подробные характеристики улова"
+    },
+    {
+      component: FishStep3,
+      title: "Контакты, цена и сервер",
+      description: "Контактная информация, цена и выбор сервера"
     }
   ];
 

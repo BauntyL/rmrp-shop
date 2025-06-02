@@ -1,50 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import ProductCard from "@/components/product-card";
-import CategoryGrid from "@/components/category-grid";
 import CreateListingModal from "@/components/create-listing-modal";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import type { ProductWithDetails } from "@/lib/types";
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
   const [showCreateListing, setShowCreateListing] = useState(false);
-  const [categories, setCategories] = useState([]);
 
-  const { data: featuredProducts = [] } = useQuery({
+  const { data: featuredProducts = [] } = useQuery<ProductWithDetails[]>({
     queryKey: ["/api/products", { status: "approved" }],
   });
-  // УДАЛИТЬ ЭТУ СТРОКУ:
-  // е
-  
-  useEffect(() => {
-    const loadCategories = async () => {
-      try {
-        const response = await fetch('/api/categories');
-        const data = await response.json();
-        console.log('Raw categories from API:', data);
-        
-        // Проверяем, что data это массив, а не объект с ошибкой
-        if (Array.isArray(data)) {
-          setCategories(data);
-        } else {
-          console.error('Categories API returned error:', data);
-          setCategories([]); // Устанавливаем пустой массив
-        }
-      } catch (error) {
-        console.error('Error loading categories:', error);
-        setCategories([]); // Устанавливаем пустой массив при ошибке
-      }
-    };
-    loadCategories();
-  }, []);
-
-  const mainCategories = categories.filter((cat: any) => !cat.parentId);
-  console.log('Filtered main categories:', mainCategories);
 
   const handleCreateListing = () => {
     if (!isAuthenticated) {
@@ -53,17 +25,6 @@ export default function Home() {
     }
     // Перенаправляем на страницу "мои товары"
     window.location.href = "/my-products";
-  };
-
-  const handleViewProducts = () => {
-    // Автоматический скролл к секции категорий
-    const categoriesSection = document.getElementById('categories');
-    if (categoriesSection) {
-      categoriesSection.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }
   };
 
   const handleProductContact = (userId: number) => {
@@ -92,13 +53,6 @@ export default function Home() {
               >
                 Разместить объявление
               </Button>
-              <Button 
-                onClick={handleViewProducts}
-                className="bg-blue-500 text-white hover:bg-blue-400 px-8 py-4 font-semibold text-lg transition-all duration-200 border-0 shadow-lg"
-                size="lg"
-              >
-                Смотреть товары
-              </Button>
             </div>
           </div>
         </div>
@@ -107,19 +61,6 @@ export default function Home() {
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-300/10 rounded-full blur-3xl"></div>
-        </div>
-      </section>
-
-      {/* Categories Section */}
-      <section id="categories" className="py-20 bg-slate-800 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">Категории товаров</h2>
-            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
-              Выберите категорию и найдите именно то, что вам нужно
-            </p>
-          </div>
-          <CategoryGrid categories={mainCategories} />
         </div>
       </section>
 
@@ -133,7 +74,7 @@ export default function Home() {
           
           {featuredProducts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {featuredProducts.slice(0, 8).map((product: any) => (
+              {featuredProducts.slice(0, 8).map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
@@ -159,14 +100,10 @@ export default function Home() {
       
       {showCreateListing && (
         <CreateListingModal 
-          isOpen={showCreateListing} 
-          onClose={() => setShowCreateListing(false)} 
+          open={showCreateListing} 
+          onOpenChange={setShowCreateListing} 
         />
       )}
     </div>
   );
 }
-
-// УДАЛИТЬ ЭТИ СТРОКИ (170-172):
-// const mainCategories = categories.filter(cat => !cat.parentId);
-// console.log('Filtered main categories:', mainCategories);

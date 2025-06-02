@@ -1,11 +1,13 @@
 import React from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { StepWizard } from '@/components/step-wizard';
+import StepWizard from '@/components/step-wizard'; // Изменен импорт на default import
 import FishStep1 from '@/components/steps/fish-step1';
 import FishStep2 from '@/components/steps/fish-step2';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { createFishSchema } from '../../../shared/schema';
+import { useAuth } from '@/contexts/auth-context'; // Добавлен импорт useAuth
+import { apiRequest } from '@/lib/api'; // Добавлен импорт apiRequest
+import { z } from 'zod'; // Добавлен импорт zod
 
 const createFishSchema = z.object({
   description: z.string().min(10, "Описание должно содержать минимум 10 символов"),
@@ -48,6 +50,31 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
     queryKey: ["/api/servers"],
   });
 
+  const createFishMutation = useMutation({
+    mutationFn: async (productData: any) => {
+      return await apiRequest('/api/products', {
+        method: 'POST',
+        body: JSON.stringify(productData),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      toast({
+        title: "Успех!",
+        description: "Объявление о рыбе создано успешно",
+      });
+      onOpenChange(false);
+    },
+    onError: (error: any) => {
+      console.error('Ошибка создания объявления:', error);
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось создать объявление",
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleComplete = async (formData: any) => {
     try {
       const apiData: CreateFishFormData = {
@@ -82,19 +109,7 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
         userId: user?.id,
       };
 
-      await apiRequest('/api/products', {
-        method: 'POST',
-        body: JSON.stringify(productData),
-      });
-
-      await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      
-      toast({
-        title: "Успех!",
-        description: "Объявление о рыбе создано успешно",
-      });
-      
-      onOpenChange(false);
+      createFishMutation.mutate(productData);
     } catch (error: any) {
       console.error('Ошибка создания объявления:', error);
       toast({

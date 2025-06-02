@@ -109,28 +109,26 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl h-[95vh] p-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-        <div className="max-h-[70vh] overflow-y-auto">
-          <StepWizard
-            steps={[
-              {
-                component: <TreasureStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
-                title: "Основная информация",
-                description: "Расскажите о вашем сокровище",
-                isValid: true
-              },
-              {
-                component: <TreasureStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
-                title: "Изображение и контакты",
-                description: "Добавьте фото и контактную информацию",
-                isValid: true
-              }
-            ]}
-            defaultValues={defaultValues}
-            onComplete={handleComplete}
-            onCancel={() => onOpenChange(false)}
-            category="treasure"
-          />
-        </div>
+        <StepWizard
+          steps={[
+            {
+              component: <TreasureStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
+              title: "Основная информация",
+              description: "Расскажите о вашем сокровище",
+              isValid: true
+            },
+            {
+              component: <TreasureStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
+              title: "Изображение и контакты",
+              description: "Добавьте фото и контактную информацию",
+              isValid: true
+            }
+          ]}
+          defaultValues={defaultValues}
+          onComplete={handleComplete}
+          onCancel={() => onOpenChange(false)}
+          category="treasure"
+        />
       </DialogContent>
     </Dialog>
   );

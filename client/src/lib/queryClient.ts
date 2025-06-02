@@ -15,7 +15,10 @@ export async function apiRequest(
   const token = localStorage.getItem("token");
   
   // Добавляем базовый URL для API запросов
-  const apiUrl = typeof url === 'string' && url.startsWith('http') ? url : `${window.location.origin}${url}`;
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || window.location.origin;
+  const apiUrl = typeof url === 'string' && url.startsWith('http') ? url : `${baseUrl}${url}`;
+  
+  console.log('Making API request to:', apiUrl);
   
   const res = await fetch(apiUrl, {
     method,
@@ -41,9 +44,11 @@ export const getQueryFn: <T>(options: {
     let url = queryKey[0] as string;
     
     // Добавляем базовый URL для API запросов
-    const apiUrl = typeof url === 'string' && url.startsWith('http') ? url : `${window.location.origin}${url}`;
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || window.location.origin;
+    const apiUrl = typeof url === 'string' && url.startsWith('http') ? url : `${baseUrl}${url}`;
     
     // Добавляем параметры запроса, если они есть
+    let finalUrl = apiUrl;
     if (queryKey[1] && typeof queryKey[1] === 'object') {
       const params = new URLSearchParams();
       const filters = queryKey[1] as Record<string, any>;
@@ -55,15 +60,13 @@ export const getQueryFn: <T>(options: {
       });
       
       if (params.toString()) {
-        url = `${apiUrl}?${params.toString()}`;
-      } else {
-        url = apiUrl;
+        finalUrl = `${apiUrl}?${params.toString()}`;
       }
-    } else {
-      url = apiUrl;
     }
     
-    const res = await fetch(url, {
+    console.log('Making query request to:', finalUrl);
+    
+    const res = await fetch(finalUrl, {
       headers: {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },

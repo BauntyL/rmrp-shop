@@ -13,26 +13,39 @@ interface FishStep1Props {
 
 export default function FishStep1({ data, onDataChange, onValidationChange, servers = [] }: FishStep1Props) {
   const [formData, setFormData] = useState({
-    fishType: data.fishType || '',
-    quantity: data.quantity || 1,
+    title: data.title || '',
     description: data.description || '',
     price: data.price || '',
     serverId: data.serverId || '',
+    fishType: data.fishType || '',
+    quantity: data.quantity || 1,
     ...data
   });
 
   const updateData = (field: string, value: string | number) => {
     const newData = { ...formData, [field]: value };
     setFormData(newData);
-    onDataChange(newData);
+    
+    // Обновляем родительский компонент с правильной структурой данных
+    const updatedData = {
+      ...data,
+      title: newData.title,
+      description: newData.description,
+      price: typeof newData.price === 'string' ? parseInt(newData.price) : newData.price,
+      serverId: typeof newData.serverId === 'string' ? parseInt(newData.serverId) : newData.serverId,
+      fishType: newData.fishType,
+      quantity: newData.quantity
+    };
+    
+    onDataChange(updatedData);
   };
 
   useEffect(() => {
-    const isValid = formData.fishType.length > 0 && 
-                   formData.quantity > 0 && 
-                   formData.description.length >= 10 && 
-                   formData.price > 0 && 
-                   formData.serverId;
+    const isValid = 
+      formData.title.length > 0 && 
+      formData.description.length >= 10 && 
+      parseInt(formData.price as string) > 0 && 
+      parseInt(formData.serverId as string) > 0;
     onValidationChange(isValid);
   }, [formData, onValidationChange]);
 
@@ -44,6 +57,17 @@ export default function FishStep1({ data, onDataChange, onValidationChange, serv
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="title" className="text-slate-300">Название *</Label>
+          <Input
+            id="title"
+            value={formData.title}
+            onChange={(e) => updateData('title', e.target.value)}
+            className="bg-slate-800 border-slate-600 text-white"
+            placeholder="Введите название"
+          />
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="server" className="text-slate-300">Сервер *</Label>
           <Select
@@ -65,17 +89,6 @@ export default function FishStep1({ data, onDataChange, onValidationChange, serv
               ))}
             </SelectContent>
           </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="title" className="text-slate-300">Название *</Label>
-          <Input
-            id="title"
-            value={formData.title}
-            onChange={(e) => updateData('title', e.target.value)}
-            className="bg-slate-800 border-slate-600 text-white"
-            placeholder="Введите название"
-          />
         </div>
 
         <div className="space-y-2">

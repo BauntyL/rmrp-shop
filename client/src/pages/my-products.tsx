@@ -16,6 +16,7 @@ export default function MyProducts() {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [showCreateListing, setShowCreateListing] = useState(false);
   
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["/api/my-products"],
@@ -190,9 +191,18 @@ export default function MyProducts() {
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Мои товары</h1>
-          <p className="text-slate-300">Управляйте вашими объявлениями</p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Мои товары</h1>
+            <p className="text-slate-300">Управляйте вашими объявлениями</p>
+          </div>
+          <Button 
+            onClick={() => setShowCreateListing(true)} 
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Добавить товар
+          </Button>
         </div>
 
         <Tabs defaultValue="all" className="space-y-6">
@@ -232,84 +242,84 @@ export default function MyProducts() {
                 <p className="text-slate-300">
                   Перейдите в нужную категорию для создания объявления
                 </p>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {products.map((product: any) => (
-                    <ProductCard 
-                      key={product.id} 
-                      product={product} 
-                      showManageButtons={true}
-                    />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {products.map((product: any) => (
+                  <ProductCard 
+                    key={product.id} 
+                    product={product} 
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
 
-            <TabsContent value="pending">
-              {pendingProducts.length === 0 ? (
-                <div className="text-center py-16">
-                  <div className="inline-flex p-4 rounded-full bg-yellow-600/20 mb-4">
-                    <Eye className="h-8 w-8 text-yellow-400" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    Нет товаров на модерации
-                  </h3>
-                  <p className="text-slate-300">
-                    Все ваши товары прошли модерацию
-                  </p>
+          <TabsContent value="pending">
+            {pendingProducts.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="inline-flex p-4 rounded-full bg-yellow-600/20 mb-4">
+                  <Eye className="h-8 w-8 text-yellow-400" />
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {pendingProducts.map((product: any) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  Нет товаров на модерации
+                </h3>
+                <p className="text-slate-300">
+                  Все ваши товары прошли модерацию
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {pendingProducts.map((product: any) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
 
-            <TabsContent value="approved">
-              {approvedProducts.length === 0 ? (
-                <div className="text-center py-16">
-                  <div className="inline-flex p-4 rounded-full bg-green-600/20 mb-4">
-                    <Eye className="h-8 w-8 text-green-400" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    Нет одобренных товаров
-                  </h3>
-                  <p className="text-slate-300">
-                    Ваши товары еще не прошли модерацию
-                  </p>
+          <TabsContent value="approved">
+            {approvedProducts.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="inline-flex p-4 rounded-full bg-green-600/20 mb-4">
+                  <Eye className="h-8 w-8 text-green-400" />
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {approvedProducts.map((product: any) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  Нет одобренных товаров
+                </h3>
+                <p className="text-slate-300">
+                  Ваши товары еще не прошли модерацию
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {approvedProducts.map((product: any) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
 
-            <TabsContent value="rejected">
-              {rejectedProducts.length === 0 ? (
-                <div className="text-center py-16">
-                  <div className="inline-flex p-4 rounded-full bg-red-600/20 mb-4">
-                    <Eye className="h-8 w-8 text-red-400" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    Нет отклоненных товаров
-                  </h3>
-                  <p className="text-slate-300">
-                    Все ваши товары соответствуют правилам
-                  </p>
+          <TabsContent value="rejected">
+            {rejectedProducts.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="inline-flex p-4 rounded-full bg-red-600/20 mb-4">
+                  <Eye className="h-8 w-8 text-red-400" />
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {rejectedProducts.map((product: any) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  Нет отклоненных товаров
+                </h3>
+                <p className="text-slate-300">
+                  Все ваши товары соответствуют правилам
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {rejectedProducts.map((product: any) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
         </Tabs>
       </div>
 
@@ -325,11 +335,3 @@ export default function MyProducts() {
     </div>
   );
 }
-
-<Button 
-  onClick={() => alert('Кнопка работает!')} 
-  className="bg-blue-600 hover:bg-blue-700"
->
-  <Plus className="h-4 w-4 mr-2" />
-  Добавить товар
-</Button>

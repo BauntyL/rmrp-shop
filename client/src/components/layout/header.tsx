@@ -1,27 +1,63 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Heart, MessageCircle, Menu, ChevronDown } from "lucide-react";
+import { Heart, MessageCircle, ChevronDown, User, Settings, LogOut } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
+
+interface Server {
+  id: number;
+  name: string;
+  displayName: string;
+}
+
+interface Favorite {
+  id: number;
+  productId: number;
+  userId: number;
+}
+
+interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  profileImageUrl: string | null;
+}
 
 export default function Header() {
   const { user, isAuthenticated, logout } = useAuth();
-  const [location] = useLocation();
-  const [selectedServer, setSelectedServer] = useState("arbat");
+  const [location, setLocation] = useLocation();
+  const [selectedServer, setSelectedServer] = useState<string>("all");
 
-  const { data: servers = [] } = useQuery({
-    queryKey: ["/api/servers"],
+  const userInitials = useMemo(() => {
+    if (!user?.firstName || !user?.lastName) return "";
+    return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+  }, [user?.firstName, user?.lastName]);
+
+  const { data: servers = [] } = useQuery<Server[]>({
+    queryKey: ["servers"],
+    queryFn: async () => {
+      const response = await fetch("/api/servers");
+      return response.json();
+    },
   });
 
-  const { data: favorites = [] } = useQuery({
-    queryKey: ["/api/favorites"],
-    enabled: isAuthenticated,
+  const { data: favorites = [] } = useQuery<Favorite[]>({
+    queryKey: ["favorites"],
+    queryFn: async () => {
+      const response = await fetch("/api/favorites");
+      return response.json();
+    },
   });
 
   // Добавляем запрос для получения количества непрочитанных сообщений
@@ -33,93 +69,65 @@ export default function Header() {
 
   const unreadCount = unreadData?.count || 0;
 
-  const navigation = [
+  const mainNav = [
     { name: "Главная", href: "/" },
-    { name: "Авто", href: "/category/cars" },
-    { name: "Недвижимость", href: "/category/realestate" },
-    { name: "Рыба", href: "/category/fish" },
-    { name: "Клады", href: "/category/treasures" },
+    { name: "Каталог", href: "/catalog" },
+    { name: "О нас", href: "/about" },
   ];
 
-  const userInitials = user ? `${user.firstName[0]}${user.lastName[0]}` : "";
-
   return (
-    <header className="bg-slate-900 shadow-lg border-b border-slate-700 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Link href="/">
-              <h1 className="text-2xl font-bold text-blue-400 cursor-pointer hover:text-blue-300 transition-colors">RMRP SHOP</h1>
-            </Link>
-          </div>
-
-          {/* Navigation Menu */}
-          <nav className="hidden md:flex space-x-8">
-            {navigation.map((item) => (
-              <Link key={item.name} href={item.href}>
-                <span className={`font-medium transition-colors cursor-pointer ${
-                  location === item.href 
-                    ? "text-blue-400" 
-                    : "text-slate-300 hover:text-blue-400"
-                }`}>
-                  {item.name}
-                </span>
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center">
+        <div className="mr-4 hidden md:flex">
+          <Link href="/" className="mr-6 flex items-center space-x-2">
+            <span className="hidden font-bold sm:inline-block">
+              RMRP Shop
+            </span>
+          </Link>
+          <nav className="flex items-center space-x-6 text-sm font-medium">
+            {mainNav.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "transition-colors hover:text-foreground/80",
+                  item.href === location ? "text-foreground" : "text-foreground/60"
+                )}
+              >
+                {item.name}
               </Link>
             ))}
           </nav>
+        </div>
 
-          {/* User Actions */}
-          <div className="flex items-center space-x-4">
-            {/* Server Selector */}
-            <div className="hidden md:block">
-              <Select value={selectedServer} onValueChange={setSelectedServer}>
-                <SelectTrigger className="w-32 bg-slate-800 border-slate-600 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-600">
-                  {servers.map((server: any) => (
-                    <SelectItem key={server.name} value={server.name} className="text-white hover:bg-slate-700">
-                      {server.displayName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
+        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
+          <div className="w-full flex-1 md:w-auto md:flex-none">
+            {/* Search Component */}
+          </div>
+          <nav className="flex items-center space-x-2">
             {isAuthenticated ? (
               <>
-                {/* Favorites */}
-                <Link href="/favorites">
-                  <Button variant="ghost" size="sm" className="relative text-slate-300 hover:text-white hover:bg-slate-800">
+                <Link href="/favorites" className="relative">
+                  <Button variant="ghost" size="icon" className="text-foreground/60 hover:text-foreground">
                     <Heart className="h-5 w-5" />
                     {favorites.length > 0 && (
-                      <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-blue-600 hover:bg-blue-700">
+                      <span className="absolute -right-1 -top-1 h-4 w-4 rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
                         {favorites.length}
-                      </Badge>
+                      </span>
                     )}
                   </Button>
                 </Link>
-
-                {/* Messages */}
                 <Link href="/messages">
-                  <Button variant="ghost" size="sm" className="relative text-slate-300 hover:text-white hover:bg-slate-800">
+                  <Button variant="ghost" size="icon" className="text-foreground/60 hover:text-foreground">
                     <MessageCircle className="h-5 w-5" />
-                    {unreadCount > 0 && (
-                      <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-blue-600 hover:bg-blue-700">
-                        {unreadCount}
-                      </Badge>
-                    )}
                   </Button>
                 </Link>
-
-                {/* User Menu */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center space-x-2 text-slate-300 hover:text-white hover:bg-slate-800">
+                    <Button variant="ghost" className="flex items-center space-x-2 text-foreground hover:bg-accent">
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={user?.profileImageUrl} alt={user?.firstName} />
-                        <AvatarFallback className="bg-slate-700 text-white">{userInitials}</AvatarFallback>
+                        <AvatarImage src={user?.profileImageUrl || ''} alt={user?.firstName || ''} />
+                        <AvatarFallback className="bg-accent text-foreground">{userInitials}</AvatarFallback>
                       </Avatar>
                       <span className="hidden md:block text-sm font-medium">
                         {user?.firstName} {user?.lastName}
@@ -127,64 +135,29 @@ export default function Header() {
                       <ChevronDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48 bg-slate-800 border-slate-600">
-                    <DropdownMenuItem asChild className="text-slate-300 hover:text-white hover:bg-slate-700">
-                      <Link href="/my-products">Мои товары</Link>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setLocation('/profile')}>
+                      <User className="mr-2" />
+                      Профиль
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="text-slate-300 hover:text-white hover:bg-slate-700">
-                      <Link href="/favorites">Избранное</Link>
+                    <DropdownMenuItem onClick={() => setLocation('/settings')}>
+                      <Settings className="mr-2" />
+                      Настройки
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="text-slate-300 hover:text-white hover:bg-slate-700">
-                      <Link href="/messages">Диалоги</Link>
-                    </DropdownMenuItem>
-                    {(user?.role === "admin" || user?.role === "moderator") && (
-                      <>
-                        <DropdownMenuSeparator className="bg-slate-600" />
-                        <DropdownMenuItem asChild className="text-slate-300 hover:text-white hover:bg-slate-700">
-                          <Link href="/admin">Администрирование</Link>
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                    <DropdownMenuSeparator className="bg-slate-600" />
-                    <DropdownMenuItem onClick={logout} className="text-red-400 hover:text-red-300 hover:bg-slate-700">
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={logout} className="text-red-500 hover:text-red-600">
+                      <LogOut className="mr-2" />
                       Выйти
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </>
             ) : (
-              <div className="flex space-x-2">
-                <Link href="/login">
-                  <Button variant="ghost" className="text-slate-300 hover:text-white hover:bg-slate-800">Войти</Button>
-                </Link>
-                <Link href="/register">
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white">Регистрация</Button>
-                </Link>
-              </div>
+              <Button variant="default" onClick={() => setLocation('/login')}>
+                Войти
+              </Button>
             )}
-
-            {/* Mobile Menu */}
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" className="md:hidden text-slate-300 hover:text-white hover:bg-slate-800">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-80 bg-slate-900 border-slate-700">
-                <div className="py-4">
-                  <nav className="space-y-4">
-                    {navigation.map((item) => (
-                      <Link key={item.name} href={item.href}>
-                        <span className="block px-3 py-2 text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg cursor-pointer transition-colors">
-                          {item.name}
-                        </span>
-                      </Link>
-                    ))}
-                  </nav>
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+          </nav>
         </div>
       </div>
     </header>

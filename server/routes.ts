@@ -319,37 +319,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const productData = {
         ...req.body,
         userId,
-        status: 'pending', // Все новые товары требуют модерации
+        status: 'pending',
         createdAt: new Date(),
         updatedAt: new Date()
       };
 
-      console.log('Creating product with data:', JSON.stringify(productData, null, 2));
+      console.log('🔍 Request body:', JSON.stringify(req.body, null, 2));
+      console.log('👤 User ID:', userId);
+      console.log('📦 Product data before validation:', JSON.stringify(productData, null, 2));
 
       try {
         // Валидация данных
         const validatedData = insertProductSchema.parse(productData);
-        console.log('Validated data:', JSON.stringify(validatedData, null, 2));
+        console.log('✅ Validation passed. Validated data:', JSON.stringify(validatedData, null, 2));
         
         const product = await storage.createProduct(validatedData);
-        console.log('Created product:', JSON.stringify(product, null, 2));
+        console.log('✨ Product created successfully:', JSON.stringify(product, null, 2));
         
         res.status(201).json(product);
       } catch (validationError) {
-        console.error('Validation error:', validationError);
+        console.error('❌ Validation error:', validationError);
         if (validationError instanceof z.ZodError) {
+          const errors = validationError.errors.map(err => ({
+            path: err.path.join('.'),
+            message: err.message
+          }));
+          console.error('📝 Validation errors details:', JSON.stringify(errors, null, 2));
           return res.status(400).json({
             message: 'Validation error',
-            errors: validationError.errors.map(err => ({
-              path: err.path.join('.'),
-              message: err.message
-            }))
+            errors
           });
         }
         throw validationError;
       }
     } catch (error) {
-      console.error('Create product error:', error);
+      console.error('❌ Create product error:', error);
       res.status(500).json({ 
         message: error instanceof Error ? error.message : 'Failed to create product',
         error: process.env.NODE_ENV === 'development' ? error : undefined

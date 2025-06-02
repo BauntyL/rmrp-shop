@@ -80,13 +80,20 @@ export default function CreateListingModal({ open, onOpenChange }: CreateListing
 
   const handleComplete = async (data: any) => {
     try {
+      console.log('🚀 Starting to create listing with data:', JSON.stringify(data, null, 2));
+      
       const productData = {
         ...data,
         images: data.imageUrl ? [data.imageUrl] : [],
       };
       
+      console.log('📦 Prepared product data:', JSON.stringify(productData, null, 2));
+      
       const response = await apiRequest("POST", "/api/products", productData);
-      await response.json();
+      console.log('📡 Server response status:', response.status);
+      
+      const result = await response.json();
+      console.log('✅ Server response data:', JSON.stringify(result, null, 2));
       
       toast({
         title: "Объявление создано",
@@ -95,6 +102,7 @@ export default function CreateListingModal({ open, onOpenChange }: CreateListing
       onOpenChange(false);
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
     } catch (error: any) {
+      console.error('❌ Error creating listing:', error);
       toast({
         title: "Ошибка",
         description: error.message || "Не удалось создать объявление",

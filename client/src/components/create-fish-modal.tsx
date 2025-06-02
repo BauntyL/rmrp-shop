@@ -1,21 +1,13 @@
-import React, { useState } from "react";
+import React from 'react';
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { Fish, MessageCircle, Users, Phone, Loader2, Package } from "lucide-react";
+import StepWizard from './step-wizard';
+import { FishStep1, FishStep2, FishStep3 } from './steps';
 
 const createFishSchema = z.object({
-  // title: z.string().min(1, "Название обязательно"), // Убираем это поле
   description: z.string().min(10, "Описание должно содержать минимум 10 символов"),
   price: z.coerce.number().min(1, "Цена должна быть больше 0"),
   categoryId: z.literal(3), // Только рыба
@@ -44,30 +36,8 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Полностью убираем запрос подкатегорий
   const { data: servers = [] } = useQuery({
     queryKey: ["/api/servers"],
-  });
-
-  const form = useForm<CreateFishFormData>({
-    resolver: zodResolver(createFishSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      price: 0,
-      categoryId: 3,
-      serverId: 0,
-      imageUrl: "",
-      metadata: {
-        fishType: "",
-        quantity: 1,
-        contacts: {
-          discord: "",
-          telegram: "",
-          phone: "",
-        },
-      },
-    },
   });
 
   const createListingMutation = useMutation({
@@ -84,7 +54,6 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
         title: "Объявление создано",
         description: "Ваше рыболовное объявление отправлено на модерацию",
       });
-      form.reset();
       onOpenChange(false);
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
     },
@@ -97,293 +66,81 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
     },
   });
 
-  const onSubmit = (data: CreateFishFormData) => {
-    createListingMutation.mutate(data);
+  const handleComplete = (formData: any) => {
+    // Преобразуем данные из формата StepWizard в формат API
+    const apiData: CreateFishFormData = {
+      description: formData.description || '',
+      price: formData.price || 0,
+      categoryId: 3,
+      serverId: formData.serverId || 0,
+      imageUrl: formData.imageUrl || '',
+      metadata: {
+        fishType: formData.fishType || '',
+        quantity: formData.quantity || 1,
+        contacts: {
+          discord: formData.discord || '',
+          telegram: formData.telegram || '',
+          phone: formData.phone || '',
+        },
+      },
+    };
+
+    createListingMutation.mutate(apiData);
   };
 
+  const steps = [
+    {
+      id: 'basic-info',
+      title: 'Основная информация',
+      description: 'Укажите тип и количество рыбы',
+      component: FishStep1,
+      validation: (data: any) => {
+        const errors: string[] = [];
+        if (!data.fishType?.trim()) errors.push('Укажите тип рыбы');
+        if (!data.quantity || data.quantity < 1) errors.push('Укажите количество');
+        return errors;
+      }
+    },
+    {
+      id: 'details',
+      title: 'Детали и цена',
+      description: 'Добавьте описание, фото и цену',
+      component: FishStep2,
+      validation: (data: any) => {
+        const errors: string[] = [];
+        if (!data.description?.trim() || data.description.length < 10) {
+          errors.push('Описание должно содержать минимум 10 символов');
+        }
+        if (!data.price || data.price < 1) errors.push('Укажите цену');
+        return errors;
+      }
+    },
+    {
+      id: 'contact',
+      title: 'Контакты и размещение',
+      description: 'Укажите контакты и выберите сервер',
+      component: FishStep3,
+      validation: (data: any) => {
+        const errors: string[] = [];
+        if (!data.serverId) errors.push('Выберите сервер');
+        const hasContact = data.discord?.trim() || data.telegram?.trim() || data.phone?.trim();
+        if (!hasContact) errors.push('Укажите хотя бы один способ связи');
+        return errors;
+      }
+    }
+  ];
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-blue-900 to-cyan-900 border-blue-500/20 text-white animate-in fade-in-0 zoom-in-95 duration-300">
-        <DialogHeader className="text-center pb-8 relative">
-          {/* Decorative gradient line */}
-          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 rounded-full animate-pulse" />
-          
-          <div className="mx-auto w-20 h-20 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mb-6 shadow-2xl shadow-blue-500/30 animate-pulse">
-            <Fish className="h-10 w-10 text-white" />
-          </div>
-          <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent mb-2">
-            Рыба на продажу
-          </DialogTitle>
-          <p className="text-blue-200/80 text-lg">Создайте объявление о продаже рыбы</p>
-        </DialogHeader>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            {/* Убираем весь блок Category Selection */}
-            
-            {/* Тип рыбы - перемещаем в начало */}
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20">
-              <h3 className="text-lg font-semibold text-blue-300 mb-4 flex items-center gap-2">
-                <Fish className="h-5 w-5" />
-                Рыба на продажу
-              </h3>
-              <FormField
-                control={form.control}
-                name="metadata.fishType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-blue-200 font-medium">Тип рыбы</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Введите тип рыбы (например: Плотва, Щука, Лещ)" 
-                        {...field} 
-                        className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-400" />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Quantity */}
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20">
-              <h3 className="text-lg font-semibold text-blue-300 mb-6 flex items-center gap-2">
-                <Package className="h-5 w-5" />
-                Количество и характеристики
-              </h3>
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="metadata.quantity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-blue-200 font-medium flex items-center gap-2">
-                        <Package className="h-4 w-4" />
-                        Количество рыбы (шт.)
-                      </FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          min="1"
-                          placeholder="1" 
-                          {...field} 
-                          className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-400" />
-                    </FormItem>
-                  )}
-                />
-                <div className="text-sm text-blue-300/70 bg-blue-900/20 p-3 rounded-lg">
-                  <p className="font-medium mb-1">💡 Рекомендации по указанию количества:</p>
-                  <ul className="list-disc list-inside space-y-1 text-xs">
-                    <li>Указывайте точное количество рыбы в штуках</li>
-                    <li>Для крупной рыбы можно указать вес в описании</li>
-                    <li>При продаже улова укажите общее количество</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            {/* Contact Information */}
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20">
-              <h3 className="text-lg font-semibold text-blue-300 mb-6 flex items-center gap-2">
-                <MessageCircle className="h-5 w-5" />
-                Контактная информация
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <FormField
-                  control={form.control}
-                  name="metadata.contacts.discord"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-blue-200 font-medium flex items-center gap-2">
-                        <MessageCircle className="h-4 w-4" />
-                        Discord
-                      </FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="username#1234" 
-                          {...field} 
-                          className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-400" />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="metadata.contacts.telegram"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-blue-200 font-medium flex items-center gap-2">
-                        <Users className="h-4 w-4" />
-                        Telegram
-                      </FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="@username" 
-                          {...field} 
-                          className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-400" />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="metadata.contacts.phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-blue-200 font-medium flex items-center gap-2">
-                        <Phone className="h-4 w-4" />
-                        Телефон
-                      </FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="+7 (999) 123-45-67" 
-                          {...field} 
-                          className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
-                        />
-                      </FormControl>
-                      <FormMessage className="text-red-400" />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-
-            {/* Server Selection */}
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20">
-              <FormField
-                control={form.control}
-                name="serverId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-blue-200 font-medium text-lg">Сервер</FormLabel>
-                    <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
-                      <FormControl>
-                        <SelectTrigger className="bg-slate-700/50 border-blue-500/30 text-white focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200">
-                          <SelectValue placeholder="Выберите сервер" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-slate-800 border-blue-500/30">
-                        {servers.map((server: any) => (
-                          <SelectItem key={server.id} value={server.id.toString()} className="text-white hover:bg-blue-600/20">
-                            {server.displayName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="text-red-400" />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Listing Details */}
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20 space-y-6">
-              <h3 className="text-lg font-semibold text-blue-300 mb-4">Детали объявления</h3>
-              
-              {/* Убираем поле title */}
-              
-              <FormField
-                control={form.control}
-                name="imageUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-blue-200 font-medium flex items-center gap-2">
-                      <Fish className="h-4 w-4" />
-                      Ссылка на фото
-                    </FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="https://example.com/image.jpg" 
-                        {...field} 
-                        className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200" 
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-400" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-blue-200 font-medium">Описание</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Опишите рыбу: вес, размер, свежесть, способ ловли..." 
-                        rows={4}
-                        {...field} 
-                        className="bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200 resize-none"
-                      />
-                    </FormControl>
-                    <FormMessage className="text-red-400" />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-blue-200 font-medium">Цена</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input 
-                          type="number" 
-                          placeholder="5000" 
-                          {...field}
-                          className="pr-12 bg-slate-700/50 border-blue-500/30 text-white placeholder:text-blue-300/50 focus:border-blue-400 focus:ring-blue-400/20 transition-all duration-200"
-                        />
-                        <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-blue-300 font-semibold">₽</span>
-                      </div>
-                    </FormControl>
-                    <FormMessage className="text-red-400" />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex space-x-4 pt-6">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => onOpenChange(false)} 
-                className="flex-1 border-blue-500/30 text-blue-300 hover:bg-blue-600/10 hover:border-blue-400 transition-all duration-200"
-                disabled={createListingMutation.isPending}
-              >
-                Отмена
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={createListingMutation.isPending} 
-                className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold shadow-lg shadow-blue-500/25 transition-all duration-200 transform hover:scale-[1.02]"
-              >
-                {createListingMutation.isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Создание...
-                  </>
-                ) : (
-                  "Разместить объявление"
-                )}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+    <StepWizard
+      open={open}
+      onOpenChange={onOpenChange}
+      steps={steps}
+      category="fish"
+      title="Продажа рыбы"
+      description="Создайте объявление о продаже рыбы"
+      onComplete={handleComplete}
+      isLoading={createListingMutation.isPending}
+      additionalProps={{ servers }}
+    />
   );
 }

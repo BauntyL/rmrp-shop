@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { Home, MapPin, Ruler, Bed, Building, Layers, X, Sparkles, Car, Warehouse, Plane, Phone, DollarSign, Image, FileText, MessageCircle, Users } from "lucide-react";
-import { StepWizard } from "@/components/ui/step-wizard";
+import StepWizard from "@/components/step-wizard";
 
 const createRealEstateSchema = z.object({
   title: z.string().min(1, "Название обязательно"),

@@ -13,6 +13,8 @@ interface Step {
 }
 
 interface StepWizardProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   steps: Step[];
   onComplete: (data: any) => void;
   onCancel: () => void;
@@ -85,88 +87,84 @@ export default function StepWizard({
   const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (
-    <div className={cn(
-      'fixed inset-0 z-50 flex items-center justify-center p-4',
-      'bg-black/50 backdrop-blur-sm',
-      className
-    )}>
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className={cn(
-          'relative w-full max-w-4xl max-h-[90vh] overflow-hidden',
-          'bg-slate-900 rounded-2xl shadow-2xl border border-slate-700',
-          'bg-gradient-to-br', theme.gradient
-        )}
-      >
-        {/* Header */}
-        <div className="relative p-6 border-b border-slate-700/50">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <span className="text-2xl">{theme.icon}</span>
-              <div>
-                <h2 className={cn('text-xl font-bold', theme.accent)}>
-                  {steps[currentStep].title}
-                </h2>
-                {steps[currentStep].description && (
-                  <p className="text-sm text-slate-400">
-                    {steps[currentStep].description}
-                  </p>
-                )}
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onCancel}
-              className="text-slate-400 hover:text-white"
-            >
-              ✕
-            </Button>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-xs text-slate-400">
-              <span>Шаг {currentStep + 1} из {steps.length}</span>
-              <span>{Math.round(progress)}%</span>
-            </div>
-            <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-              <motion.div
-                className={cn('h-full rounded-full', `bg-${theme.progress}`)} 
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.3 }}
-              />
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      className={cn(
+        'relative w-full overflow-hidden',
+        'bg-transparent rounded-2xl',
+        'bg-gradient-to-br', theme.gradient,
+        className
+      )}
+    >
+      {/* Header */}
+      <div className="relative p-6 border-b border-slate-700/50">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <span className="text-2xl">{theme.icon}</span>
+            <div>
+              <h2 className={cn('text-xl font-bold', theme.accent)}>
+                {steps[currentStep].title}
+              </h2>
+              {steps[currentStep].description && (
+                <p className="text-sm text-slate-400">
+                  {steps[currentStep].description}
+                </p>
+              )}
             </div>
           </div>
-
-          {/* Step Indicators */}
-          <div className="flex justify-center mt-4 space-x-2">
-            {steps.map((step, index) => (
-              <button
-                key={step.id}
-                onClick={() => goToStep(index)}
-                className={cn(
-                  'w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all',
-                  index === currentStep
-                    ? cn('text-white', theme.button)
-                    : index < currentStep
-                    ? 'bg-green-600 text-white'
-                    : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
-                )}
-              >
-                {index < currentStep ? (
-                  <Check className="w-4 h-4" />
-                ) : (
-                  index + 1
-                )}
-              </button>
-            ))}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onCancel}
+            className="text-slate-400 hover:text-white"
+          >
+            ✕
+          </Button>
+        </div>
+    
+        {/* Progress Bar */}
+        <div className="space-y-2">
+          <div className="flex justify-between text-xs text-slate-400">
+            <span>Шаг {currentStep + 1} из {steps.length}</span>
+            <span>{Math.round(progress)}%</span>
+          </div>
+          <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+            <motion.div
+              className={cn('h-full rounded-full', `bg-${theme.progress}`)} 
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.3 }}
+            />
           </div>
         </div>
-
+    
+        {/* Step Indicators */}
+        <div className="flex justify-center mt-4 space-x-2">
+          {steps.map((step, index) => (
+            <button
+              key={step.id}
+              onClick={() => goToStep(index)}
+              className={cn(
+                'w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-all',
+                index === currentStep
+                  ? cn('text-white', theme.button)
+                  : index < currentStep
+                  ? 'bg-green-600 text-white'
+                  : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+              )}
+            >
+              {index < currentStep ? (
+                <Check className="w-4 h-4" />
+              ) : (
+                index + 1
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+    
         {/* Content */}
         <div className="relative h-[60vh] overflow-hidden">
           <AnimatePresence mode="wait">
@@ -182,7 +180,7 @@ export default function StepWizard({
             </motion.div>
           </AnimatePresence>
         </div>
-
+    
         {/* Footer */}
         <div className="p-6 border-t border-slate-700/50 bg-slate-900/50">
           <div className="flex justify-between">

@@ -1,9 +1,10 @@
-import React from 'react';
+import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import StepWizard from './step-wizard';
 import { FishStep1, FishStep2, FishStep3 } from './steps';
 
@@ -131,16 +132,16 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
   ];
 
   return (
-    <StepWizard
-      open={open}
-      onOpenChange={onOpenChange}
-      steps={steps}
-      category="fish"
-      title="Продажа рыбы"
-      description="Создайте объявление о продаже рыбы"
-      onComplete={handleComplete}
-      isLoading={createListingMutation.isPending}
-      additionalProps={{ servers }}
-    />
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-cyan-500/20 text-white shadow-2xl shadow-cyan-500/10">
+        <StepWizard
+          steps={steps}
+          category="fish"
+          onComplete={handleComplete}
+          onCancel={() => onOpenChange(false)}
+          additionalProps={{ servers }}
+        />
+      </DialogContent>
+    </Dialog>
   );
 }

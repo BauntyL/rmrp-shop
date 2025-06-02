@@ -108,19 +108,25 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
 
   const steps = [
     {
-      component: FishStep1,
+      id: "step1",
       title: "Основная информация",
-      description: "Тип рыбы, количество и базовая информация"
+      description: "Тип рыбы, количество и базовая информация",
+      component: <FishStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
+      isValid: true
     },
     {
-      component: FishStep2,
+      id: "step2",
       title: "Детали и характеристики",
-      description: "Подробные характеристики улова"
+      description: "Подробные характеристики улова",
+      component: <FishStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
+      isValid: true
     },
     {
-      component: FishStep3,
+      id: "step3",
       title: "Контакты, цена и сервер",
-      description: "Контактная информация, цена и выбор сервера"
+      description: "Контактная информация, цена и выбор сервера",
+      component: <FishStep3 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
+      isValid: true
     }
   ];
 
@@ -130,7 +136,8 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
         <StepWizard
           steps={steps}
           onComplete={handleComplete}
-          servers={servers}
+          onCancel={() => onOpenChange(false)}
+          category="fish"
         />
       </DialogContent>
     </Dialog>

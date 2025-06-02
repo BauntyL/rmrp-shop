@@ -132,7 +132,7 @@ export default function StepWizard({
           </div>
           <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
             <motion.div
-              className={cn('h-full rounded-full', `bg-${theme.progress}`)} 
+              className={cn('h-full rounded-full', theme.progress)} 
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.3 }}

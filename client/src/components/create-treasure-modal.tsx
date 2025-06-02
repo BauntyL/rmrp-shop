@@ -1,9 +1,12 @@
-import StepWizard from './step-wizard';
+import React from "react";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { TreasureStep1, TreasureStep2, TreasureStep3 } from "./steps";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Gem } from "lucide-react";
 import { z } from "zod";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import StepWizard from "@/components/step-wizard";
 
 const createTreasureSchema = z.object({
   description: z.string().min(10, "Описание должно содержать минимум 10 символов"),

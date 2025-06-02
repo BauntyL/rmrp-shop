@@ -1,9 +1,12 @@
-import StepWizard from './step-wizard';
+import React from "react";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { CarStep1, CarStep2, CarStep3 } from "./steps";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Car } from "lucide-react";
 import { z } from "zod";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import StepWizard from "@/components/step-wizard";
 
 const createCarSchema = z.object({
   title: z.string().min(1, "Название автомобиля обязательно"),

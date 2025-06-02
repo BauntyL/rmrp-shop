@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Upload, X } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 
 interface FishStep3Props {
   data: any;
@@ -12,103 +11,83 @@ interface FishStep3Props {
 
 export default function FishStep3({ data, onDataChange, onValidationChange }: FishStep3Props) {
   const [formData, setFormData] = useState({
-    images: data.images || [],
-    location: data.location || '',
-    contact: data.contact || '',
+    discord: data.discord || '',
+    telegram: data.telegram || '',
+    phone: data.phone || '',
+    additionalInfo: data.additionalInfo || '',
     ...data
   });
 
-  const updateData = (field: string, value: any) => {
+  const updateData = (field: string, value: string) => {
     const newData = { ...formData, [field]: value };
     setFormData(newData);
     onDataChange(newData);
-    
-    // Валидация
-    const isValid = newData.location.length > 0 && newData.contact.length > 0;
-    onValidationChange(isValid);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    const newImages = [...formData.images, ...files];
-    updateData('images', newImages);
-  };
-
-  const removeImage = (index: number) => {
-    const newImages = formData.images.filter((_: any, i: number) => i !== index);
-    updateData('images', newImages);
-  };
+  useEffect(() => {
+    // Хотя бы один контакт должен быть заполнен
+    const hasContact = formData.discord || formData.telegram || formData.phone;
+    onValidationChange(hasContact);
+  }, [formData, onValidationChange]);
 
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold text-cyan-400 mb-2">Фотографии и контакты</h3>
-        <p className="text-slate-400">Добавьте фото и укажите контактную информацию</p>
+        <h3 className="text-lg font-semibold text-cyan-400 mb-2">Контактная информация</h3>
+        <p className="text-slate-400">Укажите как с вами можно связаться</p>
       </div>
 
       <div className="space-y-4">
-        <Label className="text-slate-300">Фотографии рыбы</Label>
-        <div className="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center">
-          <Upload className="mx-auto h-12 w-12 text-slate-400 mb-4" />
-          <p className="text-slate-400 mb-4">Перетащите фото сюда или нажмите для выбора</p>
-          <Button variant="outline" className="border-slate-600 text-slate-300">
-            <label htmlFor="image-upload" className="cursor-pointer">
-              Выбрать файлы
-            </label>
-          </Button>
-          <input
-            id="image-upload"
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
+        <div className="space-y-2">
+          <Label htmlFor="discord" className="text-slate-300">Discord</Label>
+          <Input
+            id="discord"
+            value={formData.discord}
+            onChange={(e) => updateData('discord', e.target.value)}
+            placeholder="username#1234"
+            className="bg-slate-800 border-slate-600 text-white"
           />
         </div>
-        
-        {formData.images.length > 0 && (
-          <div className="grid grid-cols-3 gap-4">
-            {formData.images.map((image: File, index: number) => (
-              <div key={index} className="relative">
-                <img
-                  src={URL.createObjectURL(image)}
-                  alt={`Preview ${index}`}
-                  className="w-full h-24 object-cover rounded-lg"
-                />
-                <button
-                  onClick={() => removeImage(index)}
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="telegram" className="text-slate-300">Telegram</Label>
+          <Input
+            id="telegram"
+            value={formData.telegram}
+            onChange={(e) => updateData('telegram', e.target.value)}
+            placeholder="@username или +7XXXXXXXXXX"
+            className="bg-slate-800 border-slate-600 text-white"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="phone" className="text-slate-300">Телефон</Label>
+          <Input
+            id="phone"
+            type="tel"
+            value={formData.phone}
+            onChange={(e) => updateData('phone', e.target.value)}
+            placeholder="+7 (XXX) XXX-XX-XX"
+            className="bg-slate-800 border-slate-600 text-white"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="additionalInfo" className="text-slate-300">Дополнительная информация</Label>
+          <Textarea
+            id="additionalInfo"
+            value={formData.additionalInfo}
+            onChange={(e) => updateData('additionalInfo', e.target.value)}
+            placeholder="Предпочтительное время для связи, дополнительные контакты..."
+            className="bg-slate-800 border-slate-600 text-white min-h-[100px]"
+          />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <Label htmlFor="location" className="text-slate-300">Местоположение *</Label>
-          <Input
-            id="location"
-            value={formData.location}
-            onChange={(e) => updateData('location', e.target.value)}
-            placeholder="Город, район"
-            className="bg-slate-800 border-slate-600 text-white"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="contact" className="text-slate-300">Контакт *</Label>
-          <Input
-            id="contact"
-            value={formData.contact}
-            onChange={(e) => updateData('contact', e.target.value)}
-            placeholder="Телефон или email"
-            className="bg-slate-800 border-slate-600 text-white"
-          />
-        </div>
+      <div className="bg-slate-800 p-4 rounded-lg border border-slate-600">
+        <p className="text-sm text-slate-400">
+          <span className="text-red-400">*</span> Необходимо указать хотя бы один способ связи
+        </p>
       </div>
     </div>
   );

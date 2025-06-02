@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 
 interface TreasureStep2Props {
   data: any;
@@ -12,41 +11,117 @@ interface TreasureStep2Props {
 
 export default function TreasureStep2({ data, onDataChange, onValidationChange }: TreasureStep2Props) {
   const [formData, setFormData] = useState({
-    material: data.material || '',
-    condition: data.condition || '',
-    authenticity: data.authenticity || '',
-    price: data.price || '',
-    appraisal: data.appraisal || '',
+    treasureType: data.metadata?.treasureType || '',
+    quantity: data.metadata?.quantity || 1,
+    rarity: data.metadata?.rarity || '',
+    condition: data.metadata?.condition || '',
+    imageUrl: data.metadata?.imageUrl || '',
     ...data
   });
 
-  const updateData = (field: string, value: string) => {
+  const updateData = (field: string, value: string | number) => {
     const newData = { ...formData, [field]: value };
     setFormData(newData);
-    onDataChange(newData);
+    
+    // Обновляем данные в правильной структуре
+    const updatedData = {
+      ...data,
+      metadata: {
+        ...data.metadata,
+        [field]: value
+      }
+    };
+    onDataChange(updatedData);
     
     // Валидация
-    const isValid = newData.material.length > 0 && newData.condition.length > 0 && newData.price.length > 0;
+    const isValid = newData.treasureType.length > 0 && 
+                   newData.quantity > 0 && 
+                   newData.rarity.length > 0 && 
+                   newData.condition.length > 0;
     onValidationChange(isValid);
   };
+
+  const treasureTypes = [
+    { value: 'weapon', label: 'Оружие' },
+    { value: 'armor', label: 'Броня' },
+    { value: 'jewelry', label: 'Украшения' },
+    { value: 'artifact', label: 'Артефакт' },
+    { value: 'scroll', label: 'Свиток' },
+    { value: 'potion', label: 'Зелье' },
+    { value: 'gem', label: 'Драгоценный камень' },
+    { value: 'relic', label: 'Реликвия' },
+    { value: 'other', label: 'Другое' }
+  ];
+
+  const rarityLevels = [
+    { value: 'common', label: 'Обычный' },
+    { value: 'uncommon', label: 'Необычный' },
+    { value: 'rare', label: 'Редкий' },
+    { value: 'epic', label: 'Эпический' },
+    { value: 'legendary', label: 'Легендарный' },
+    { value: 'mythic', label: 'Мифический' }
+  ];
+
+  const conditionLevels = [
+    { value: 'perfect', label: 'Идеальное' },
+    { value: 'excellent', label: 'Отличное' },
+    { value: 'good', label: 'Хорошее' },
+    { value: 'fair', label: 'Удовлетворительное' },
+    { value: 'poor', label: 'Плохое' },
+    { value: 'damaged', label: 'Поврежденное' }
+  ];
 
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold text-amber-400 mb-2">Характеристики и оценка</h3>
-        <p className="text-slate-400">Укажите материал, состояние и стоимость</p>
+        <h3 className="text-lg font-semibold text-amber-400 mb-2">Детали клада</h3>
+        <p className="text-slate-400">Укажите тип, количество, редкость и состояние</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <Label htmlFor="material" className="text-slate-300">Материал *</Label>
+          <Label htmlFor="treasureType" className="text-slate-300">Тип клада *</Label>
+          <Select value={formData.treasureType} onValueChange={(value) => updateData('treasureType', value)}>
+            <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+              <SelectValue placeholder="Выберите тип клада" />
+            </SelectTrigger>
+            <SelectContent className="bg-slate-800 border-slate-600">
+              {treasureTypes.map((type) => (
+                <SelectItem key={type.value} value={type.value} className="text-white hover:bg-slate-700">
+                  {type.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="quantity" className="text-slate-300">Количество *</Label>
           <Input
-            id="material"
-            value={formData.material}
-            onChange={(e) => updateData('material', e.target.value)}
-            placeholder="Например: Золото 585 пробы"
+            id="quantity"
+            type="number"
+            min="1"
+            value={formData.quantity}
+            onChange={(e) => updateData('quantity', parseInt(e.target.value) || 1)}
+            placeholder="1"
             className="bg-slate-800 border-slate-600 text-white"
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="rarity" className="text-slate-300">Редкость *</Label>
+          <Select value={formData.rarity} onValueChange={(value) => updateData('rarity', value)}>
+            <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+              <SelectValue placeholder="Выберите редкость" />
+            </SelectTrigger>
+            <SelectContent className="bg-slate-800 border-slate-600">
+              {rarityLevels.map((rarity) => (
+                <SelectItem key={rarity.value} value={rarity.value} className="text-white hover:bg-slate-700">
+                  {rarity.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-2">
@@ -55,53 +130,30 @@ export default function TreasureStep2({ data, onDataChange, onValidationChange }
             <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
               <SelectValue placeholder="Выберите состояние" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="mint">Идеальное</SelectItem>
-              <SelectItem value="excellent">Отличное</SelectItem>
-              <SelectItem value="good">Хорошее</SelectItem>
-              <SelectItem value="fair">Удовлетворительное</SelectItem>
-              <SelectItem value="poor">Требует реставрации</SelectItem>
+            <SelectContent className="bg-slate-800 border-slate-600">
+              {conditionLevels.map((condition) => (
+                <SelectItem key={condition.value} value={condition.value} className="text-white hover:bg-slate-700">
+                  {condition.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="authenticity" className="text-slate-300">Подлинность</Label>
-          <Select value={formData.authenticity} onValueChange={(value) => updateData('authenticity', value)}>
-            <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-              <SelectValue placeholder="Выберите" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="certified">Сертифицирована</SelectItem>
-              <SelectItem value="expert">Экспертная оценка</SelectItem>
-              <SelectItem value="family">Семейная реликвия</SelectItem>
-              <SelectItem value="unknown">Неизвестно</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="price" className="text-slate-300">Цена (₽) *</Label>
-          <Input
-            id="price"
-            type="number"
-            value={formData.price}
-            onChange={(e) => updateData('price', e.target.value)}
-            placeholder="0"
-            className="bg-slate-800 border-slate-600 text-white"
-          />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="appraisal" className="text-slate-300">Оценочная стоимость или история</Label>
-        <Textarea
-          id="appraisal"
-          value={formData.appraisal}
-          onChange={(e) => updateData('appraisal', e.target.value)}
-          placeholder="Укажите оценочную стоимость, историю приобретения или другие важные детали..."
-          className="bg-slate-800 border-slate-600 text-white min-h-[80px]"
+        <Label htmlFor="imageUrl" className="text-slate-300">URL изображения (необязательно)</Label>
+        <Input
+          id="imageUrl"
+          type="url"
+          value={formData.imageUrl}
+          onChange={(e) => updateData('imageUrl', e.target.value)}
+          placeholder="https://example.com/image.jpg"
+          className="bg-slate-800 border-slate-600 text-white"
         />
+        <p className="text-xs text-slate-400">
+          Добавьте ссылку на изображение клада для привлечения покупателей
+        </p>
       </div>
     </div>
   );

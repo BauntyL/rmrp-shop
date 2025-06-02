@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { CarStep1, CarStep2, CarStep3 } from "./steps";
 import { apiRequest } from "@/lib/queryClient";
@@ -15,17 +15,40 @@ const createCarSchema = z.object({
   serverId: z.number().min(1, "Выберите сервер"),
   imageUrl: z.string().url("Введите корректную ссылку на изображение").optional().or(z.literal("")),
   metadata: z.object({
-    category: z.enum(["standard", "coupe", "suv", "sport", "motorcycle", "special"], {
+    // Step 1 - Основная информация
+    brand: z.string().min(1, "Марка обязательна"),
+    model: z.string().min(1, "Модель обязательна"),
+    year: z.number().min(1900, "Некорректный год").max(new Date().getFullYear() + 1, "Некорректный год"),
+    category: z.enum(["sedan", "hatchback", "suv", "coupe", "wagon", "convertible", "pickup", "van", "motorcycle"], {
       required_error: "Выберите категорию автомобиля"
     }),
-    maxSpeed: z.number().min(1, "Максимальная скорость должна быть больше 0"),
-    tuning: z.enum(["none", "ft", "fft"], {
-      required_error: "Выберите тип тюнинга"
+    
+    // Step 2 - Детали автомобиля
+    engineType: z.string().min(1, "Тип двигателя обязателен"),
+    engineVolume: z.number().min(0.1, "Объем двигателя должен быть больше 0"),
+    horsepower: z.number().min(1, "Мощность должна быть больше 0"),
+    transmission: z.enum(["manual", "automatic", "cvt", "robot"], {
+      required_error: "Выберите тип коробки передач"
     }),
+    driveType: z.enum(["front", "rear", "all"], {
+      required_error: "Выберите тип привода"
+    }),
+    fuelType: z.enum(["gasoline", "diesel", "hybrid", "electric", "gas"], {
+      required_error: "Выберите тип топлива"
+    }),
+    mileage: z.number().min(0, "Пробег не может быть отрицательным"),
+    condition: z.enum(["new", "excellent", "good", "fair", "poor"], {
+      required_error: "Выберите состояние автомобиля"
+    }),
+    color: z.string().min(1, "Цвет обязателен"),
+    
+    // Step 3 - Контакты
     contacts: z.object({
       discord: z.string().optional(),
       telegram: z.string().optional(),
       phone: z.string().optional(),
+    }).refine(data => data.discord || data.telegram || data.phone, {
+      message: "Необходимо указать хотя бы один способ связи"
     })
   })
 });
@@ -45,7 +68,6 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
     queryKey: ["/api/servers"],
   });
 
-  // Функция handleComplete должна быть определена ДО return
   const handleComplete = async (data: CreateCarFormData) => {
     try {
       const productData = {
@@ -84,9 +106,19 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
     serverId: 0,
     imageUrl: "",
     metadata: {
-      category: "standard",
-      maxSpeed: 0,
-      tuning: "none",
+      brand: "",
+      model: "",
+      year: new Date().getFullYear(),
+      category: "sedan",
+      engineType: "",
+      engineVolume: 0,
+      horsepower: 0,
+      transmission: "manual",
+      driveType: "front",
+      fuelType: "gasoline",
+      mileage: 0,
+      condition: "good",
+      color: "",
       contacts: {
         discord: "",
         telegram: "",
@@ -122,20 +154,20 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
               steps={[
                 {
                   component: <CarStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
-                  title: "Категория и название",
-                  description: "Выберите тип автомобиля и укажите название",
+                  title: "Основная информация",
+                  description: "Марка, модель, год и категория автомобиля",
                   isValid: true
                 },
                 {
                   component: <CarStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
-                  title: "Детали и тюнинг",
-                  description: "Опишите автомобиль, укажите характеристики и цену",
+                  title: "Детали автомобиля",
+                  description: "Технические характеристики и состояние",
                   isValid: true
                 },
                 {
                   component: <CarStep3 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
-                  title: "Контакты и сервер",
-                  description: "Укажите контактную информацию и выберите сервер",
+                  title: "Контакты и цена",
+                  description: "Контактная информация, цена и сервер",
                   isValid: true
                 }
               ]}

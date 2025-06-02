@@ -84,7 +84,7 @@ export default function TreasureStep1({ data, onDataChange, onValidationChange, 
             value={formData.description}
             onChange={(e) => updateData('description', e.target.value)}
             placeholder="Подробное описание сокровища, его особенностей и характеристик..."
-            className="bg-slate-800 border-slate-600 text-white min-h-[80px]" {/* Уменьшил с min-h-[120px] до min-h-[80px] */}
+            className="bg-slate-800 border-slate-600 text-white min-h-[80px]"
           />
           <p className="text-xs text-slate-400">
             Минимум 10 символов. Текущая длина: {formData.description.length}

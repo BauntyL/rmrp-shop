@@ -5,7 +5,7 @@ import FishStep1 from '@/components/steps/fish-step1';
 import FishStep2 from '@/components/steps/fish-step2';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/auth-context'; // Добавлен импорт useAuth
+import { useAuth } from '@/hooks/useAuth'; // Исправлен путь импорта
 import { apiRequest } from '@/lib/api'; // Добавлен импорт apiRequest
 import { z } from 'zod'; // Добавлен импорт zod
 

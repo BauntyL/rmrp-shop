@@ -353,38 +353,57 @@ export class DatabaseStorage implements IStorage {
     
     // Проверяем обязательные поля
     if (!product.title || !product.description || !product.price || !product.categoryId || !product.serverId || !product.userId) {
+      console.error('🚫 Missing required fields:', {
+        title: !product.title,
+        description: !product.description,
+        price: !product.price,
+        categoryId: !product.categoryId,
+        serverId: !product.serverId,
+        userId: !product.userId
+      });
       throw new Error('Missing required fields');
     }
 
     // Проверяем, что цена положительная
     if (product.price <= 0) {
+      console.error('🚫 Invalid price:', product.price);
       throw new Error('Price must be positive');
     }
 
     // Проверяем существование категории
+    console.log('🔍 Checking category:', product.categoryId);
     const categoryResult = await db.select().from(categories).where(eq(categories.id, product.categoryId));
     if (!categoryResult.length) {
+      console.error('🚫 Category not found:', product.categoryId);
       throw new Error('Category not found');
     }
+    console.log('✅ Category found:', categoryResult[0]);
 
     // Проверяем существование сервера
+    console.log('🔍 Checking server:', product.serverId);
     const serverResult = await db.select().from(servers).where(eq(servers.id, product.serverId));
     if (!serverResult.length) {
+      console.error('🚫 Server not found:', product.serverId);
       throw new Error('Server not found');
     }
+    console.log('✅ Server found:', serverResult[0]);
 
     // Проверяем существование пользователя
+    console.log('🔍 Checking user:', product.userId);
     const userResult = await db.select().from(users).where(eq(users.id, product.userId));
     if (!userResult.length) {
+      console.error('🚫 User not found:', product.userId);
       throw new Error('User not found');
     }
+    console.log('✅ User found:', userResult[0]);
 
     try {
+      console.log('📝 Inserting product:', JSON.stringify(product, null, 2));
       const [newProduct] = await db.insert(products).values(product).returning();
-      console.log('🗄️ Created product:', JSON.stringify(newProduct, null, 2));
+      console.log('✅ Created product:', JSON.stringify(newProduct, null, 2));
       return newProduct;
     } catch (error) {
-      console.error('🗄️ Error creating product:', error);
+      console.error('❌ Error creating product:', error);
       throw error;
     }
   }
@@ -630,4 +649,3 @@ export class DatabaseStorage implements IStorage {
 }
 
 export const storage = new DatabaseStorage();
-import { eq, and, or, desc, asc, like, sql, ne, isNull } from "drizzle-orm";

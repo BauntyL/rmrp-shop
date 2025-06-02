@@ -199,6 +199,12 @@ export const insertUserSchema = createInsertSchema(users).omit({
 
 export const insertProductSchema = createInsertSchema(products)
   .extend({
+    title: z.string().min(1, "Название обязательно"),
+    description: z.string().min(1, "Описание обязательно"),
+    price: z.number().min(1, "Цена должна быть больше 0"),
+    categoryId: z.number().min(1, "Выберите категорию"),
+    serverId: z.number().min(1, "Выберите сервер"),
+    userId: z.number().min(1, "Пользователь не определен"),
     metadata: z.object({
       treasureType: z.string().optional(),
       quantity: z.number().optional(),

@@ -15,7 +15,7 @@ export async function apiRequest(
   const token = localStorage.getItem("token");
   
   // Добавляем базовый URL для API запросов
-  const apiUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+  const apiUrl = typeof url === 'string' && url.startsWith('http') ? url : `${window.location.origin}${url}`;
   
   const res = await fetch(apiUrl, {
     method,
@@ -41,7 +41,7 @@ export const getQueryFn: <T>(options: {
     let url = queryKey[0] as string;
     
     // Добавляем базовый URL для API запросов
-    const apiUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+    const apiUrl = typeof url === 'string' && url.startsWith('http') ? url : `${window.location.origin}${url}`;
     
     // Добавляем параметры запроса, если они есть
     if (queryKey[1] && typeof queryKey[1] === 'object') {

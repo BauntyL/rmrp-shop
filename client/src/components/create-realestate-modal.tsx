@@ -123,6 +123,9 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
     index === self.findIndex((s: any) => s.name === subcategory.name)
   );
 
+  // Remove the old steps declaration from here - it's duplicated below
+  // const steps = [ ... ] // DELETE THIS ENTIRE BLOCK
+
   const steps = [
     {
       title: "Тип и характеристики",

@@ -14,7 +14,10 @@ export async function apiRequest(
 ): Promise<Response> {
   const token = localStorage.getItem("token");
   
-  const res = await fetch(url, {
+  // Добавляем базовый URL для API запросов
+  const apiUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+  
+  const res = await fetch(apiUrl, {
     method,
     headers: {
       ...(data ? { "Content-Type": "application/json" } : {}),
@@ -37,6 +40,9 @@ export const getQueryFn: <T>(options: {
     
     let url = queryKey[0] as string;
     
+    // Добавляем базовый URL для API запросов
+    const apiUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
+    
     // Добавляем параметры запроса, если они есть
     if (queryKey[1] && typeof queryKey[1] === 'object') {
       const params = new URLSearchParams();
@@ -49,8 +55,12 @@ export const getQueryFn: <T>(options: {
       });
       
       if (params.toString()) {
-        url += '?' + params.toString();
+        url = `${apiUrl}?${params.toString()}`;
+      } else {
+        url = apiUrl;
       }
+    } else {
+      url = apiUrl;
     }
     
     const res = await fetch(url, {

@@ -12,22 +12,25 @@ import { RealEstateStep1, RealEstateStep2, RealEstateStep3 } from "@/components/
 
 const createRealEstateSchema = z.object({
   title: z.string().min(1, "Название обязательно"),
-  description: z.string().min(10, "Описание должно содержать минимум 10 символов"),
+  description: z.string().optional(),
   price: z.coerce.number().min(1, "Цена должна быть больше 0"),
   categoryId: z.literal(2),
   subcategoryId: z.coerce.number().min(1, "Выберите тип недвижимости"),
   serverId: z.coerce.number().min(1, "Выберите сервер"),
   imageUrl: z.string().url("Введите корректную ссылку на изображение").optional().or(z.literal("")),
   metadata: z.object({
-    garageSpaces: z.coerce.number().min(1).max(6),
-    warehouses: z.coerce.number().min(1).max(2),
-    helipads: z.coerce.number().min(1).max(2),
+    // Дополнительные характеристики
+    garageSpaces: z.coerce.number().min(0).optional(),
+    warehouses: z.coerce.number().min(0).optional(),
+    helipads: z.coerce.number().min(0).optional(),
     income: z.coerce.number().optional(),
+    
+    // Контакты
     contacts: z.object({
       discord: z.string().optional(),
       telegram: z.string().optional(),
       phone: z.string().optional(),
-    })
+    }),
   }),
 });
 
@@ -62,15 +65,15 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
       serverId: 0,
       imageUrl: "",
       metadata: {
-        garageSpaces: 1,
-        warehouses: 1,
-        helipads: 1,
+        garageSpaces: 0,
+        warehouses: 0,
+        helipads: 0,
         income: 0,
         contacts: {
           discord: "",
           telegram: "",
           phone: "",
-        }
+        },
       },
     },
   });
@@ -116,22 +119,22 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
   const steps = [
     {
       id: "step1",
-      title: "Основная информация",
-      description: "Тип недвижимости, название и описание",
-      component: <RealEstateStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
+      title: "Тип и характеристики",
+      description: "Тип недвижимости, сервер, название и цена",
+      component: <RealEstateStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} subcategories={subcategories} />,
       isValid: true
     },
     {
       id: "step2",
-      title: "Детали и характеристики",
-      description: "Удобства и особенности недвижимости",
+      title: "Дополнительная информация",
+      description: "Гаражные места, склады, вертолетные площадки, доход и описание",
       component: <RealEstateStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
       isValid: true
     },
     {
       id: "step3",
-      title: "Контакты, цена и сервер",
-      description: "Контактная информация, цена и выбор сервера",
+      title: "Изображение и контакты",
+      description: "Ссылка на изображение и контактная информация",
       component: <RealEstateStep3 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
       isValid: true
     }

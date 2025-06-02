@@ -37,20 +37,20 @@ export default function FishStep1({ data, onDataChange, onValidationChange, serv
   }, [formData, onValidationChange]);
 
   return (
-    <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold text-cyan-400 mb-2">Основная информация о рыбе</h3>
-        <p className="text-slate-400">Укажите тип рыбы, количество, описание, цену и сервер</p>
+    <div className="space-y-4">
+      <div className="text-center mb-4">
+        <h3 className="text-lg font-semibold text-cyan-400 mb-2">Основная информация</h3>
+        <p className="text-slate-400 text-sm">Тип рыбы, количество, описание, цена и сервер</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="fishType" className="text-slate-300">Тип рыбы *</Label>
           <Input
             id="fishType"
             value={formData.fishType}
             onChange={(e) => updateData('fishType', e.target.value)}
-            placeholder="Например: Лосось, Тунец, Карп"
+            placeholder="Например: Лосось, Окунь, Щука"
             className="bg-slate-800 border-slate-600 text-white"
           />
         </div>
@@ -72,10 +72,11 @@ export default function FishStep1({ data, onDataChange, onValidationChange, serv
           <Input
             id="price"
             type="number"
-            min="1"
+            min="0"
+            step="0.01"
             value={formData.price}
             onChange={(e) => updateData('price', parseFloat(e.target.value) || 0)}
-            placeholder="Цена в игровой валюте"
+            placeholder="0.00"
             className="bg-slate-800 border-slate-600 text-white"
           />
         </div>
@@ -88,7 +89,7 @@ export default function FishStep1({ data, onDataChange, onValidationChange, serv
             </SelectTrigger>
             <SelectContent className="bg-slate-800 border-slate-600">
               {servers.map((server) => (
-                <SelectItem key={server.id} value={server.id.toString()} className="text-white">
+                <SelectItem key={server.id} value={server.id.toString()} className="text-white hover:bg-slate-700">
                   {server.name}
                 </SelectItem>
               ))}
@@ -103,10 +104,10 @@ export default function FishStep1({ data, onDataChange, onValidationChange, serv
           id="description"
           value={formData.description}
           onChange={(e) => updateData('description', e.target.value)}
-          placeholder="Подробное описание рыбы (минимум 10 символов)"
-          className="bg-slate-800 border-slate-600 text-white min-h-[100px]"
+          placeholder="Опишите вашу рыбу (минимум 10 символов)"
+          className="bg-slate-800 border-slate-600 text-white min-h-[80px] resize-none"
+          rows={3}
         />
-        <p className="text-xs text-slate-400">{formData.description.length}/10 символов минимум</p>
       </div>
     </div>
   );

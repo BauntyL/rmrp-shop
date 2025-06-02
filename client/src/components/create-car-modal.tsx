@@ -1,6 +1,6 @@
 import React from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
-import { CarStep1, CarStep2, CarStep3 } from "./steps";
+import { CarStep1, CarStep2 } from "./steps";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Car } from "lucide-react";
@@ -155,19 +155,13 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
                 {
                   component: <CarStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
                   title: "Основная информация",
-                  description: "Марка, модель, год и категория автомобиля",
+                  description: "Данные об автомобиле, характеристики и цена",
                   isValid: true
                 },
                 {
                   component: <CarStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
-                  title: "Детали автомобиля",
-                  description: "Технические характеристики и состояние",
-                  isValid: true
-                },
-                {
-                  component: <CarStep3 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
-                  title: "Контакты и цена",
-                  description: "Контактная информация, цена и сервер",
+                  title: "Изображение и контакты",
+                  description: "Фото автомобиля и контактная информация",
                   isValid: true
                 }
               ]}
@@ -182,3 +176,4 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
     </Dialog>
   );
 }
+import { CarStep1, CarStep2 } from "./steps";

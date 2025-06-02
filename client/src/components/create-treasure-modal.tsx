@@ -1,6 +1,6 @@
 import React from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
-import { TreasureStep1, TreasureStep2, TreasureStep3 } from "./steps";
+import { TreasureStep1, TreasureStep2 } from "./steps";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Gem } from "lucide-react";
@@ -15,13 +15,10 @@ const createTreasureSchema = z.object({
   categoryId: z.literal(4), // Только клады
   
   // Детали клада
-  metadata: z.object({
-    treasureType: z.string().min(1, "Укажите тип клада"),
-    quantity: z.coerce.number().min(1, "Количество должно быть больше 0"),
-    rarity: z.string().min(1, "Укажите редкость"),
-    condition: z.string().min(1, "Укажите состояние"),
-    imageUrl: z.string().url("Введите корректный URL изображения").optional().or(z.literal("")),
-  }),
+  treasureType: z.string().min(1, "Укажите тип клада"),
+  quantity: z.coerce.number().min(1, "Количество должно быть больше 0"),
+  rarity: z.string().min(1, "Укажите редкость"),
+  condition: z.string().min(1, "Укажите состояние"),
   
   // Контакты, цена и сервер
   contacts: z.object({
@@ -35,8 +32,13 @@ const createTreasureSchema = z.object({
       path: ["contacts"]
     }
   ),
+  contact: z.string().optional(),
   price: z.coerce.number().min(1, "Цена должна быть больше 0"),
   serverId: z.coerce.number().min(1, "Выберите сервер"),
+  location: z.string().min(1, "Укажите местоположение"),
+  images: z.array(z.any()).optional(),
+  additionalInfo: z.string().optional(),
+  notes: z.string().optional(),
 });
 
 type CreateTreasureFormData = z.infer<typeof createTreasureSchema>;
@@ -62,13 +64,16 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
         price: data.price,
         categoryId: data.categoryId,
         serverId: data.serverId,
-        images: data.metadata.imageUrl ? [data.metadata.imageUrl] : [],
+        images: data.images || [],
         metadata: {
-          treasureType: data.metadata.treasureType,
-          quantity: data.metadata.quantity,
-          rarity: data.metadata.rarity,
-          condition: data.metadata.condition,
+          treasureType: data.treasureType,
+          quantity: data.quantity,
+          rarity: data.rarity,
+          condition: data.condition,
           contacts: data.contacts,
+          location: data.location,
+          additionalInfo: data.additionalInfo,
+          notes: data.notes,
         },
       };
       
@@ -99,20 +104,22 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
     name: "",
     description: "",
     categoryId: 4,
-    metadata: {
-      treasureType: "",
-      quantity: 1,
-      rarity: "",
-      condition: "",
-      imageUrl: "",
-    },
+    treasureType: "",
+    quantity: 1,
+    rarity: "",
+    condition: "",
     contacts: {
       discord: "",
       telegram: "",
       phone: "",
     },
+    contact: "",
     price: 0,
     serverId: 0,
+    location: "",
+    images: [],
+    additionalInfo: "",
+    notes: "",
   };
 
   return (
@@ -135,21 +142,15 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
             <StepWizard
               steps={[
                 {
-                  component: <TreasureStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
-                  title: "Основная информация",
-                  description: "Название и описание клада",
+                  component: <TreasureStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
+                  title: "Основная информация и детали",
+                  description: "Название, описание, тип клада, цена и сервер",
                   isValid: true
                 },
                 {
                   component: <TreasureStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
-                  title: "Детали клада",
-                  description: "Тип, количество, редкость и состояние",
-                  isValid: true
-                },
-                {
-                  component: <TreasureStep3 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
-                  title: "Контакты и продажа",
-                  description: "Контактная информация, цена и сервер",
+                  title: "Изображения и контакты",
+                  description: "Фотографии и контактная информация",
                   isValid: true
                 }
               ]}

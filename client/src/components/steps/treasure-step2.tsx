@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Upload, X } from 'lucide-react';
 
 interface TreasureStep2Props {
   data: any;
@@ -11,149 +13,182 @@ interface TreasureStep2Props {
 
 export default function TreasureStep2({ data, onDataChange, onValidationChange }: TreasureStep2Props) {
   const [formData, setFormData] = useState({
-    treasureType: data.metadata?.treasureType || '',
-    quantity: data.metadata?.quantity || 1,
-    rarity: data.metadata?.rarity || '',
-    condition: data.metadata?.condition || '',
-    imageUrl: data.metadata?.imageUrl || '',
+    discord: data.contacts?.discord || '',
+    telegram: data.contacts?.telegram || '',
+    phone: data.contacts?.phone || '',
+    contact: data.contact || '',
+    images: data.images || [],
+    additionalInfo: data.additionalInfo || '',
+    notes: data.notes || '',
     ...data
   });
 
-  const updateData = (field: string, value: string | number) => {
+  const updateData = (field: string, value: string | any) => {
     const newData = { ...formData, [field]: value };
     setFormData(newData);
     
     // Обновляем данные в правильной структуре
-    const updatedData = {
-      ...data,
-      metadata: {
-        ...data.metadata,
+    let updatedData;
+    if (['discord', 'telegram', 'phone'].includes(field)) {
+      updatedData = {
+        ...data,
+        contacts: {
+          ...data.contacts,
+          [field]: value
+        }
+      };
+    } else {
+      updatedData = {
+        ...data,
         [field]: value
-      }
-    };
+      };
+    }
     onDataChange(updatedData);
     
-    // Валидация
-    const isValid = newData.treasureType.length > 0 && 
-                   newData.quantity > 0 && 
-                   newData.rarity.length > 0 && 
-                   newData.condition.length > 0;
-    onValidationChange(isValid);
+    // Валидация - требуется хотя бы один способ связи
+    const hasContact = newData.discord.length > 0 || newData.telegram.length > 0 || newData.phone.length > 0 || newData.contact.length > 0;
+    onValidationChange(hasContact);
   };
 
-  const treasureTypes = [
-    { value: 'weapon', label: 'Оружие' },
-    { value: 'armor', label: 'Броня' },
-    { value: 'jewelry', label: 'Украшения' },
-    { value: 'artifact', label: 'Артефакт' },
-    { value: 'scroll', label: 'Свиток' },
-    { value: 'potion', label: 'Зелье' },
-    { value: 'gem', label: 'Драгоценный камень' },
-    { value: 'relic', label: 'Реликвия' },
-    { value: 'other', label: 'Другое' }
-  ];
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const newImages = [...formData.images, ...files];
+    updateData('images', newImages);
+  };
 
-  const rarityLevels = [
-    { value: 'common', label: 'Обычный' },
-    { value: 'uncommon', label: 'Необычный' },
-    { value: 'rare', label: 'Редкий' },
-    { value: 'epic', label: 'Эпический' },
-    { value: 'legendary', label: 'Легендарный' },
-    { value: 'mythic', label: 'Мифический' }
-  ];
-
-  const conditionLevels = [
-    { value: 'perfect', label: 'Идеальное' },
-    { value: 'excellent', label: 'Отличное' },
-    { value: 'good', label: 'Хорошее' },
-    { value: 'fair', label: 'Удовлетворительное' },
-    { value: 'poor', label: 'Плохое' },
-    { value: 'damaged', label: 'Поврежденное' }
-  ];
+  const removeImage = (index: number) => {
+    const newImages = formData.images.filter((_: any, i: number) => i !== index);
+    updateData('images', newImages);
+  };
 
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold text-amber-400 mb-2">Детали клада</h3>
-        <p className="text-slate-400">Укажите тип, количество, редкость и состояние</p>
+        <h3 className="text-lg font-semibold text-amber-400 mb-2">Изображения и контакты</h3>
+        <p className="text-slate-400">Добавьте фото и контактную информацию</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <Label htmlFor="treasureType" className="text-slate-300">Тип клада *</Label>
-          <Select value={formData.treasureType} onValueChange={(value) => updateData('treasureType', value)}>
-            <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-              <SelectValue placeholder="Выберите тип клада" />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-slate-600">
-              {treasureTypes.map((type) => (
-                <SelectItem key={type.value} value={type.value} className="text-white hover:bg-slate-700">
-                  {type.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="quantity" className="text-slate-300">Количество *</Label>
-          <Input
-            id="quantity"
-            type="number"
-            min="1"
-            value={formData.quantity}
-            onChange={(e) => updateData('quantity', parseInt(e.target.value) || 1)}
-            placeholder="1"
-            className="bg-slate-800 border-slate-600 text-white"
+      {/* Фотографии */}
+      <div className="space-y-4">
+        <h4 className="text-md font-medium text-purple-300">Фотографии сокровища</h4>
+        <div className="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center">
+          <Upload className="mx-auto h-12 w-12 text-slate-400 mb-4" />
+          <p className="text-slate-400 mb-4">Добавьте фото с разных ракурсов для лучшей оценки</p>
+          <Button variant="outline" className="border-slate-600 text-slate-300">
+            <label htmlFor="image-upload" className="cursor-pointer">
+              Выбрать файлы
+            </label>
+          </Button>
+          <input
+            id="image-upload"
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="hidden"
           />
         </div>
+        
+        {formData.images.length > 0 && (
+          <div className="grid grid-cols-3 gap-4">
+            {formData.images.map((image: File, index: number) => (
+              <div key={index} className="relative">
+                <img
+                  src={URL.createObjectURL(image)}
+                  alt={`Preview ${index}`}
+                  className="w-full h-24 object-cover rounded-lg"
+                />
+                <button
+                  onClick={() => removeImage(index)}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="rarity" className="text-slate-300">Редкость *</Label>
-          <Select value={formData.rarity} onValueChange={(value) => updateData('rarity', value)}>
-            <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-              <SelectValue placeholder="Выберите редкость" />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-slate-600">
-              {rarityLevels.map((rarity) => (
-                <SelectItem key={rarity.value} value={rarity.value} className="text-white hover:bg-slate-700">
-                  {rarity.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      {/* Контактная информация */}
+      <div className="space-y-4">
+        <h4 className="text-md font-medium text-purple-300">Контактная информация *</h4>
+        <p className="text-sm text-slate-400 mb-4">Укажите хотя бы один способ связи</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="discord" className="text-slate-300">Discord</Label>
+            <Input
+              id="discord"
+              value={formData.discord}
+              onChange={(e) => updateData('discord', e.target.value)}
+              placeholder="username#1234"
+              className="bg-slate-800 border-slate-600 text-white"
+            />
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="condition" className="text-slate-300">Состояние *</Label>
-          <Select value={formData.condition} onValueChange={(value) => updateData('condition', value)}>
-            <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-              <SelectValue placeholder="Выберите состояние" />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-slate-600">
-              {conditionLevels.map((condition) => (
-                <SelectItem key={condition.value} value={condition.value} className="text-white hover:bg-slate-700">
-                  {condition.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="space-y-2">
+            <Label htmlFor="telegram" className="text-slate-300">Telegram</Label>
+            <Input
+              id="telegram"
+              value={formData.telegram}
+              onChange={(e) => updateData('telegram', e.target.value)}
+              placeholder="@username"
+              className="bg-slate-800 border-slate-600 text-white"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phone" className="text-slate-300">Телефон</Label>
+            <Input
+              id="phone"
+              value={formData.phone}
+              onChange={(e) => updateData('phone', e.target.value)}
+              placeholder="+7 (999) 123-45-67"
+              className="bg-slate-800 border-slate-600 text-white"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="contact" className="text-slate-300">Основной контакт</Label>
+            <Input
+              id="contact"
+              value={formData.contact}
+              onChange={(e) => updateData('contact', e.target.value)}
+              placeholder="Телефон или email"
+              className="bg-slate-800 border-slate-600 text-white"
+            />
+          </div>
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="imageUrl" className="text-slate-300">URL изображения (необязательно)</Label>
-        <Input
-          id="imageUrl"
-          type="url"
-          value={formData.imageUrl}
-          onChange={(e) => updateData('imageUrl', e.target.value)}
-          placeholder="https://example.com/image.jpg"
-          className="bg-slate-800 border-slate-600 text-white"
-        />
-        <p className="text-xs text-slate-400">
-          Добавьте ссылку на изображение клада для привлечения покупателей
-        </p>
+      {/* Дополнительная информация */}
+      <div className="space-y-4">
+        <h4 className="text-md font-medium text-purple-300">Дополнительная информация</h4>
+        
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="additionalInfo" className="text-slate-300">Дополнительная информация</Label>
+            <Textarea
+              id="additionalInfo"
+              value={formData.additionalInfo}
+              onChange={(e) => updateData('additionalInfo', e.target.value)}
+              placeholder="Любая дополнительная информация о сделке, условиях передачи и т.д."
+              className="bg-slate-800 border-slate-600 text-white min-h-[100px]"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="notes" className="text-slate-300">Дополнительные заметки</Label>
+            <Textarea
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => updateData('notes', e.target.value)}
+              placeholder="Особые условия продажи, история, сертификаты..."
+              className="bg-slate-800 border-slate-600 text-white min-h-[80px]"
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -191,11 +191,10 @@ export default function MyProducts() {
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-white">Мои товары</h1>
-            <p className="text-slate-300">Управляйте вашими объявлениями</p>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-white">Мои товары</h1>
+          <p className="text-slate-300">Управляйте вашими объявлениями</p>
+        </div>
           <Button 
             onClick={() => setShowCreateListing(true)} 
             className="bg-blue-600 hover:bg-blue-700"

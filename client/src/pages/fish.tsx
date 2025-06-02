@@ -12,6 +12,45 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Plus, Fish, Filter } from "lucide-react";
 import type { ProductWithDetails } from "@/lib/types";
 import CreateFishModal from "@/components/create-fish-modal";
+import { motion, type Variants, type AnimationProps } from "framer-motion";
+
+interface Server {
+  id: number;
+  name: string;
+  displayName: string;
+}
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants: Variants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut"
+    }
+  }
+};
+
+const floatingAnimation: AnimationProps["animate"] = {
+  y: [-4, 4],
+  transition: {
+    duration: 2,
+    repeat: Infinity,
+    repeatType: "mirror",
+    ease: "easeInOut"
+  }
+};
 
 export default function FishPage() {
   const { isAuthenticated } = useAuth();
@@ -20,13 +59,11 @@ export default function FishPage() {
   const [selectedServer, setSelectedServer] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: products = [], isLoading: productsLoading } = useQuery({
+  const { data: products = [], isLoading: productsLoading } = useQuery<ProductWithDetails[], Error, ProductWithDetails[]>({
     queryKey: ["/api/products", { categoryId: 3, search: searchQuery }],
-    staleTime: 0, // Отключить кэширование временно
-    cacheTime: 0,
   });
 
-  const { data: servers = [] } = useQuery({
+  const { data: servers = [] } = useQuery<Server[], Error, Server[]>({
     queryKey: ["/api/servers"],
   });
 
@@ -39,7 +76,7 @@ export default function FishPage() {
     { id: "exotic", name: "Экзотическая", count: 0 },
   ];
 
-  const filteredProducts = products.filter((product: ProductWithDetails) => {
+  const filteredProducts = products.filter((product) => {
     const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesServer = selectedServer === "all" || product.serverId === parseInt(selectedServer);

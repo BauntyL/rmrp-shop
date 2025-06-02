@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { CarStep1, CarStep2, CarStep3 } from "./steps";
 import { apiRequest } from "@/lib/queryClient";
@@ -45,6 +45,7 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
     queryKey: ["/api/servers"],
   });
 
+  // Функция handleComplete должна быть определена ДО return
   const handleComplete = async (data: CreateCarFormData) => {
     try {
       const productData = {
@@ -60,49 +61,21 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
       const response = await apiRequest("POST", "/api/products", productData);
       await response.json();
       
-      toast.success("Объявление создано", "Ваше объявление об автомобиле отправлено на модерацию");
+      toast({
+        title: "Объявление создано",
+        description: "Ваше объявление об автомобиле отправлено на модерацию",
+      });
       onClose();
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
     } catch (error: any) {
-      toast.error("Ошибка", error.message || "Не удалось создать объявление");
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось создать объявление",
+        variant: "destructive",
+      });
       throw error;
     }
   };
-
-  const stepValidationSchemas = [
-    // Step 1: Category and basic info
-    z.object({
-      metadata: z.object({
-        category: z.enum(["standard", "coupe", "suv", "sport", "motorcycle", "special"], {
-          required_error: "Выберите категорию автомобиля"
-        })
-      }),
-      title: z.string().min(1, "Название автомобиля обязательно")
-    }),
-    // Step 2: Details, tuning and price
-    z.object({
-      description: z.string().min(1, "Описание обязательно"),
-      price: z.number().min(1, "Цена должна быть больше 0"),
-      metadata: z.object({
-        maxSpeed: z.number().min(1, "Максимальная скорость должна быть больше 0"),
-        tuning: z.enum(["none", "ft", "fft"], {
-          required_error: "Выберите тип тюнинга"
-        })
-      }),
-      imageUrl: z.string().url("Введите корректную ссылку на изображение").optional().or(z.literal(""))
-    }),
-    // Step 3: Contacts and server
-    z.object({
-      serverId: z.number().min(1, "Выберите сервер"),
-      metadata: z.object({
-        contacts: z.object({
-          discord: z.string().optional(),
-          telegram: z.string().optional(),
-          phone: z.string().optional(),
-        })
-      })
-    })
-  ];
 
   const defaultValues: CreateCarFormData = {
     title: "",
@@ -148,27 +121,28 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
             <StepWizard
               steps={[
                 {
-                  component: CarStep1,
+                  component: <CarStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
                   title: "Категория и название",
-                  description: "Выберите тип автомобиля и укажите название"
+                  description: "Выберите тип автомобиля и укажите название",
+                  isValid: true
                 },
                 {
-                  component: CarStep2,
+                  component: <CarStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
                   title: "Детали и тюнинг",
-                  description: "Опишите автомобиль, укажите характеристики и цену"
+                  description: "Опишите автомобиль, укажите характеристики и цену",
+                  isValid: true
                 },
                 {
-                  component: CarStep3,
+                  component: <CarStep3 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
                   title: "Контакты и сервер",
-                  description: "Укажите контактную информацию и выберите сервер"
+                  description: "Укажите контактную информацию и выберите сервер",
+                  isValid: true
                 }
               ]}
-              validationSchemas={stepValidationSchemas}
               defaultValues={defaultValues}
               onComplete={handleComplete}
               onCancel={onClose}
               category="car"
-              additionalProps={{ servers }}
             />
           </div>
         </div>

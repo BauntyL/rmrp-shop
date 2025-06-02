@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
@@ -41,52 +41,49 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
     queryKey: ["/api/servers"],
   });
 
-  const createListingMutation = useMutation({
-    mutationFn: async (data: CreateFishFormData) => {
-      const productData = {
-        ...data,
-        images: data.imageUrl ? [data.imageUrl] : [],
+  // Функция handleComplete должна быть определена ДО return
+  const handleComplete = async (formData: any) => {
+    try {
+      // Преобразуем данные из формата StepWizard в формат API
+      const apiData: CreateFishFormData = {
+        description: formData.description || '',
+        price: formData.price || 0,
+        categoryId: 3,
+        serverId: formData.serverId || 0,
+        imageUrl: formData.imageUrl || '',
+        metadata: {
+          fishType: formData.fishType || '',
+          quantity: formData.quantity || 1,
+          contacts: {
+            discord: formData.discord || '',
+            telegram: formData.telegram || '',
+            phone: formData.phone || '',
+          },
+        },
       };
+
+      const productData = {
+        ...apiData,
+        images: apiData.imageUrl ? [apiData.imageUrl] : [],
+      };
+      
       const response = await apiRequest("POST", "/api/products", productData);
-      return response.json();
-    },
-    onSuccess: () => {
+      await response.json();
+      
       toast({
         title: "Объявление создано",
         description: "Ваше рыболовное объявление отправлено на модерацию",
       });
       onOpenChange(false);
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-    },
-    onError: (error) => {
+    } catch (error: any) {
       toast({
         title: "Ошибка",
         description: error.message || "Не удалось создать объявление",
         variant: "destructive",
       });
-    },
-  });
-
-  const handleComplete = (formData: any) => {
-    // Преобразуем данные из формата StepWizard в формат API
-    const apiData: CreateFishFormData = {
-      description: formData.description || '',
-      price: formData.price || 0,
-      categoryId: 3,
-      serverId: formData.serverId || 0,
-      imageUrl: formData.imageUrl || '',
-      metadata: {
-        fishType: formData.fishType || '',
-        quantity: formData.quantity || 1,
-        contacts: {
-          discord: formData.discord || '',
-          telegram: formData.telegram || '',
-          phone: formData.phone || '',
-        },
-      },
-    };
-
-    createListingMutation.mutate(apiData);
+      throw error;
+    }
   };
 
   const steps = [
@@ -94,52 +91,33 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
       id: 'basic-info',
       title: 'Основная информация',
       description: 'Укажите тип и количество рыбы',
-      component: FishStep1,
-      validation: (data: any) => {
-        const errors: string[] = [];
-        if (!data.fishType?.trim()) errors.push('Укажите тип рыбы');
-        if (!data.quantity || data.quantity < 1) errors.push('Укажите количество');
-        return errors;
-      }
+      component: <FishStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
+      isValid: true
     },
     {
       id: 'details',
       title: 'Детали и цена',
       description: 'Добавьте описание, фото и цену',
-      component: FishStep2,
-      validation: (data: any) => {
-        const errors: string[] = [];
-        if (!data.description?.trim() || data.description.length < 10) {
-          errors.push('Описание должно содержать минимум 10 символов');
-        }
-        if (!data.price || data.price < 1) errors.push('Укажите цену');
-        return errors;
-      }
+      component: <FishStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
+      isValid: true
     },
     {
       id: 'contact',
       title: 'Контакты и размещение',
       description: 'Укажите контакты и выберите сервер',
-      component: FishStep3,
-      validation: (data: any) => {
-        const errors: string[] = [];
-        if (!data.serverId) errors.push('Выберите сервер');
-        const hasContact = data.discord?.trim() || data.telegram?.trim() || data.phone?.trim();
-        if (!hasContact) errors.push('Укажите хотя бы один способ связи');
-        return errors;
-      }
+      component: <FishStep3 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
+      isValid: true
     }
   ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-cyan-500/20 text-white shadow-2xl shadow-cyan-500/10">
+      <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-cyan-500/20 text-white shadow-2xl shadow-cyan-500/10">
         <StepWizard
           steps={steps}
           category="fish"
           onComplete={handleComplete}
           onCancel={() => onOpenChange(false)}
-          additionalProps={{ servers }}
         />
       </DialogContent>
     </Dialog>

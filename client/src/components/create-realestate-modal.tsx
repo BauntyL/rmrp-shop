@@ -43,6 +43,12 @@ interface CreateRealEstateModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Добавить схему валидации для первого шага
+const step1Schema = z.object({
+  subcategoryId: z.coerce.number().min(1, "Выберите тип недвижимости"),
+  serverId: z.coerce.number().min(1, "Выберите сервер"),
+});
+
 export default function CreateRealEstateModal({ open, onOpenChange }: CreateRealEstateModalProps) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -83,6 +89,7 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
   const selectedSubcategory = form.watch("subcategoryId");
   const isBusiness = subcategories.find((sub: any) => sub.id === selectedSubcategory)?.name === "realestate_business";
 
+  // Удалить или упростить createListingMutation
   const createListingMutation = useMutation({
     mutationFn: async (data: CreateRealEstateFormData) => {
       const productData = {
@@ -92,26 +99,12 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
       const response = await apiRequest("POST", "/api/products", productData);
       return response.json();
     },
-    onSuccess: () => {
-      toast({
-        title: "Объявление создано",
-        description: "Ваше объявление о недвижимости отправлено на модерацию",
-      });
-      form.reset();
-      onOpenChange(false);
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Ошибка",
-        description: error.message || "Не удалось создать объявление",
-        variant: "destructive",
-      });
-    },
+    // Убрать onSuccess и onError, так как они теперь в handleComplete
   });
-
+  
+  // Изменить onSubmit
   const onSubmit = (data: CreateRealEstateFormData) => {
-    createListingMutation.mutate(data);
+    handleComplete(data); // Вместо createListingMutation.mutate(data)
   };
 
   // Функция для получения иконки типа недвижимости
@@ -548,6 +541,78 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
           isLoading={createListingMutation.isPending}
           category="realestate"
           additionalProps={{ servers }}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+
+  // Функция handleComplete должна быть определена ДО return
+  const handleComplete = async (data: any) => {
+    try {
+      const productData = {
+        ...data,
+        categoryId: 2,
+        images: data.imageUrl ? [data.imageUrl] : [],
+      };
+      
+      const response = await apiRequest("POST", "/api/products", productData);
+      await response.json();
+      
+      toast({
+        title: "Объявление создано",
+        description: "Ваше объявление о недвижимости отправлено на модерацию",
+      });
+      onOpenChange(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+    } catch (error: any) {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Не удалось создать объявление",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  const steps = [
+    {
+      id: "step1",
+      title: "Основная информация",
+      description: "Тип недвижимости и базовые характеристики",
+      component: <RealEstateStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
+      isValid: true
+    },
+    {
+      id: "step2",
+      title: "Удобства и инфраструктура",
+      description: "Дополнительные удобства и особенности",
+      component: <RealEstateStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
+      isValid: true
+    },
+    {
+      id: "step3",
+      title: "Фотографии",
+      description: "Загрузите фотографии недвижимости",
+      component: <RealEstateStep3 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
+      isValid: true
+    },
+    {
+      id: "step4",
+      title: "Цена и контакты",
+      description: "Укажите цену и контактную информацию",
+      component: <RealEstateStep4 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
+      isValid: true
+    }
+  ];
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-emerald-500/20 text-white shadow-2xl shadow-emerald-500/10">
+        <StepWizard
+          steps={steps}
+          onComplete={handleComplete}
+          onCancel={() => onOpenChange(false)}
+          category="realestate"
         />
       </DialogContent>
     </Dialog>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { TreasureStep1, TreasureStep2, TreasureStep3 } from "./steps";
 import { apiRequest } from "@/lib/queryClient";
@@ -40,6 +40,7 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
     queryKey: ["/api/servers"],
   });
 
+  // Функция handleComplete должна быть определена ДО return
   const handleComplete = async (data: CreateTreasureFormData) => {
     try {
       const productData = {
@@ -65,33 +66,6 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
       throw error;
     }
   };
-
-  const stepValidationSchemas = [
-    // Step 1: Treasure type and quantity
-    z.object({
-      metadata: z.object({
-        treasureType: z.string().min(1, "Укажите тип клада"),
-        quantity: z.coerce.number().min(1, "Количество должно быть больше 0")
-      })
-    }),
-    // Step 2: Description, photo and price
-    z.object({
-      description: z.string().min(10, "Описание должно содержать минимум 10 символов"),
-      price: z.coerce.number().min(1, "Цена должна быть больше 0"),
-      imageUrl: z.string().optional()
-    }),
-    // Step 3: Contacts and server
-    z.object({
-      serverId: z.coerce.number().min(1, "Выберите сервер"),
-      metadata: z.object({
-        contacts: z.object({
-          discord: z.string().optional(),
-          telegram: z.string().optional(),
-          phone: z.string().optional(),
-        })
-      })
-    })
-  ];
 
   const defaultValues: CreateTreasureFormData = {
     description: "",
@@ -131,27 +105,28 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
             <StepWizard
               steps={[
                 {
-                  component: TreasureStep1,
+                  component: <TreasureStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
                   title: "Тип и количество",
-                  description: "Укажите тип клада и количество предметов"
+                  description: "Укажите тип клада и количество предметов",
+                  isValid: true
                 },
                 {
-                  component: TreasureStep2,
+                  component: <TreasureStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
                   title: "Описание и цена",
-                  description: "Опишите клад, добавьте фото и укажите цену"
+                  description: "Опишите клад, добавьте фото и укажите цену",
+                  isValid: true
                 },
                 {
-                  component: TreasureStep3,
+                  component: <TreasureStep3 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
                   title: "Контакты и сервер",
-                  description: "Укажите контактную информацию и выберите сервер"
+                  description: "Укажите контактную информацию и выберите сервер",
+                  isValid: true
                 }
               ]}
-              validationSchemas={stepValidationSchemas}
               defaultValues={defaultValues}
               onComplete={handleComplete}
               onCancel={() => onOpenChange(false)}
               category="treasure"
-              additionalProps={{ servers }}
             />
           </div>
         </div>

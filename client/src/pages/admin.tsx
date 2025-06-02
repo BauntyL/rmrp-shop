@@ -219,6 +219,16 @@ export default function Admin() {
   // Users query with filters
   const { data: users = [], isLoading: usersLoading } = useQuery<User[]>({
     queryKey: ["/api/admin/users", { search: userSearch, role: userRoleFilter, status: userStatusFilter }],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        ...(userSearch && { search: userSearch }),
+        ...(userRoleFilter !== "all" && { role: userRoleFilter }),
+        ...(userStatusFilter !== "all" && { status: userStatusFilter }),
+      });
+      const response = await fetch(`/api/admin/users?${params}`);
+      if (!response.ok) throw new Error("Failed to fetch users");
+      return response.json();
+    },
     enabled: isAuthenticated && hasPermission,
   });
 
@@ -577,7 +587,8 @@ export default function Admin() {
               <Card className="bg-slate-800/50 backdrop-blur-lg border-slate-700/50">
                 <CardHeader>
                   <div className="flex items-center justify-between mb-4">
-                    <CardTitle className="text-2xl font-bold text-white">
+                    <CardTitle className="text-2xl font-bold text-white flex items-center gap-2">
+                      <Users className="h-6 w-6 text-indigo-400" />
                       Управление пользователями
                     </CardTitle>
                     <div className="flex gap-4">
@@ -587,14 +598,14 @@ export default function Admin() {
                           placeholder="Поиск пользователей..."
                           value={userSearch}
                           onChange={(e) => setUserSearch(e.target.value)}
-                          className="pl-10 bg-slate-700/50 border-slate-600/50"
+                          className="pl-10 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
                         />
                       </div>
                       <Select value={userRoleFilter} onValueChange={setUserRoleFilter}>
                         <SelectTrigger className="w-[180px] bg-slate-700/50 border-slate-600/50">
                           <SelectValue placeholder="Фильтр по роли" />
                         </SelectTrigger>
-                        <SelectContent className="bg-slate-700 border-slate-600">
+                        <SelectContent>
                           <SelectItem value="all">Все роли</SelectItem>
                           <SelectItem value="admin">Администраторы</SelectItem>
                           <SelectItem value="moderator">Модераторы</SelectItem>
@@ -605,7 +616,7 @@ export default function Admin() {
                         <SelectTrigger className="w-[180px] bg-slate-700/50 border-slate-600/50">
                           <SelectValue placeholder="Фильтр по статусу" />
                         </SelectTrigger>
-                        <SelectContent className="bg-slate-700 border-slate-600">
+                        <SelectContent>
                           <SelectItem value="all">Все статусы</SelectItem>
                           <SelectItem value="active">Активные</SelectItem>
                           <SelectItem value="banned">Заблокированные</SelectItem>
@@ -615,101 +626,119 @@ export default function Admin() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="relative overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Пользователь</TableHead>
-                          <TableHead>Роль</TableHead>
-                          <TableHead>Статус</TableHead>
-                          <TableHead>Объявления</TableHead>
-                          <TableHead>Сообщения</TableHead>
-                          <TableHead>Действия</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {users.map((user) => (
-                          <TableRow key={user.id}>
-                            <TableCell>
-                              <div className="flex items-center gap-3">
-                                <Avatar>
-                                  <AvatarImage src={user.profileImageUrl} />
-                                  <AvatarFallback>
-                                    {getUserInitials(user.firstName, user.lastName)}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                  <p className="font-medium text-white">
-                                    {user.firstName} {user.lastName}
-                                  </p>
-                                  <p className="text-sm text-slate-400">{user.email}</p>
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className={getRoleBadgeColor(user.role)}>
-                                {getRoleText(user.role)}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              {user.isBanned ? (
-                                <Badge variant="destructive" className="bg-red-500">
-                                  Заблокирован
-                                </Badge>
-                              ) : (
-                                <Badge variant="secondary" className="bg-emerald-500 text-white">
-                                  Активен
-                                </Badge>
-                              )}
-                            </TableCell>
-                            <TableCell>{user.productsCount}</TableCell>
-                            <TableCell>{user.messagesCount}</TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                {user.role !== "admin" && (
-                                  <Select
-                                    value={user.role}
-                                    onValueChange={(newRole) => 
-                                      updateUserRoleMutation.mutate({ userId: user.id, role: newRole })
-                                    }
-                                  >
-                                    <SelectTrigger className="w-[140px] bg-slate-700/50 border-slate-600/50">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-slate-700 border-slate-600">
-                                      <SelectItem value="user">Пользователь</SelectItem>
-                                      <SelectItem value="moderator">Модератор</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                )}
-                                {user.isBanned ? (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => unbanUserMutation.mutate(user.id)}
-                                    className="border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white"
-                                  >
-                                    <CheckCircle className="h-4 w-4 mr-1" />
-                                    Разблокировать
-                                  </Button>
-                                ) : (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleBanUser(user.id)}
-                                    className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                                  >
-                                    <Ban className="h-4 w-4 mr-1" />
-                                    Заблокировать
-                                  </Button>
-                                )}
-                              </div>
-                            </TableCell>
+                  {usersLoading ? (
+                    <div className="flex items-center justify-center p-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500" />
+                    </div>
+                  ) : users.length === 0 ? (
+                    <div className="text-center py-8">
+                      <UserPlus className="h-12 w-12 text-slate-500 mx-auto mb-4" />
+                      <p className="text-slate-400">Пользователи не найдены</p>
+                    </div>
+                  ) : (
+                    <div className="relative overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="border-slate-700">
+                            <TableHead className="text-slate-300">Пользователь</TableHead>
+                            <TableHead className="text-slate-300">Роль</TableHead>
+                            <TableHead className="text-slate-300">Статус</TableHead>
+                            <TableHead className="text-slate-300">Объявления</TableHead>
+                            <TableHead className="text-slate-300">Сообщения</TableHead>
+                            <TableHead className="text-slate-300">Действия</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                        </TableHeader>
+                        <TableBody>
+                          {users.map((user) => (
+                            <TableRow key={user.id} className="border-slate-700">
+                              <TableCell>
+                                <div className="flex items-center gap-3">
+                                  <Avatar>
+                                    <AvatarImage src={user.profileImageUrl || undefined} />
+                                    <AvatarFallback className="bg-slate-700 text-white">
+                                      {getUserInitials(user.firstName, user.lastName)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <p className="font-medium text-white">
+                                      {user.firstName} {user.lastName}
+                                    </p>
+                                    <p className="text-sm text-slate-400">{user.email}</p>
+                                    <p className="text-xs text-slate-500">@{user.username}</p>
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge className={getRoleBadgeColor(user.role)}>
+                                  {getRoleText(user.role)}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                {user.isBanned ? (
+                                  <Badge variant="destructive" className="bg-red-500/80 text-white flex items-center gap-1">
+                                    <Ban className="h-3 w-3" />
+                                    Заблокирован
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="secondary" className="bg-emerald-500/80 text-white flex items-center gap-1">
+                                    <CheckCircle className="h-3 w-3" />
+                                    Активен
+                                  </Badge>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-slate-300">{user.productsCount}</span>
+                              </TableCell>
+                              <TableCell>
+                                <span className="text-slate-300">{user.messagesCount}</span>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  {user.role !== "admin" && (
+                                    <Select
+                                      value={user.role}
+                                      onValueChange={(newRole) => 
+                                        updateUserRoleMutation.mutate({ userId: user.id, role: newRole })
+                                      }
+                                    >
+                                      <SelectTrigger className="w-[140px] bg-slate-700/50 border-slate-600/50">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="user">Пользователь</SelectItem>
+                                        <SelectItem value="moderator">Модератор</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  )}
+                                  {user.isBanned ? (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => unbanUserMutation.mutate(user.id)}
+                                      className="border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white"
+                                    >
+                                      <CheckCircle className="h-4 w-4 mr-1" />
+                                      Разблокировать
+                                    </Button>
+                                  ) : (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleBanUser(user.id)}
+                                      className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                                    >
+                                      <Ban className="h-4 w-4 mr-1" />
+                                      Заблокировать
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -773,7 +802,7 @@ export default function Admin() {
                           <h3 className="text-lg font-semibold text-white mb-2">{product.title}</h3>
                           <p className="text-slate-300 text-sm mb-4">{product.description}</p>
                           <div className="flex items-center gap-2 mb-4">
-                            <Badge className={`bg-${product.category.name}-500/20 text-${product.category.name}-500`}>
+                            <Badge className="bg-slate-500/20 text-slate-300">
                               {product.category.displayName}
                             </Badge>
                             <Badge variant="outline">

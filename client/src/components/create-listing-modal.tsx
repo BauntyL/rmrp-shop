@@ -97,24 +97,18 @@ export default function CreateListingModal({ open, onOpenChange }: CreateListing
       
       console.log('📦 Prepared product data:', JSON.stringify(productData, null, 2));
       
-      const response = await fetch(`${window.location.origin}/api/products`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(productData)
-      });
+      const response = await apiRequest("POST", "/api/products", productData);
+      const responseData = await response.json();
       
-      console.log('📡 Server response status:', response.status);
-      
+      console.log('📡 Server response:', JSON.stringify(responseData, null, 2));
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create listing');
+        const message = responseData.message || 
+          (responseData.errors && responseData.errors.length > 0 
+            ? responseData.errors.map((e: any) => e.message).join(", ") 
+            : "Не удалось создать объявление");
+        throw new Error(message);
       }
-      
-      const result = await response.json();
-      console.log('✅ Server response data:', JSON.stringify(result, null, 2));
       
       toast({
         title: "Объявление создано",
@@ -162,11 +156,10 @@ export default function CreateListingModal({ open, onOpenChange }: CreateListing
       <DialogContent className="max-w-5xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-violet-500/20 text-white shadow-2xl shadow-violet-500/10">
         <StepWizard
           steps={steps}
-          form={form}
           onComplete={handleComplete}
           isLoading={createListingMutation.isPending}
           category="listing"
-          additionalProps={{ servers, categories }}
+          additionalProps={{ servers, categories, form }}
         />
       </DialogContent>
     </Dialog>

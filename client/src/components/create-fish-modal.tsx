@@ -7,6 +7,8 @@ import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth'; // Исправлен путь импорта
 import { z } from 'zod'; // Добавлен импорт zod
+import { apiRequest } from '@/lib/queryClient';
+import type { Server } from '@shared/schema';
 
 const createFishSchema = z.object({
   description: z.string().min(10, "Описание должно содержать минимум 10 символов"),
@@ -45,16 +47,14 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: servers = [] } = useQuery({
+  const { data: servers = [] } = useQuery<Server[]>({
     queryKey: ["/api/servers"],
   });
 
   const createFishMutation = useMutation({
     mutationFn: async (productData: any) => {
-      return await apiRequest('/api/products', {
-        method: 'POST',
-        body: JSON.stringify(productData),
-      });
+      const response = await apiRequest("POST", "/api/products", productData);
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });

@@ -45,90 +45,88 @@ export default function TreasureStep2({ data, onDataChange, onValidationChange }
     onValidationChange(hasContact);
   };
 
-  export function TreasureStep2({ formData, updateData }: TreasureStep2Props) {
-    return (
-      <div className="space-y-4"> {/* Уменьшил отступы */}
-        <div className="text-center mb-4">
-          <h3 className="text-lg font-semibold text-amber-400 mb-2">Изображение и контакты</h3>
-          <p className="text-slate-400">Добавьте изображение и контактную информацию</p>
+  return (
+    <div className="space-y-4">
+      <div className="text-center mb-4">
+        <h3 className="text-lg font-semibold text-amber-400 mb-2">Изображение и контакты</h3>
+        <p className="text-slate-400">Добавьте изображение и контактную информацию</p>
+      </div>
+
+      {/* Изображение */}
+      <div className="space-y-3">
+        <h4 className="text-md font-medium text-purple-300">Изображение сокровища</h4>
+        
+        <div className="space-y-2">
+          <Label htmlFor="imageUrl" className="text-slate-300">Ссылка на изображение</Label>
+          <Input
+            id="imageUrl"
+            type="url"
+            value={formData.imageUrl}
+            onChange={(e) => updateData('imageUrl', e.target.value)}
+            placeholder="https://example.com/image.jpg"
+            className="bg-slate-800 border-slate-600 text-white"
+          />
+          <p className="text-xs text-slate-400">Вставьте ссылку на изображение вашего сокровища</p>
         </div>
-  
-        {/* Изображение */}
-        <div className="space-y-3"> {/* Уменьшил отступы */}
-          <h4 className="text-md font-medium text-purple-300">Изображение сокровища</h4>
-  
+        
+        {formData.imageUrl && (
+          <div className="border border-slate-600 rounded-lg p-3">
+            <div className="flex items-center space-x-2 mb-2">
+              <Image className="h-4 w-4 text-purple-400" />
+              <span className="text-sm text-slate-300">Предварительный просмотр:</span>
+            </div>
+            <img
+              src={formData.imageUrl}
+              alt="Preview"
+              className="w-full max-w-xs h-32 object-cover rounded-lg"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Контактная информация */}
+      <div className="space-y-3">
+        <h4 className="text-md font-medium text-purple-300">Контактная информация *</h4>
+        <p className="text-sm text-slate-400 mb-3">Укажите хотя бы один способ связи</p>
+        
+        <div className="space-y-3">
           <div className="space-y-2">
-            <Label htmlFor="imageUrl" className="text-slate-300">Ссылка на изображение</Label>
+            <Label htmlFor="discord" className="text-slate-300">Discord</Label>
             <Input
-              id="imageUrl"
-              type="url"
-              value={formData.imageUrl}
-              onChange={(e) => updateData('imageUrl', e.target.value)}
-              placeholder="https://example.com/image.jpg"
+              id="discord"
+              value={formData.discord}
+              onChange={(e) => updateData('discord', e.target.value)}
+              placeholder="username#1234"
               className="bg-slate-800 border-slate-600 text-white"
             />
-            <p className="text-xs text-slate-400">Вставьте ссылку на изображение вашего сокровища</p>
           </div>
-  
-          {formData.imageUrl && (
-            <div className="border border-slate-600 rounded-lg p-3"> {/* Уменьшил padding с p-4 до p-3 */}
-              <div className="flex items-center space-x-2 mb-2">
-                <Image className="h-4 w-4 text-purple-400" />
-                <span className="text-sm text-slate-300">Предварительный просмотр:</span>
-              </div>
-              <img
-                src={formData.imageUrl}
-                alt="Preview"
-                className="w-full max-w-xs h-32 object-cover rounded-lg" {/* Уменьшил высоту с h-48 до h-32 */}
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                }}
-              />
-            </div>
-          )}
-        </div>
-  
-        {/* Контактная информация */}
-        <div className="space-y-3"> {/* Уменьшил отступы */}
-          <h4 className="text-md font-medium text-purple-300">Контактная информация *</h4>
-          <p className="text-sm text-slate-400 mb-3">Укажите хотя бы один способ связи</p> {/* Уменьшил mb-4 до mb-3 */}
-          
-          <div className="space-y-3"> {/* Уменьшил отступы между полями */}
-            <div className="space-y-2">
-              <Label htmlFor="discord" className="text-slate-300">Discord</Label>
-              <Input
-                id="discord"
-                value={formData.discord}
-                onChange={(e) => updateData('discord', e.target.value)}
-                placeholder="username#1234"
-                className="bg-slate-800 border-slate-600 text-white"
-              />
-            </div>
-  
-            <div className="space-y-2">
-              <Label htmlFor="telegram" className="text-slate-300">Telegram</Label>
-              <Input
-                id="telegram"
-                value={formData.telegram}
-                onChange={(e) => updateData('telegram', e.target.value)}
-                placeholder="@username"
-                className="bg-slate-800 border-slate-600 text-white"
-              />
-            </div>
-  
-            <div className="space-y-2">
-              <Label htmlFor="phone" className="text-slate-300">Телефон</Label>
-              <Input
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => updateData('phone', e.target.value)}
-                placeholder="+7 (999) 123-45-67"
-                className="bg-slate-800 border-slate-600 text-white"
-              />
-            </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="telegram" className="text-slate-300">Telegram</Label>
+            <Input
+              id="telegram"
+              value={formData.telegram}
+              onChange={(e) => updateData('telegram', e.target.value)}
+              placeholder="@username"
+              className="bg-slate-800 border-slate-600 text-white"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phone" className="text-slate-300">Телефон</Label>
+            <Input
+              id="phone"
+              value={formData.phone}
+              onChange={(e) => updateData('phone', e.target.value)}
+              placeholder="+7 (999) 123-45-67"
+              className="bg-slate-800 border-slate-600 text-white"
+            />
           </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 }

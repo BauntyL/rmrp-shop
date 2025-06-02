@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { CarStep1, CarStep2 } from "./steps";
 import { apiRequest } from "@/lib/queryClient";
@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import StepWizard from "@/components/step-wizard";
+import type { Server } from "@shared/schema";
 
 const createCarSchema = z.object({
   // Шаг 1: Основная информация
@@ -43,18 +44,32 @@ interface CreateCarModalProps {
 export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [formData, setFormData] = useState<Partial<CreateCarFormData>>({});
+  const [stepsValidation, setStepsValidation] = useState<boolean[]>([false, false]);
 
-  const { data: servers = [] } = useQuery({
+  const { data: servers = [] } = useQuery<Server[]>({
     queryKey: ["/api/servers"],
   });
+
+  const handleDataChange = (stepIndex: number, data: Partial<CreateCarFormData>) => {
+    setFormData(prev => ({ ...prev, ...data }));
+  };
+
+  const handleValidationChange = (stepIndex: number, isValid: boolean) => {
+    setStepsValidation(prev => {
+      const newValidation = [...prev];
+      newValidation[stepIndex] = isValid;
+      return newValidation;
+    });
+  };
 
   const handleComplete = async (data: CreateCarFormData) => {
     try {
       const productData = {
-        name: data.title,
+        title: data.title,
         description: data.description,
         price: data.price,
-        categoryId: data.categoryId,
+        categoryId: 1, // Автомобили
         serverId: data.serverId,
         images: data.imageUrl ? [data.imageUrl] : [],
         metadata: {
@@ -64,10 +79,8 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
         },
       };
       
-      await apiRequest("/api/products", {
-        method: "POST",
-        body: JSON.stringify(productData),
-      });
+      const response = await apiRequest("POST", "/api/products", productData);
+      await response.json();
       
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       toast({
@@ -89,15 +102,28 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
       id: "step1",
       title: "Основная информация",
       description: "Данные об автомобиле и контакты",
-      component: <CarStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
-      isValid: true
+      component: (
+        <CarStep1 
+          data={formData} 
+          onDataChange={(data) => handleDataChange(0, data)} 
+          onValidationChange={(isValid) => handleValidationChange(0, isValid)} 
+          servers={servers} 
+        />
+      ),
+      isValid: stepsValidation[0]
     },
     {
       id: "step2",
       title: "Характеристики и фото",
       description: "Тип автомобиля, цена и изображение",
-      component: <CarStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
-      isValid: true
+      component: (
+        <CarStep2 
+          data={formData} 
+          onDataChange={(data) => handleDataChange(1, data)} 
+          onValidationChange={(isValid) => handleValidationChange(1, isValid)} 
+        />
+      ),
+      isValid: stepsValidation[1]
     }
   ];
 

@@ -16,42 +16,25 @@ export const CarStep1: React.FC<CarStep1Props> = ({ data, onDataChange, onValida
     title: data.title || '',
     description: data.description || '',
     serverId: data.serverId || 0,
-    discord: data.contacts?.discord || '',
-    telegram: data.contacts?.telegram || '',
-    phone: data.contacts?.phone || '',
+    price: data.price || 0,
     ...data
   });
 
   const updateData = (field: string, value: any) => {
     const newData = { ...formData, [field]: value };
     setFormData(newData);
-    
-    let updatedData;
-    if (['discord', 'telegram', 'phone'].includes(field)) {
-      updatedData = {
-        ...data,
-        contacts: {
-          ...data.contacts,
-          [field]: value
-        }
-      };
-    } else {
-      updatedData = {
-        ...data,
-        [field]: value
-      };
-    }
-    
-    onDataChange(updatedData);
+    onDataChange({
+      ...data,
+      [field]: value
+    });
   };
 
   useEffect(() => {
     // Валидация обязательных полей
-    const hasContact = formData.discord.length > 0 || formData.telegram.length > 0 || formData.phone.length > 0;
     const isValid = formData.title.length > 0 && 
                    formData.description.length > 0 &&
                    formData.serverId > 0 &&
-                   hasContact;
+                   formData.price > 0;
     onValidationChange(isValid);
   }, [formData, onValidationChange]);
 

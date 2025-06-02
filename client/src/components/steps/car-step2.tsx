@@ -15,6 +15,11 @@ export const CarStep2: React.FC<CarStep2Props> = ({ data, onDataChange, onValida
     price: data.price || 0,
     carType: data.carType || '',
     imageUrl: data.imageUrl || '',
+    contacts: {
+      discord: data.contacts?.discord || '',
+      telegram: data.contacts?.telegram || '',
+      phone: data.contacts?.phone || '',
+    },
     ...data
   });
 
@@ -25,6 +30,27 @@ export const CarStep2: React.FC<CarStep2Props> = ({ data, onDataChange, onValida
     const updatedData = {
       ...data,
       [field]: value
+    };
+    
+    onDataChange(updatedData);
+  };
+
+  const updateContacts = (field: string, value: string) => {
+    const newData = {
+      ...formData,
+      contacts: {
+        ...formData.contacts,
+        [field]: value
+      }
+    };
+    setFormData(newData);
+    
+    const updatedData = {
+      ...data,
+      contacts: {
+        ...data.contacts,
+        [field]: value
+      }
     };
     
     onDataChange(updatedData);

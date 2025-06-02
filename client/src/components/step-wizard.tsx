@@ -1,7 +1,7 @@
 import React, { useState, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Step {
@@ -23,47 +23,32 @@ interface StepWizardProps {
 
 const categoryConfig = {
   fish: {
-    color: 'blue',
-    icon: '🐟',
-    title: 'Добавить рыбу'
+    gradient: 'from-blue-400 via-cyan-400 to-teal-400',
+    bgGradient: 'from-blue-900/20 via-cyan-900/20 to-teal-900/20',
+    icon: '🌊',
+    title: 'Добавить рыбу',
+    accent: 'text-cyan-300'
   },
   treasure: {
-    color: 'amber',
-    icon: '💎',
-    title: 'Добавить сокровище'
+    gradient: 'from-yellow-400 via-amber-400 to-orange-400',
+    bgGradient: 'from-yellow-900/20 via-amber-900/20 to-orange-900/20',
+    icon: '✨',
+    title: 'Добавить сокровище',
+    accent: 'text-amber-300'
   },
   car: {
-    color: 'red',
-    icon: '🚗',
-    title: 'Добавить автомобиль'
+    gradient: 'from-red-400 via-pink-400 to-purple-400',
+    bgGradient: 'from-red-900/20 via-pink-900/20 to-purple-900/20',
+    icon: '🚀',
+    title: 'Добавить автомобиль',
+    accent: 'text-pink-300'
   },
   realestate: {
-    color: 'green',
-    icon: '🏠',
-    title: 'Добавить недвижимость'
-  }
-};
-
-const colorClasses = {
-  blue: {
-    primary: 'bg-blue-600 hover:bg-blue-700 text-white',
-    secondary: 'text-blue-600',
-    progress: 'bg-blue-600'
-  },
-  amber: {
-    primary: 'bg-amber-600 hover:bg-amber-700 text-white',
-    secondary: 'text-amber-600',
-    progress: 'bg-amber-600'
-  },
-  red: {
-    primary: 'bg-red-600 hover:bg-red-700 text-white',
-    secondary: 'text-red-600',
-    progress: 'bg-red-600'
-  },
-  green: {
-    primary: 'bg-green-600 hover:bg-green-700 text-white',
-    secondary: 'text-green-600',
-    progress: 'bg-green-600'
+    gradient: 'from-green-400 via-emerald-400 to-teal-400',
+    bgGradient: 'from-green-900/20 via-emerald-900/20 to-teal-900/20',
+    icon: '🏰',
+    title: 'Добавить недвижимость',
+    accent: 'text-emerald-300'
   }
 };
 
@@ -79,7 +64,6 @@ export default function StepWizard({
   const [formData, setFormData] = useState(defaultValues);
   
   const config = categoryConfig[category];
-  const colors = colorClasses[config.color];
 
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
@@ -98,82 +82,140 @@ export default function StepWizard({
   const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (
-    <div className={cn('flex flex-col h-full bg-white', className)}>
+    <div className={cn('relative flex flex-col h-[90vh] overflow-hidden', className)}>
+      {/* Animated Background */}
+      <div className={cn(
+        'absolute inset-0 bg-gradient-to-br opacity-30',
+        config.bgGradient
+      )} />
+      
+      {/* Floating Orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          animate={{
+            x: [0, 100, 0],
+            y: [0, -100, 0],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+          className={cn(
+            'absolute top-20 right-20 w-32 h-32 rounded-full blur-xl opacity-20 bg-gradient-to-r',
+            config.gradient
+          )}
+        />
+        <motion.div
+          animate={{
+            x: [0, -80, 0],
+            y: [0, 120, 0],
+            scale: [1, 0.8, 1],
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: "linear",
+            delay: 5
+          }}
+          className={cn(
+            'absolute bottom-20 left-20 w-24 h-24 rounded-full blur-xl opacity-15 bg-gradient-to-r',
+            config.gradient
+          )}
+        />
+      </div>
+
       {/* Header */}
-      <div className="px-8 py-6 border-b border-gray-200">
+      <div className="relative z-10 p-8 bg-white/5 backdrop-blur-sm border-b border-white/10">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-4">
-            <div className="text-3xl">{config.icon}</div>
+            <motion.div 
+              className="text-4xl"
+              animate={{ rotate: [0, 10, -10, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              {config.icon}
+            </motion.div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{config.title}</h1>
-              <p className="text-gray-600 mt-1">{steps[currentStep].title}</p>
+              <h1 className={cn(
+                'text-3xl font-bold bg-gradient-to-r bg-clip-text text-transparent',
+                config.gradient
+              )}>
+                {config.title}
+              </h1>
+              <p className="text-white/70 mt-1 text-lg">{steps[currentStep].title}</p>
             </div>
           </div>
+          <Sparkles className={cn('w-8 h-8', config.accent)} />
         </div>
 
         {/* Progress */}
-        <div className="space-y-3">
-          <div className="flex justify-between text-sm text-gray-600">
+        <div className="space-y-4">
+          <div className="flex justify-between text-sm text-white/60">
             <span>Шаг {currentStep + 1} из {steps.length}</span>
             <span>{Math.round(progress)}% завершено</span>
           </div>
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-3 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm">
             <motion.div
-              className={cn('h-full rounded-full', colors.progress)}
+              className={cn(
+                'h-full rounded-full bg-gradient-to-r',
+                config.gradient
+              )}
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
             />
           </div>
         </div>
 
         {/* Step indicators */}
-        <div className="flex justify-center mt-6 space-x-3">
+        <div className="flex justify-center mt-8 space-x-4">
           {steps.map((step, index) => (
-            <div
+            <motion.div
               key={step.id}
-              className={cn(
-                'flex items-center',
-                index < steps.length - 1 && 'mr-8'
-              )}
+              className="flex items-center"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
             >
               <div
                 className={cn(
-                  'w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all',
+                  'w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-300 cursor-pointer',
                   index === currentStep
-                    ? colors.primary
+                    ? cn('bg-gradient-to-r text-white shadow-lg', config.gradient)
                     : index < currentStep
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-gray-100 text-gray-400'
+                    ? 'bg-green-500/80 text-white backdrop-blur-sm'
+                    : 'bg-white/10 text-white/50 backdrop-blur-sm hover:bg-white/20'
                 )}
+                onClick={() => setCurrentStep(index)}
               >
                 {index < currentStep ? (
-                  <Check className="w-5 h-5" />
+                  <Check className="w-6 h-6" />
                 ) : (
                   index + 1
                 )}
               </div>
               {index < steps.length - 1 && (
                 <div className={cn(
-                  'w-8 h-0.5 ml-3',
-                  index < currentStep ? 'bg-green-300' : 'bg-gray-200'
+                  'w-12 h-1 mx-2 rounded-full transition-all duration-300',
+                  index < currentStep ? cn('bg-gradient-to-r', config.gradient) : 'bg-white/20'
                 )} />
               )}
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="relative z-10 flex-1 overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.2 }}
-            className="p-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="p-8 min-h-full bg-white/5 backdrop-blur-sm"
           >
             {React.cloneElement(steps[currentStep].component as React.ReactElement, {
               data: formData,
@@ -187,28 +229,34 @@ export default function StepWizard({
       </div>
 
       {/* Footer */}
-      <div className="px-8 py-6 border-t border-gray-200 bg-gray-50">
+      <div className="relative z-10 p-8 bg-white/5 backdrop-blur-sm border-t border-white/10">
         <div className="flex justify-between">
           <Button
             variant="outline"
             onClick={prevStep}
             disabled={currentStep === 0}
-            className="border-gray-300 text-gray-700 hover:bg-gray-100"
+            className="border-white/20 text-white bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all duration-200"
           >
-            <ChevronLeft className="w-4 h-4 mr-2" />
+            <ChevronLeft className="w-5 h-5 mr-2" />
             Назад
           </Button>
           
           <Button
             onClick={nextStep}
-            className={colors.primary}
+            className={cn(
+              'bg-gradient-to-r text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105',
+              config.gradient
+            )}
           >
             {currentStep === steps.length - 1 ? (
-              'Создать объявление'
+              <>
+                <Sparkles className="w-5 h-5 mr-2" />
+                Создать объявление
+              </>
             ) : (
               <>
                 Далее
-                <ChevronRight className="w-4 h-4 ml-2" />
+                <ChevronRight className="w-5 h-5 ml-2" />
               </>
             )}
           </Button>

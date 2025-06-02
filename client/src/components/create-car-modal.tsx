@@ -86,13 +86,13 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
       
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       toast({
-        title: "Успешно!",
+        title: "🎉 Успешно!",
         description: "Объявление создано и отправлено на модерацию",
       });
       onClose();
     } catch (error: any) {
       toast({
-        title: "Ошибка",
+        title: "❌ Ошибка",
         description: error.message || "Не удалось создать объявление",
         variant: "destructive",
       });
@@ -101,7 +101,7 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[90vh] p-0">
+      <DialogContent className="max-w-6xl h-[95vh] p-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         <StepWizard
           steps={[
             {

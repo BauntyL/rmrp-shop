@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import StepWizard from './step-wizard';
-import { FishStep1, FishStep2, FishStep3 } from './steps';
+import { FishStep1, FishStep2 } from './steps';
 
 const createFishSchema = z.object({
   description: z.string().min(10, "Описание должно содержать минимум 10 символов"),
@@ -41,10 +41,8 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
     queryKey: ["/api/servers"],
   });
 
-  // Функция handleComplete должна быть определена ДО return
   const handleComplete = async (formData: any) => {
     try {
-      // Преобразуем данные из формата StepWizard в формат API
       const apiData: CreateFishFormData = {
         description: formData.description || '',
         price: formData.price || 0,
@@ -70,54 +68,44 @@ export default function CreateFishModal({ open, onOpenChange }: CreateFishModalP
       const response = await apiRequest("POST", "/api/products", productData);
       await response.json();
       
+      await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      
       toast({
-        title: "Объявление создано",
-        description: "Ваше рыболовное объявление отправлено на модерацию",
+        title: "Успех!",
+        description: "Объявление о рыбе создано успешно",
       });
+      
       onOpenChange(false);
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
     } catch (error: any) {
+      console.error('Ошибка создания объявления:', error);
       toast({
         title: "Ошибка",
         description: error.message || "Не удалось создать объявление",
         variant: "destructive",
       });
-      throw error;
     }
   };
 
   const steps = [
     {
-      id: 'basic-info',
-      title: 'Основная информация',
-      description: 'Укажите тип и количество рыбы',
-      component: <FishStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
-      isValid: true
+      component: FishStep1,
+      title: "Основная информация",
+      description: "Тип рыбы, количество, описание, цена и сервер"
     },
     {
-      id: 'details',
-      title: 'Детали и цена',
-      description: 'Добавьте описание, фото и цену',
-      component: <FishStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
-      isValid: true
-    },
-    {
-      id: 'contact',
-      title: 'Контакты и размещение',
-      description: 'Укажите контакты и выберите сервер',
-      component: <FishStep3 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
-      isValid: true
+      component: FishStep2,
+      title: "Изображение и контакты",
+      description: "Ссылка на изображение и контактная информация"
     }
   ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[95vh] overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-cyan-500/20 text-white shadow-2xl shadow-cyan-500/10">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
         <StepWizard
           steps={steps}
-          category="fish"
           onComplete={handleComplete}
-          onCancel={() => onOpenChange(false)}
+          servers={servers}
         />
       </DialogContent>
     </Dialog>

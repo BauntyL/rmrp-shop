@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface FishStep2Props {
   data: any;
@@ -11,10 +10,10 @@ interface FishStep2Props {
 
 export default function FishStep2({ data, onDataChange, onValidationChange }: FishStep2Props) {
   const [formData, setFormData] = useState({
-    size: data.size || '',
-    age: data.age || '',
-    condition: data.condition || '',
-    price: data.price || '',
+    imageUrl: data.imageUrl || '',
+    discord: data.discord || '',
+    telegram: data.telegram || '',
+    phone: data.phone || '',
     ...data
   });
 
@@ -22,66 +21,72 @@ export default function FishStep2({ data, onDataChange, onValidationChange }: Fi
     const newData = { ...formData, [field]: value };
     setFormData(newData);
     onDataChange(newData);
-    
-    // Валидация
-    const isValid = newData.size.length > 0 && newData.condition.length > 0 && newData.price.length > 0;
-    onValidationChange(isValid);
   };
+
+  useEffect(() => {
+    // Хотя бы один контакт должен быть заполнен
+    const hasContact = formData.discord || formData.telegram || formData.phone;
+    onValidationChange(hasContact);
+  }, [formData, onValidationChange]);
 
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold text-cyan-400 mb-2">Характеристики и цена</h3>
-        <p className="text-slate-400">Укажите размер, возраст и стоимость</p>
+        <h3 className="text-lg font-semibold text-cyan-400 mb-2">Изображение и контакты</h3>
+        <p className="text-slate-400">Добавьте изображение и контактную информацию</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="size" className="text-slate-300">Размер *</Label>
+          <Label htmlFor="imageUrl" className="text-slate-300">Ссылка на изображение</Label>
           <Input
-            id="size"
-            value={formData.size}
-            onChange={(e) => updateData('size', e.target.value)}
-            placeholder="Например: 15 см"
+            id="imageUrl"
+            type="url"
+            value={formData.imageUrl}
+            onChange={(e) => updateData('imageUrl', e.target.value)}
+            placeholder="https://example.com/image.jpg"
             className="bg-slate-800 border-slate-600 text-white"
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="age" className="text-slate-300">Возраст</Label>
-          <Input
-            id="age"
-            value={formData.age}
-            onChange={(e) => updateData('age', e.target.value)}
-            placeholder="Например: 2 года"
-            className="bg-slate-800 border-slate-600 text-white"
-          />
-        </div>
+        <div className="border-t border-slate-600 pt-4">
+          <h4 className="text-md font-medium text-slate-300 mb-4">Контакты *</h4>
+          <p className="text-sm text-slate-400 mb-4">Укажите хотя бы один способ связи</p>
+          
+          <div className="grid grid-cols-1 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="discord" className="text-slate-300">Discord</Label>
+              <Input
+                id="discord"
+                value={formData.discord}
+                onChange={(e) => updateData('discord', e.target.value)}
+                placeholder="username#1234"
+                className="bg-slate-800 border-slate-600 text-white"
+              />
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="condition" className="text-slate-300">Состояние *</Label>
-          <Select value={formData.condition} onValueChange={(value) => updateData('condition', value)}>
-            <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-              <SelectValue placeholder="Выберите состояние" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="excellent">Отличное</SelectItem>
-              <SelectItem value="good">Хорошее</SelectItem>
-              <SelectItem value="fair">Удовлетворительное</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="telegram" className="text-slate-300">Telegram</Label>
+              <Input
+                id="telegram"
+                value={formData.telegram}
+                onChange={(e) => updateData('telegram', e.target.value)}
+                placeholder="@username"
+                className="bg-slate-800 border-slate-600 text-white"
+              />
+            </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="price" className="text-slate-300">Цена (₽) *</Label>
-          <Input
-            id="price"
-            type="number"
-            value={formData.price}
-            onChange={(e) => updateData('price', e.target.value)}
-            placeholder="0"
-            className="bg-slate-800 border-slate-600 text-white"
-          />
+            <div className="space-y-2">
+              <Label htmlFor="phone" className="text-slate-300">Телефон</Label>
+              <Input
+                id="phone"
+                value={formData.phone}
+                onChange={(e) => updateData('phone', e.target.value)}
+                placeholder="+7 (999) 123-45-67"
+                className="bg-slate-800 border-slate-600 text-white"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

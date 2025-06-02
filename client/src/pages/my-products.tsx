@@ -195,6 +195,8 @@ export default function MyProducts() {
           <h1 className="text-3xl font-bold text-white">Мои товары</h1>
           <p className="text-slate-300">Управляйте вашими объявлениями</p>
         </div>
+        
+        <div className="mb-8">
           <Button 
             onClick={() => setShowCreateListing(true)} 
             className="bg-blue-600 hover:bg-blue-700"

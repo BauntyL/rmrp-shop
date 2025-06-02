@@ -165,52 +165,51 @@ export default function StepWizard({
         </div>
       </div>
     
-        {/* Content */}
-        <div className="relative h-[60vh] overflow-hidden">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentStep}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-              className="absolute inset-0 p-6 overflow-y-auto scrollbar-hide"
-            >
-              {steps[currentStep].component}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+      {/* Content */}
+      <div className="relative h-[60vh] overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="absolute inset-0 p-6 overflow-y-auto scrollbar-hide"
+          >
+            {steps[currentStep].component}
+          </motion.div>
+        </AnimatePresence>
+      </div>
     
-        {/* Footer */}
-        <div className="p-6 border-t border-slate-700/50 bg-slate-900/50">
-          <div className="flex justify-between">
-            <Button
-              variant="outline"
-              onClick={prevStep}
-              disabled={currentStep === 0}
-              className="border-slate-600 text-slate-300 hover:bg-slate-700"
-            >
-              <ChevronLeft className="w-4 h-4 mr-2" />
-              Назад
-            </Button>
-            
-            <Button
-              onClick={nextStep}
-              disabled={steps[currentStep].isValid === false}
-              className={theme.button}
-            >
-              {currentStep === steps.length - 1 ? (
-                'Создать объявление'
-              ) : (
-                <>
-                  Далее
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </>
-              )}
-            </Button>
-          </div>
+      {/* Footer */}
+      <div className="p-6 border-t border-slate-700/50 bg-slate-900/50">
+        <div className="flex justify-between">
+          <Button
+            variant="outline"
+            onClick={prevStep}
+            disabled={currentStep === 0}
+            className="border-slate-600 text-slate-300 hover:bg-slate-700"
+          >
+            <ChevronLeft className="w-4 h-4 mr-2" />
+            Назад
+          </Button>
+          
+          <Button
+            onClick={nextStep}
+            disabled={steps[currentStep].isValid === false}
+            className={theme.button}
+          >
+            {currentStep === steps.length - 1 ? (
+              'Создать объявление'
+            ) : (
+              <>
+                Далее
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </>
+            )}
+          </Button>
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </motion.div>
   );
 }

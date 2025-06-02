@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { TreasureStep1, TreasureStep2 } from "./steps";
 import { apiRequest } from "@/lib/queryClient";
@@ -6,6 +6,10 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import StepWizard from "@/components/step-wizard";
+import { useMutation } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
+import type { ProductWithDetails } from "@/lib/types";
+import type { Server } from "@shared/schema";
 
 const createTreasureSchema = z.object({
   // Шаг 1: Основная информация
@@ -44,15 +48,29 @@ interface CreateTreasureModalProps {
 export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasureModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [formData, setFormData] = useState<Partial<CreateTreasureFormData>>({});
+  const [stepsValidation, setStepsValidation] = useState<boolean[]>([false, false]);
 
-  const { data: servers = [] } = useQuery({
+  const { data: servers = [] } = useQuery<Server[]>({
     queryKey: ["/api/servers"],
   });
+
+  const handleDataChange = (stepIndex: number, data: Partial<CreateTreasureFormData>) => {
+    setFormData(prev => ({ ...prev, ...data }));
+  };
+
+  const handleValidationChange = (stepIndex: number, isValid: boolean) => {
+    setStepsValidation(prev => {
+      const newValidation = [...prev];
+      newValidation[stepIndex] = isValid;
+      return newValidation;
+    });
+  };
 
   const handleComplete = async (data: CreateTreasureFormData) => {
     try {
       const productData = {
-        name: `${data.treasureType} (${data.quantity} шт.)`,
+        title: `${data.treasureType} (${data.quantity} шт.)`,
         description: data.description,
         price: data.price,
         categoryId: data.categoryId,
@@ -66,12 +84,8 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
         },
       };
       
-      const response = await apiRequest("/api/products", {
-        method: "POST",
-        body: JSON.stringify(productData),
-      });
-      
-      await response.json();
+      const response = await apiRequest("POST", "/api/products", productData);
+      const result = (await response.json()) as ProductWithDetails;
       
       toast({
         title: "Объявление создано",
@@ -94,26 +108,40 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
       id: "step1",
       title: "Основная информация",
       description: "Тип сокровища, количество, описание, цена и сервер",
-      component: <TreasureStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
-      isValid: true
+      component: (
+        <TreasureStep1 
+          data={formData} 
+          onDataChange={(data) => handleDataChange(0, data)} 
+          onValidationChange={(isValid) => handleValidationChange(0, isValid)} 
+          servers={servers} 
+        />
+      ),
+      isValid: stepsValidation[0]
     },
     {
       id: "step2",
       title: "Изображение и контакты",
       description: "Ссылка на изображение и контактная информация",
-      component: <TreasureStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
-      isValid: true
+      component: (
+        <TreasureStep2 
+          data={formData} 
+          onDataChange={(data) => handleDataChange(1, data)} 
+          onValidationChange={(isValid) => handleValidationChange(1, isValid)} 
+        />
+      ),
+      isValid: stepsValidation[1]
     }
   ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
-        <StepWizard
+        <StepWizard<CreateTreasureFormData>
           steps={steps}
           onComplete={handleComplete}
           onCancel={() => onOpenChange(false)}
           category="treasure"
+          defaultValues={formData}
         />
       </DialogContent>
     </Dialog>

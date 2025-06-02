@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Check, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { z } from 'zod';
 
 interface Step {
   id: string;
@@ -12,13 +13,13 @@ interface Step {
   isValid?: boolean;
 }
 
-interface StepWizardProps {
+interface StepWizardProps<T> {
   steps: Step[];
-  onComplete: (data: any) => void;
+  onComplete: (data: T) => void;
   onCancel: () => void;
   category: 'fish' | 'treasure' | 'car' | 'realestate';
   className?: string;
-  defaultValues?: any;
+  defaultValues?: Partial<T>;
 }
 
 const categoryConfig = {
@@ -52,16 +53,16 @@ const categoryConfig = {
   }
 };
 
-export default function StepWizard({ 
+export default function StepWizard<T>({ 
   steps, 
   onComplete, 
   onCancel, 
   category, 
   className,
   defaultValues = {}
-}: StepWizardProps) {
+}: StepWizardProps<T>) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState(defaultValues);
+  const [formData, setFormData] = useState<Partial<T>>(defaultValues);
   
   const config = categoryConfig[category];
 
@@ -69,7 +70,7 @@ export default function StepWizard({
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      onComplete(formData);
+      onComplete(formData as T);
     }
   };
 

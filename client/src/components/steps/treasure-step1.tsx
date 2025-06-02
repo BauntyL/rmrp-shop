@@ -3,12 +3,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { Server } from '@shared/schema';
 
 interface TreasureStep1Props {
   data: any;
   onDataChange: (data: any) => void;
   onValidationChange: (isValid: boolean) => void;
-  servers: any[];
+  servers: Server[];
 }
 
 export default function TreasureStep1({ data, onDataChange, onValidationChange, servers }: TreasureStep1Props) {

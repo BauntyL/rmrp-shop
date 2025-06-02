@@ -2,10 +2,23 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Image } from 'lucide-react';
+import { z } from 'zod';
+
+const contactsSchema = z.object({
+  discord: z.string().optional(),
+  telegram: z.string().optional(),
+  phone: z.string().optional(),
+});
 
 interface TreasureStep2Props {
-  data: any;
-  onDataChange: (data: any) => void;
+  data: {
+    imageUrl?: string;
+    contacts?: z.infer<typeof contactsSchema>;
+  };
+  onDataChange: (data: {
+    imageUrl?: string;
+    contacts: z.infer<typeof contactsSchema>;
+  }) => void;
   onValidationChange: (isValid: boolean) => void;
 }
 
@@ -23,21 +36,15 @@ export default function TreasureStep2({ data, onDataChange, onValidationChange }
     setFormData(newData);
     
     // Обновляем данные в правильной структуре
-    let updatedData;
-    if (['discord', 'telegram', 'phone'].includes(field)) {
-      updatedData = {
-        ...data,
-        contacts: {
-          ...data.contacts,
-          [field]: value
-        }
-      };
-    } else {
-      updatedData = {
-        ...data,
-        [field]: value
-      };
-    }
+    const updatedData = {
+      imageUrl: field === 'imageUrl' ? value : formData.imageUrl,
+      contacts: {
+        discord: field === 'discord' ? value : formData.discord,
+        telegram: field === 'telegram' ? value : formData.telegram,
+        phone: field === 'phone' ? value : formData.phone,
+      }
+    };
+    
     onDataChange(updatedData);
     
     // Валидация - требуется хотя бы один способ связи

@@ -48,21 +48,6 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
     queryKey: ["/api/servers"],
   });
 
-  const defaultValues: CreateCarFormData = {
-    title: "",
-    description: "",
-    serverId: 0,
-    contacts: {
-      discord: "",
-      telegram: "",
-      phone: "",
-    },
-    price: 0,
-    carType: "",
-    imageUrl: "",
-    categoryId: 1,
-  };
-
   const handleComplete = async (data: CreateCarFormData) => {
     try {
       const productData = {
@@ -99,27 +84,28 @@ export default function CreateCarModal({ isOpen, onClose }: CreateCarModalProps)
     }
   };
 
+  const steps = [
+    {
+      id: "step1",
+      title: "Основная информация",
+      description: "Данные об автомобиле и контакты",
+      component: <CarStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
+      isValid: true
+    },
+    {
+      id: "step2",
+      title: "Характеристики и фото",
+      description: "Тип автомобиля, цена и изображение",
+      component: <CarStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
+      isValid: true
+    }
+  ];
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl h-[95vh] p-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
         <StepWizard
-          steps={[
-            {
-              id: "basic",
-              title: "Основная информация",
-              description: "Данные об автомобиле и контакты",
-              component: <CarStep1 servers={servers} />,
-              isValid: true
-            },
-            {
-              id: "details",
-              title: "Характеристики и фото",
-              description: "Тип автомобиля, цена и изображение",
-              component: <CarStep2 />,
-              isValid: true
-            }
-          ]}
-          defaultValues={defaultValues}
+          steps={steps}
           onComplete={handleComplete}
           onCancel={onClose}
           category="car"

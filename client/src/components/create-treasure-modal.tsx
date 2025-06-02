@@ -3,9 +3,8 @@ import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { TreasureStep1, TreasureStep2 } from "./steps";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Gem } from "lucide-react";
 import { z } from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import StepWizard from "@/components/step-wizard";
 
 const createTreasureSchema = z.object({
@@ -90,41 +89,28 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
     }
   };
 
-  const defaultValues: CreateTreasureFormData = {
-    treasureType: "",
-    quantity: 1,
-    description: "",
-    price: 0,
-    serverId: 0,
-    imageUrl: "",
-    contacts: {
-      discord: "",
-      telegram: "",
-      phone: "",
+  const steps = [
+    {
+      id: "step1",
+      title: "Основная информация",
+      description: "Тип сокровища, количество, описание, цена и сервер",
+      component: <TreasureStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
+      isValid: true
     },
-    categoryId: 4,
-    name: "Сокровище",
-  };
+    {
+      id: "step2",
+      title: "Изображение и контакты",
+      description: "Ссылка на изображение и контактная информация",
+      component: <TreasureStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
+      isValid: true
+    }
+  ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl h-[95vh] p-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
         <StepWizard
-          steps={[
-            {
-              component: <TreasureStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
-              title: "Основная информация",
-              description: "Расскажите о вашем сокровище",
-              isValid: true
-            },
-            {
-              component: <TreasureStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
-              title: "Изображение и контакты",
-              description: "Добавьте фото и контактную информацию",
-              isValid: true
-            }
-          ]}
-          defaultValues={defaultValues}
+          steps={steps}
           onComplete={handleComplete}
           onCancel={() => onOpenChange(false)}
           category="treasure"

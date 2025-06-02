@@ -54,41 +54,6 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
     queryKey: ["/api/servers"],
   });
 
-  const form = useForm<CreateRealEstateFormData>({
-    resolver: zodResolver(createRealEstateSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      price: 0,
-      categoryId: 2,
-      subcategoryId: 0,
-      serverId: 0,
-      imageUrl: "",
-      metadata: {
-        garageSpaces: 0,
-        warehouses: 0,
-        helipads: 0,
-        income: 0,
-        contacts: {
-          discord: "",
-          telegram: "",
-          phone: "",
-        },
-      },
-    },
-  });
-
-  const createListingMutation = useMutation({
-    mutationFn: async (data: CreateRealEstateFormData) => {
-      const productData = {
-        ...data,
-        images: data.imageUrl ? [data.imageUrl] : [],
-      };
-      const response = await apiRequest("POST", "/api/products", productData);
-      return response.json();
-    },
-  });
-
   const handleComplete = async (data: any) => {
     try {
       const productData = {
@@ -142,14 +107,12 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-emerald-500/20 text-white shadow-2xl shadow-emerald-500/10">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
         <StepWizard
           steps={steps}
-          form={form}
           onComplete={handleComplete}
-          isLoading={createListingMutation.isPending}
+          onCancel={() => onOpenChange(false)}
           category="realestate"
-          additionalProps={{ servers, subcategories }}
         />
       </DialogContent>
     </Dialog>

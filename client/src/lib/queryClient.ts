@@ -15,10 +15,10 @@ export async function apiRequest(
   const token = localStorage.getItem("token");
   
   // Добавляем базовый URL для API запросов
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || window.location.origin;
-  const apiUrl = typeof url === 'string' && url.startsWith('http') ? url : `${baseUrl}${url}`;
+  const baseUrl = "https://autocatalog-production.up.railway.app";
+  const apiUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
   
-  console.log('Making API request to:', apiUrl);
+  console.log('Making API request to:', apiUrl, 'with data:', data);
   
   const res = await fetch(apiUrl, {
     method,
@@ -44,8 +44,8 @@ export const getQueryFn: <T>(options: {
     let url = queryKey[0] as string;
     
     // Добавляем базовый URL для API запросов
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || window.location.origin;
-    const apiUrl = typeof url === 'string' && url.startsWith('http') ? url : `${baseUrl}${url}`;
+    const baseUrl = "https://autocatalog-production.up.railway.app";
+    const apiUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
     
     // Добавляем параметры запроса, если они есть
     let finalUrl = apiUrl;
@@ -55,12 +55,17 @@ export const getQueryFn: <T>(options: {
       
       Object.entries(filters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
-          params.append(key, String(value));
+          if (typeof value === 'object') {
+            params.append(key, JSON.stringify(value));
+          } else {
+            params.append(key, String(value));
+          }
         }
       });
       
-      if (params.toString()) {
-        finalUrl = `${apiUrl}?${params.toString()}`;
+      const queryString = params.toString();
+      if (queryString) {
+        finalUrl = `${apiUrl}?${queryString}`;
       }
     }
     

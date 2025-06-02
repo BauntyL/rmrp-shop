@@ -1,7 +1,4 @@
-import React from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { StepWizard } from "./step-wizard";
+import StepWizard from './step-wizard';
 import { CarStep1, CarStep2, CarStep3 } from "./steps";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";

@@ -3,16 +3,16 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Textarea } from '../ui/textarea';
-import { DollarSign, Server, Phone, MessageCircle, Users, Home } from 'lucide-react';
+import { DollarSign, Server, Phone, MessageCircle, Users } from 'lucide-react';
 
-interface RealEstateStep3Props {
+interface ListingStep3Props {
   data: any;
   onDataChange: (data: any) => void;
   onValidationChange: (isValid: boolean) => void;
   servers?: any[];
 }
 
-export const RealEstateStep3: React.FC<RealEstateStep3Props> = ({ 
+export const ListingStep3: React.FC<ListingStep3Props> = ({ 
   data, 
   onDataChange, 
   onValidationChange, 
@@ -61,10 +61,7 @@ export const RealEstateStep3: React.FC<RealEstateStep3Props> = ({
   return (
     <div className="space-y-6">
       <div className="text-center mb-6">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <Home className="h-6 w-6 text-emerald-400" />
-          <h3 className="text-lg font-semibold text-emerald-400">Контакты, цена и сервер</h3>
-        </div>
+        <h3 className="text-lg font-semibold text-violet-400 mb-2">Контакты, цена и сервер</h3>
         <p className="text-slate-400">Укажите цену, выберите сервер и контактную информацию</p>
       </div>
 
@@ -167,9 +164,11 @@ export const RealEstateStep3: React.FC<RealEstateStep3Props> = ({
           rows={3}
           value={formData.additionalNotes}
           onChange={(e) => updateData('additionalNotes', e.target.value)}
-          className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400 focus:border-emerald-500/50 transition-colors resize-none"
+          className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400 focus:border-violet-500/50 transition-colors resize-none"
         />
       </div>
     </div>
   );
 };
+
+export default ListingStep3;

@@ -12,10 +12,15 @@ export { default as TreasureStep3 } from './treasure-step3';
 export { CarStep1 } from './car-step1';
 export { CarStep2 } from './car-step2';
 export { CarStep3 } from './car-step3';
-export { CarStep4 } from './car-step4';
 
-// Шаги для недвижимости
+// Шаги для недвижимости (трехшаговая структура)
 export { RealEstateStep1 } from './realestate-step1';
 export { RealEstateStep2 } from './realestate-step2';
 export { RealEstateStep3 } from './realestate-step3';
+
+// Шаги для общих объявлений
+export { ListingStep1 } from './listing-step1';
+export { ListingStep2 } from './listing-step2';
+export { ListingStep3 } from './listing-step3';
+export { CarStep4 } from './car-step4';
 export { RealEstateStep4 } from './realestate-step4';

@@ -85,12 +85,33 @@ export default function CreateListingModal({ open, onOpenChange }: CreateListing
       const productData = {
         ...data,
         images: data.imageUrl ? [data.imageUrl] : [],
+        metadata: {
+          ...data.metadata,
+          contacts: {
+            discord: data.metadata?.contacts?.discord || '',
+            telegram: data.metadata?.contacts?.telegram || '',
+            phone: data.metadata?.contacts?.phone || '',
+          }
+        }
       };
       
       console.log('📦 Prepared product data:', JSON.stringify(productData, null, 2));
       
-      const response = await apiRequest("POST", "/api/products", productData);
+      const response = await fetch(`${window.location.origin}/api/products`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(productData)
+      });
+      
       console.log('📡 Server response status:', response.status);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create listing');
+      }
       
       const result = await response.json();
       console.log('✅ Server response data:', JSON.stringify(result, null, 2));

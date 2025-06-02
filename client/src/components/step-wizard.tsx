@@ -13,53 +13,64 @@ interface Step {
   isValid?: boolean;
 }
 
-interface StepWizardProps<T> {
-  steps: Step[];
-  onComplete: (data: T) => void;
-  onCancel: () => void;
-  category: 'fish' | 'treasure' | 'car' | 'realestate';
-  className?: string;
-  defaultValues?: Partial<T>;
-}
-
 const categoryConfig = {
   fish: {
-    gradient: 'from-blue-400 via-cyan-400 to-teal-400',
-    bgGradient: 'from-blue-900/20 via-cyan-900/20 to-teal-900/20',
-    icon: '🌊',
-    title: 'Добавить рыбу',
-    accent: 'text-cyan-300'
+    gradient: "from-blue-500 to-cyan-500",
+    bgGradient: "from-blue-500/20 to-cyan-500/20",
+    icon: "🐟",
+    title: "Рыба",
+    accent: "blue",
   },
   treasure: {
-    gradient: 'from-yellow-400 via-amber-400 to-orange-400',
-    bgGradient: 'from-yellow-900/20 via-amber-900/20 to-orange-900/20',
-    icon: '✨',
-    title: 'Добавить сокровище',
-    accent: 'text-amber-300'
+    gradient: "from-purple-500 to-pink-500",
+    bgGradient: "from-purple-500/20 to-pink-500/20",
+    icon: "💎",
+    title: "Сокровище",
+    accent: "purple",
   },
   car: {
-    gradient: 'from-red-400 via-pink-400 to-purple-400',
-    bgGradient: 'from-red-900/20 via-pink-900/20 to-purple-900/20',
-    icon: '🚀',
-    title: 'Добавить автомобиль',
-    accent: 'text-pink-300'
+    gradient: "from-red-500 to-orange-500",
+    bgGradient: "from-red-500/20 to-orange-500/20",
+    icon: "🚗",
+    title: "Автомобиль",
+    accent: "red",
   },
   realestate: {
-    gradient: 'from-green-400 via-emerald-400 to-teal-400',
-    bgGradient: 'from-green-900/20 via-emerald-900/20 to-teal-900/20',
-    icon: '🏰',
-    title: 'Добавить недвижимость',
-    accent: 'text-emerald-300'
-  }
+    gradient: "from-green-500 to-emerald-500",
+    bgGradient: "from-green-500/20 to-emerald-500/20",
+    icon: "🏠",
+    title: "Недвижимость",
+    accent: "green",
+  },
+  listing: {
+    gradient: "from-violet-500 to-indigo-500",
+    bgGradient: "from-violet-500/20 to-indigo-500/20",
+    icon: "📦",
+    title: "Объявление",
+    accent: "violet",
+  },
 };
+
+interface StepWizardProps<T = any> {
+  steps: Step[];
+  onComplete: (data: T) => void;
+  onCancel?: () => void;
+  isLoading?: boolean;
+  category: keyof typeof categoryConfig;
+  className?: string;
+  defaultValues?: T;
+  additionalProps?: any;
+}
 
 export default function StepWizard<T>({ 
   steps, 
   onComplete, 
   onCancel, 
-  category, 
+  isLoading,
+  category,
   className,
-  defaultValues = {}
+  defaultValues = {} as T,
+  additionalProps
 }: StepWizardProps<T>) {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<Partial<T>>(defaultValues);

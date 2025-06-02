@@ -108,42 +108,28 @@ export default function CreateTreasureModal({ open, onOpenChange }: CreateTreasu
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[95vh] overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-amber-900 border-purple-500/20 text-white animate-in fade-in-0 zoom-in-95 duration-300">
-        <div className="relative z-10">
-          <DialogHeader className="text-center pb-8 relative">
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-purple-400 via-amber-400 to-purple-400 rounded-full animate-pulse" />
-            
-            <div className="mx-auto w-20 h-20 bg-gradient-to-br from-purple-500 to-amber-500 rounded-full flex items-center justify-center mb-6 shadow-2xl shadow-purple-500/30 animate-pulse">
-              <Gem className="h-10 w-10 text-white" />
-            </div>
-            <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-purple-300 to-amber-300 bg-clip-text text-transparent mb-2">
-              Клады на продажу
-            </DialogTitle>
-            <p className="text-purple-200/80 text-lg">Создайте объявление о продаже клада</p>
-          </DialogHeader>
-
-          <div className="max-h-[70vh] overflow-y-auto pr-2">
-            <StepWizard
-              steps={[
-                {
-                  component: <TreasureStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
-                  title: "Основная информация и детали",
-                  description: "Название, описание, тип клада, цена и сервер",
-                  isValid: true
-                },
-                {
-                  component: <TreasureStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
-                  title: "Изображения и контакты",
-                  description: "Фотографии и контактная информация",
-                  isValid: true
-                }
-              ]}
-              defaultValues={defaultValues}
-              onComplete={handleComplete}
-              onCancel={() => onOpenChange(false)}
-              category="treasure"
-            />
-          </div>
+      <DialogContent className="max-w-6xl h-[95vh] p-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="max-h-[70vh] overflow-y-auto">
+          <StepWizard
+            steps={[
+              {
+                component: <TreasureStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
+                title: "Основная информация",
+                description: "Расскажите о вашем сокровище",
+                isValid: true
+              },
+              {
+                component: <TreasureStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
+                title: "Изображение и контакты",
+                description: "Добавьте фото и контактную информацию",
+                isValid: true
+              }
+            ]}
+            defaultValues={defaultValues}
+            onComplete={handleComplete}
+            onCancel={() => onOpenChange(false)}
+            category="treasure"
+          />
         </div>
       </DialogContent>
     </Dialog>

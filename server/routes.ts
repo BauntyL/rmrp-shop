@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { insertUserSchema, insertProductSchema, insertMessageSchema } from "@shared/schema";
 import type { Request, Response, NextFunction } from "express";
+import { Express } from 'express';
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
@@ -218,13 +219,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/admin/messages/pending', authenticateToken, requireRole(['admin', 'moderator']), async (req, res) => {
+  app.get('/api/admin/messages/pending', authenticateToken, requireRole(['admin', 'moderator']), async (req: Request, res: Response) => {
     try {
+      console.log('🔍 Начинаем получение непроверенных сообщений...');
+      
       const messages = await storage.getPendingMessages();
+      
+      console.log(`✅ Успешно получено ${messages.length} непроверенных сообщений`);
+      if (messages.length > 0) {
+        console.log('📝 Пример первого сообщения:', JSON.stringify({
+          id: messages[0].id,
+          content: messages[0].content,
+          hasUser: !!messages[0].user,
+          hasConversation: !!messages[0].conversation,
+        }, null, 2));
+      }
+      
       res.json(messages);
-    } catch (error) {
-      console.error('Error in /api/admin/messages/pending:', error);
-      res.status(500).json({ message: 'Failed to fetch pending messages', error: error.message });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
+      console.error('❌ Ошибка в /api/admin/messages/pending:', errorMessage);
+      if (errorStack) {
+        console.error('Stack trace:', errorStack);
+      }
+      
+      res.status(500).json({ 
+        message: 'Не удалось получить непроверенные сообщения', 
+        error: errorMessage,
+        ...(process.env.NODE_ENV === 'development' && errorStack && { stack: errorStack })
+      });
     }
   });
 
@@ -387,13 +412,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/admin/messages/pending', authenticateToken, requireRole(['admin', 'moderator']), async (req, res) => {
+  app.get('/api/admin/messages/pending', authenticateToken, requireRole(['admin', 'moderator']), async (req: Request, res: Response) => {
     try {
+      console.log('🔍 Начинаем получение непроверенных сообщений...');
+      
       const messages = await storage.getPendingMessages();
+      
+      console.log(`✅ Успешно получено ${messages.length} непроверенных сообщений`);
+      if (messages.length > 0) {
+        console.log('📝 Пример первого сообщения:', JSON.stringify({
+          id: messages[0].id,
+          content: messages[0].content,
+          hasUser: !!messages[0].user,
+          hasConversation: !!messages[0].conversation,
+        }, null, 2));
+      }
+      
       res.json(messages);
-    } catch (error) {
-      console.error('Error in /api/admin/messages/pending:', error);
-      res.status(500).json({ message: 'Failed to fetch pending messages', error: error.message });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Неизвестная ошибка';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
+      console.error('❌ Ошибка в /api/admin/messages/pending:', errorMessage);
+      if (errorStack) {
+        console.error('Stack trace:', errorStack);
+      }
+      
+      res.status(500).json({ 
+        message: 'Не удалось получить непроверенные сообщения', 
+        error: errorMessage,
+        ...(process.env.NODE_ENV === 'development' && errorStack && { stack: errorStack })
+      });
     }
   });
 

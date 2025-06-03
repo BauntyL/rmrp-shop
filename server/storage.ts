@@ -1092,27 +1092,47 @@ export class DatabaseStorage implements IStorage {
             user2Id: conversations.user2Id,
             productId: conversations.productId,
             product: sql<any>`(
-              select json_build_object(
-                'id', p.id,
-                'title', p.title,
-                'description', p.description,
-                'price', p.price,
-                'images', p.images,
-                'status', p.status,
-                'category', json_build_object(
-                  'displayName', c.display_name,
-                  'color', c.color,
-                  'name', c.name
-                ),
-                'server', json_build_object(
-                  'displayName', s.display_name,
-                  'name', s.name
-                )
+              with product_data as (
+                select 
+                  p.id,
+                  p.title,
+                  p.description,
+                  p.price,
+                  p.images,
+                  p.status,
+                  c.display_name as category_display_name,
+                  c.color as category_color,
+                  c.name as category_name,
+                  s.display_name as server_display_name,
+                  s.name as server_name
+                from ${products} p
+                left join ${categories} c on c.id = p.category_id
+                left join ${servers} s on s.id = p.server_id
+                where p.id = ${conversations.productId}
               )
-              from ${products} p
-              left join ${categories} c on c.id = p.category_id
-              left join ${servers} s on s.id = p.server_id
-              where p.id = ${conversations.productId}
+              select 
+                case 
+                  when exists (select 1 from product_data) then
+                    json_build_object(
+                      'id', pd.id,
+                      'title', pd.title,
+                      'description', pd.description,
+                      'price', pd.price,
+                      'images', pd.images,
+                      'status', pd.status,
+                      'category', json_build_object(
+                        'displayName', pd.category_display_name,
+                        'color', pd.category_color,
+                        'name', pd.category_name
+                      ),
+                      'server', json_build_object(
+                        'displayName', pd.server_display_name,
+                        'name', pd.server_name
+                      )
+                    )
+                  else null
+                end
+              from product_data pd
             )`
           },
         })
@@ -1131,9 +1151,18 @@ export class DatabaseStorage implements IStorage {
       const safeResult = result.map(message => ({
         ...message,
         readAt: null, // Временно устанавливаем readAt в null
-        user: message.user || null,
+        user: message.user ? {
+          id: message.user.id,
+          firstName: message.user.firstName || '',
+          lastName: message.user.lastName || '',
+          profileImageUrl: message.user.profileImageUrl || null,
+          username: message.user.username || '',
+        } : null,
         conversation: message.conversation ? {
-          ...message.conversation,
+          id: message.conversation.id,
+          user1Id: message.conversation.user1Id,
+          user2Id: message.conversation.user2Id,
+          productId: message.conversation.productId,
           product: message.conversation.product || null
         } : null
       }));

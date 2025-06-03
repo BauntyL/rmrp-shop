@@ -900,12 +900,15 @@ export default function Admin() {
                               <Avatar>
                                 <AvatarImage src={message.user?.profileImageUrl} />
                                 <AvatarFallback>
-                                  {message.user ? getUserInitials(message.user.firstName, message.user.lastName) : 'U'}
+                                  {message.user ? getUserInitials(message.user.firstName, message.user.lastName) : '?'}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
                                 <p className="font-medium text-white">
-                                  {message.user ? `${message.user.firstName} ${message.user.lastName}` : 'Неизвестный пользователь'}
+                                  {message.user 
+                                    ? `${message.user.firstName} ${message.user.lastName}`
+                                    : 'Неизвестный пользователь'
+                                  }
                                 </p>
                                 <p className="text-sm text-slate-400">
                                   {new Date(message.createdAt).toLocaleString()}

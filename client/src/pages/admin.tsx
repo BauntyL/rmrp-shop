@@ -92,17 +92,37 @@ interface Message {
   content: string;
   createdAt: string;
   isModerated: boolean;
-  readAt?: string;
+  readAt?: string | null;
   user: {
     id: number;
     firstName: string;
     lastName: string;
     profileImageUrl?: string;
-  };
+    username: string;
+  } | null;
   conversation: {
     id: number;
-    product?: Product;
-  };
+    user1Id: number;
+    user2Id: number;
+    productId: number | null;
+    product?: {
+      id: number;
+      title: string;
+      description: string;
+      price: number;
+      images: string[];
+      status: string;
+      category?: {
+        displayName: string;
+        color: string;
+        name: string;
+      };
+      server?: {
+        displayName: string;
+        name: string;
+      };
+    } | null;
+  } | null;
 }
 
 interface Analytics {
@@ -867,7 +887,7 @@ export default function Admin() {
                       <div className="flex items-center justify-center p-8">
                         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
                       </div>
-                    ) : pendingMessages.length === 0 ? (
+                    ) : !pendingMessages || pendingMessages.length === 0 ? (
                       <div className="text-center p-8">
                         <MessageSquare className="h-12 w-12 text-slate-400 mx-auto mb-3" />
                         <p className="text-slate-300">Нет сообщений для модерации</p>

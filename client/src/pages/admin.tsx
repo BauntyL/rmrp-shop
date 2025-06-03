@@ -926,7 +926,7 @@ export default function Admin() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {analytics?.activity && (
+                    {analytics?.activity && analytics.activity.dates && analytics.activity.newUsers && analytics.activity.newProducts && analytics.activity.newMessages && (
                       <Line
                         data={{
                           labels: analytics.activity.dates,
@@ -997,16 +997,16 @@ export default function Admin() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {analytics?.users.roleDistribution && (
+                      {analytics?.users?.roleDistribution && (
                         <Bar
                           data={{
                             labels: ["Администраторы", "Модераторы", "Пользователи"],
                             datasets: [
                               {
                                 data: [
-                                  analytics.users.roleDistribution.admin,
-                                  analytics.users.roleDistribution.moderator,
-                                  analytics.users.roleDistribution.user,
+                                  analytics.users.roleDistribution.admin || 0,
+                                  analytics.users.roleDistribution.moderator || 0,
+                                  analytics.users.roleDistribution.user || 0,
                                 ],
                                 backgroundColor: [
                                   "rgba(239, 68, 68, 0.8)",
@@ -1054,18 +1054,18 @@ export default function Admin() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {analytics?.products.byCategory && (
+                      {analytics?.products?.byCategory && Object.keys(analytics.products.byCategory).length > 0 && (
                         <Bar
                           data={{
                             labels: Object.keys(analytics.products.byCategory).map(
-                              (key) => categories.find((c: Category) => c.name === key)?.displayName || key
+                              (key) => categories?.find((c: Category) => c.name === key)?.displayName || key
                             ),
                             datasets: [
                               {
-                                data: Object.values(analytics.products.byCategory),
+                                data: Object.values(analytics.products.byCategory).map(value => value || 0),
                                 backgroundColor: Object.keys(analytics.products.byCategory).map(
                                   (key) => {
-                                    const category = categories.find((c: Category) => c.name === key);
+                                    const category = categories?.find((c: Category) => c.name === key);
                                     return `rgba(${category?.color || "148, 163, 184"}, 0.8)`;
                                   }
                                 ),

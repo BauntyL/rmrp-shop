@@ -92,6 +92,7 @@ export const messages = pgTable("messages", {
   content: text("content").notNull(),
   isModerated: boolean("is_moderated").default(false),
   moderatorId: integer("moderator_id"),
+  readAt: timestamp("read_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -253,5 +254,20 @@ export type Favorite = typeof favorites.$inferSelect;
 export type InsertFavorite = z.infer<typeof insertFavoriteSchema>;
 export type Conversation = typeof conversations.$inferSelect;
 export type InsertConversation = z.infer<typeof insertConversationSchema>;
-export type Message = typeof messages.$inferSelect;
+export type Message = typeof messages.$inferSelect & {
+  user?: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    profileImageUrl?: string | null;
+    username: string;
+  } | null;
+  conversation?: {
+    id: number;
+    user1Id: number;
+    user2Id: number;
+    productId: number | null;
+    product?: any | null;
+  } | null;
+};
 export type InsertMessage = z.infer<typeof insertMessageSchema>;

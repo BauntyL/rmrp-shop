@@ -63,6 +63,7 @@ model Message {
   id             Int          @id @default(autoincrement())
   content        String
   createdAt      DateTime     @default(now())
+  readAt         DateTime?
   isModerated    Boolean      @default(false)
   userId         Int
   user           User         @relation(fields: [userId], references: [id])

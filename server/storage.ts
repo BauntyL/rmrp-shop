@@ -992,27 +992,48 @@ export class DatabaseStorage implements IStorage {
           user2Id: conversations.user2Id,
           productId: conversations.productId,
           product: sql<any>`(
-            select json_build_object(
-              'title', p.title,
-              'description', p.description,
-              'price', p.price,
-              'images', p.images,
-              'status', p.status,
-              'category', json_build_object(
-                'displayName', c.display_name,
-                'color', c.color,
-                'name', c.name
-              ),
-              'server', json_build_object(
-                'displayName', s.display_name,
-                'name', s.name
-              )
+            with product_data as (
+              select 
+                p.id,
+                p.title,
+                p.description,
+                p.price,
+                p.images,
+                p.status,
+                c.display_name as category_display_name,
+                c.color as category_color,
+                c.name as category_name,
+                s.display_name as server_display_name,
+                s.name as server_name
+              from ${products} p
+              left join ${categories} c on c.id = p.category_id
+              left join ${servers} s on s.id = p.server_id
+              where p.id = ${conversations.productId}
             )
-            from ${products} p
-            left join ${categories} c on c.id = p.category_id
-            left join ${servers} s on s.id = p.server_id
-            where p.id = ${conversations.productId}
-          )`,
+            select 
+              case 
+                when exists (select 1 from product_data pd where pd.id is not null) then
+                  json_build_object(
+                    'id', pd.id,
+                    'title', pd.title,
+                    'description', pd.description,
+                    'price', pd.price,
+                    'images', pd.images,
+                    'status', pd.status,
+                    'category', json_build_object(
+                      'displayName', pd.category_display_name,
+                      'color', pd.category_color,
+                      'name', pd.category_name
+                    ),
+                    'server', json_build_object(
+                      'displayName', pd.server_display_name,
+                      'name', pd.server_name
+                    )
+                  )
+                else null::json
+              end
+            from product_data pd
+          )`
         },
       })
       .from(messages)
@@ -1089,7 +1110,7 @@ export class DatabaseStorage implements IStorage {
               )
               select 
                 case 
-                  when exists (select 1 from product_data) then
+                  when exists (select 1 from product_data pd where pd.id is not null) then
                     json_build_object(
                       'id', pd.id,
                       'title', pd.title,
@@ -1107,10 +1128,10 @@ export class DatabaseStorage implements IStorage {
                         'name', pd.server_name
                       )
                     )
-                  else null
+                  else null::json
                 end
               from product_data pd
-            )`,
+            )`
           },
         })
         .from(messages)

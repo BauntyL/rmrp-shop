@@ -1076,7 +1076,6 @@ export class DatabaseStorage implements IStorage {
           moderatorId: messages.moderatorId,
           senderId: messages.senderId,
           conversationId: messages.conversationId,
-          readAt: messages.readAt,
           user: {
             id: users.id,
             firstName: users.firstName,
@@ -1162,8 +1161,7 @@ export class DatabaseStorage implements IStorage {
             eq(conversations.user1Id, userId),
             eq(conversations.user2Id, userId)
           ),
-          ne(messages.senderId, userId),
-          isNull(messages.readAt)
+          ne(messages.senderId, userId)
         )
       );
     
@@ -1171,16 +1169,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async markMessagesAsRead(conversationId: number, userId: number): Promise<void> {
-    await db
-      .update(messages)
-      .set({ readAt: new Date() })
-      .where(
-        and(
-          eq(messages.conversationId, conversationId),
-          ne(messages.senderId, userId),
-          isNull(messages.readAt)
-        )
-      );
+    // Временно отключаем эту функциональность
+    return;
   }
 
   async getConversationsWithUnreadCount(userId: number): Promise<any[]> {
@@ -1192,7 +1182,7 @@ export class DatabaseStorage implements IStorage {
         productId: conversations.productId,
         createdAt: conversations.createdAt,
         updatedAt: conversations.updatedAt,
-        unreadCount: sql<number>`count(case when ${messages.senderId} != ${userId} and ${messages.readAt} is null then 1 end)`,
+        unreadCount: sql<number>`count(case when ${messages.senderId} != ${userId} then 1 end)`,
         lastMessage: sql<string>`(
           select content 
           from ${messages} m2 

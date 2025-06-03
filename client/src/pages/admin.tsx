@@ -892,7 +892,7 @@ export default function Admin() {
                             </div>
                             <p className="text-slate-300 mb-4">{message.content}</p>
                             {message.conversation?.product && (
-                              <div className="flex items-center gap-2 mb-4">
+                              <div className="flex items-center gap-2 mb-4 bg-slate-800/50 p-2 rounded">
                                 <Package className="h-4 w-4 text-slate-400" />
                                 <span className="text-sm text-slate-400">
                                   В обсуждении объявления "{message.conversation.product.title}"

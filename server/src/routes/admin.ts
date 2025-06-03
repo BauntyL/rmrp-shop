@@ -182,34 +182,53 @@ router.patch("/products/:id/status", async (req, res) => {
 
 // Получение сообщений на модерации
 router.get("/messages/pending", async (req, res) => {
-  const messages = await prisma.message.findMany({
-    where: {
-      isModerated: false,
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          profileImageUrl: true,
-        },
+  try {
+    console.log('🔍 Fetching pending messages...');
+    
+    const messages = await prisma.message.findMany({
+      where: {
+        isModerated: false,
       },
-      conversation: {
-        include: {
-          product: {
-            select: {
-              id: true,
-              title: true,
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            profileImageUrl: true,
+            username: true,
+          },
+        },
+        conversation: {
+          include: {
+            product: {
+              include: {
+                category: true,
+                server: true,
+              },
             },
           },
         },
       },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+      orderBy: { createdAt: "asc" },
+    });
 
-  res.json(messages);
+    console.log(`✅ Found ${messages.length} pending messages`);
+    
+    // Преобразуем данные для безопасной обработки null значений
+    const safeMessages = messages.map(message => ({
+      ...message,
+      conversation: message.conversation ? {
+        ...message.conversation,
+        product: message.conversation.product || null
+      } : null
+    }));
+
+    res.json(safeMessages);
+  } catch (error) {
+    console.error('❌ Error fetching pending messages:', error);
+    res.status(500).json({ error: 'Failed to fetch pending messages' });
+  }
 });
 
 // Модерация сообщения

@@ -223,7 +223,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const messages = await storage.getPendingMessages();
       res.json(messages);
     } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch pending messages' });
+      console.error('Error in /api/admin/messages/pending:', error);
+      res.status(500).json({ message: 'Failed to fetch pending messages', error: error.message });
     }
   });
 
@@ -391,7 +392,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const messages = await storage.getPendingMessages();
       res.json(messages);
     } catch (error) {
-      res.status(500).json({ message: 'Failed to fetch pending messages' });
+      console.error('Error in /api/admin/messages/pending:', error);
+      res.status(500).json({ message: 'Failed to fetch pending messages', error: error.message });
     }
   });
 

@@ -1067,23 +1067,25 @@ export class DatabaseStorage implements IStorage {
           user2Id: conversations.user2Id,
           productId: conversations.productId,
           product: sql<any>`(
-            select json_build_object(
-              'id', p.id,
-              'title', p.title,
-              'description', p.description,
-              'price', p.price,
-              'images', p.images,
-              'status', p.status,
-              'category', json_build_object(
-                'displayName', c.display_name,
-                'color', c.color,
-                'name', c.name
-              ),
-              'server', json_build_object(
-                'displayName', s.display_name,
-                'name', s.name
+            select case when p.id is not null then
+              json_build_object(
+                'id', p.id,
+                'title', p.title,
+                'description', p.description,
+                'price', p.price,
+                'images', p.images,
+                'status', p.status,
+                'category', json_build_object(
+                  'displayName', c.display_name,
+                  'color', c.color,
+                  'name', c.name
+                ),
+                'server', json_build_object(
+                  'displayName', s.display_name,
+                  'name', s.name
+                )
               )
-            )
+            else null end
             from ${products} p
             left join ${categories} c on c.id = p.category_id
             left join ${servers} s on s.id = p.server_id

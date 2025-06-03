@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
@@ -23,22 +23,38 @@ export const RealEstateStep1: React.FC<RealEstateStep1Props> = ({
     price: data.price || ''
   });
 
+  useEffect(() => {
+    // При инициализации проверяем валидность данных
+    validateAndUpdate(formData);
+  }, []);
+
+  const validateAndUpdate = (newData: any) => {
+    // Преобразуем данные в правильный формат
+    const processedData = {
+      serverId: newData.serverId ? Number(newData.serverId) : null,
+      title: newData.title?.trim() || '',
+      price: newData.price ? Number(newData.price) : null,
+      subcategoryId: 1 // Фиксированное значение
+    };
+
+    // Проверяем валидность
+    const isValid = 
+      processedData.serverId !== null && 
+      processedData.title.length > 0 && 
+      processedData.price !== null && 
+      processedData.price > 0;
+
+    // Обновляем состояние родительского компонента
+    onDataChange(processedData);
+    onValidationChange(isValid);
+
+    return processedData;
+  };
+
   const updateData = (field: string, value: any) => {
     const newData = { ...formData, [field]: value };
     setFormData(newData);
-    onDataChange({
-      ...newData,
-      subcategoryId: 1, // Устанавливаем фиксированное значение для subcategoryId
-      price: field === 'price' ? Number(value) || 0 : newData.price // Преобразуем цену в число
-    });
-    
-    // Валидация: все поля обязательны
-    const isValid = 
-      Boolean(newData.serverId) && 
-      newData.title.trim().length > 0 && 
-      Number(newData.price) > 0;
-    
-    onValidationChange(isValid);
+    validateAndUpdate(newData);
   };
 
   return (
@@ -87,7 +103,12 @@ export const RealEstateStep1: React.FC<RealEstateStep1Props> = ({
         </div>
 
         <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="price" className="text-slate-300">Цена *</Label>
+          <Label htmlFor="price" className="text-slate-300">
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4" />
+              <span>Цена *</span>
+            </div>
+          </Label>
           <Input
             id="price"
             type="number"

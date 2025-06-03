@@ -1,4 +1,4 @@
-import React, { useState, ReactNode } from 'react';
+import React, { useState, ReactNode, cloneElement, isValidElement } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Check, Sparkles } from 'lucide-react';
@@ -63,7 +63,7 @@ interface StepWizardProps<T = any> {
 }
 
 export default function StepWizard<T>({ 
-  steps, 
+  steps: initialSteps, 
   onComplete, 
   onCancel, 
   isLoading,
@@ -74,13 +74,38 @@ export default function StepWizard<T>({
 }: StepWizardProps<T>) {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<Partial<T>>(defaultValues);
+  const [isStepValid, setIsStepValid] = useState(false);
   
   const config = categoryConfig[category];
+
+  // Создаем копии компонентов с актуальными данными и обработчиками
+  const steps = initialSteps.map((step) => ({
+    ...step,
+    component: isValidElement(step.component)
+      ? cloneElement(step.component, {
+          data: formData,
+          onDataChange: (newData: Partial<T>) => {
+            console.log('Step data update:', newData);
+            setFormData((prev) => ({
+              ...prev,
+              ...newData,
+            }));
+          },
+          onValidationChange: (isValid: boolean) => {
+            console.log('Step validation:', isValid);
+            setIsStepValid(isValid);
+          },
+          ...additionalProps,
+        })
+      : step.component,
+  }));
 
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
+      setIsStepValid(false);
     } else {
+      console.log('Final form data:', formData);
       onComplete(formData as T);
     }
   };
@@ -88,6 +113,7 @@ export default function StepWizard<T>({
   const prevStep = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
+      setIsStepValid(false);
     }
   };
 
@@ -199,19 +225,15 @@ export default function StepWizard<T>({
                     ? 'bg-green-500/80 text-white backdrop-blur-sm'
                     : 'bg-white/10 text-white/50 backdrop-blur-sm hover:bg-white/20'
                 )}
-                onClick={() => setCurrentStep(index)}
               >
                 {index < currentStep ? (
-                  <Check className="w-6 h-6" />
+                  <Check className="w-5 h-5" />
                 ) : (
                   index + 1
                 )}
               </div>
               {index < steps.length - 1 && (
-                <div className={cn(
-                  'w-12 h-1 mx-2 rounded-full transition-all duration-300',
-                  index < currentStep ? cn('bg-gradient-to-r', config.gradient) : 'bg-white/20'
-                )} />
+                <div className="w-8 h-0.5 bg-white/20" />
               )}
             </motion.div>
           ))}
@@ -219,56 +241,50 @@ export default function StepWizard<T>({
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex-1 overflow-hidden">
+      <div className="relative flex-1 p-6 overflow-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="h-full p-6 bg-white/5 backdrop-blur-sm"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.2 }}
+            className="h-full"
           >
-            {React.cloneElement(steps[currentStep].component as React.ReactElement, {
-              data: formData,
-              onDataChange: setFormData,
-              onValidationChange: (isValid: boolean) => {
-                // Handle validation
-              }
-            })}
+            {steps[currentStep].component}
           </motion.div>
         </AnimatePresence>
       </div>
 
       {/* Footer */}
-      <div className="relative z-10 p-6 bg-white/5 backdrop-blur-sm border-t border-white/10">
+      <div className="relative p-6 border-t border-white/10">
         <div className="flex justify-between">
           <Button
             variant="outline"
-            onClick={prevStep}
-            disabled={currentStep === 0}
-            className="border-white/20 text-white bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all duration-200"
+            onClick={currentStep === 0 ? onCancel : prevStep}
+            className="bg-white/5 border-white/10 text-white hover:bg-white/10"
           >
-            <ChevronLeft className="w-5 h-5 mr-2" />
-            Назад
+            {currentStep === 0 ? 'Отмена' : (
+              <>
+                <ChevronLeft className="w-4 h-4 mr-2" />
+                Назад
+              </>
+            )}
           </Button>
-          
           <Button
             onClick={nextStep}
+            disabled={!isStepValid}
             className={cn(
-              'bg-gradient-to-r text-white font-semibold px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105',
-              config.gradient
+              'text-white',
+              isStepValid ? cn('bg-gradient-to-r shadow-lg', config.gradient) : 'bg-white/10'
             )}
           >
             {currentStep === steps.length - 1 ? (
-              <>
-                <Sparkles className="w-5 h-5 mr-2" />
-                Создать объявление
-              </>
+              isLoading ? 'Создание...' : 'Создать'
             ) : (
               <>
                 Далее
-                <ChevronRight className="w-5 h-5 ml-2" />
+                <ChevronRight className="w-4 h-4 ml-2" />
               </>
             )}
           </Button>

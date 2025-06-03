@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -50,6 +50,21 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [formData, setFormData] = useState<Partial<CreateRealEstateFormData>>({
+    categoryId: 2,
+    subcategoryId: 1,
+    metadata: {
+      garageSpaces: 0,
+      warehouses: 0,
+      helipads: 0,
+      income: 0,
+      contacts: {
+        discord: "",
+        telegram: "",
+        phone: "",
+      },
+    },
+  });
 
   const { data: servers = [] } = useQuery<Server[]>({
     queryKey: ["/api/servers"],
@@ -57,11 +72,10 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
 
   const handleComplete = async (data: any) => {
     try {
-      // Объединяем данные со всех шагов
-      const productData = {
+      // Объединяем все данные
+      const finalData = {
+        ...formData,
         ...data,
-        categoryId: 2,
-        subcategoryId: 1,
         // Убедимся, что все обязательные поля присутствуют
         title: data.title?.trim(),
         description: data.description?.trim(),
@@ -69,24 +83,26 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
         serverId: Number(data.serverId),
         // Преобразуем imageUrl в массив images
         images: data.imageUrl ? [data.imageUrl] : [],
-        // Убедимся, что metadata имеет правильную структуру
+        // Обновляем metadata
         metadata: {
+          ...formData.metadata,
           ...data.metadata,
           garageSpaces: Number(data.metadata?.garageSpaces) || 0,
           warehouses: Number(data.metadata?.warehouses) || 0,
           helipads: Number(data.metadata?.helipads) || 0,
           income: Number(data.metadata?.income) || 0,
           contacts: {
-            discord: data.metadata?.contacts?.discord || "",
-            telegram: data.metadata?.contacts?.telegram || "",
-            phone: data.metadata?.contacts?.phone || "",
+            ...formData.metadata?.contacts,
+            ...data.metadata?.contacts,
           },
         },
       };
 
-      console.log('Отправляемые данные:', productData);
+      // Валидируем данные
+      const validatedData = createRealEstateSchema.parse(finalData);
+      console.log('Отправляемые данные:', validatedData);
       
-      const response = await apiRequest("POST", "/api/products", productData);
+      const response = await apiRequest("POST", "/api/products", validatedData);
       await response.json();
       
       toast({
@@ -112,8 +128,11 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
       title: "Основная информация",
       description: "Название, сервер и цена",
       component: <RealEstateStep1 
-        data={{}} 
-        onDataChange={(data) => console.log('Step1 data:', data)} 
+        data={formData} 
+        onDataChange={(data) => {
+          console.log('Step1 data:', data);
+          setFormData((prev) => ({ ...prev, ...data }));
+        }} 
         onValidationChange={(isValid) => console.log('Step1 validation:', isValid)} 
         servers={servers} 
       />,
@@ -124,8 +143,11 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
       title: "Дополнительная информация",
       description: "Гаражные места, склады, вертолетные площадки, доход и описание",
       component: <RealEstateStep2 
-        data={{}} 
-        onDataChange={(data) => console.log('Step2 data:', data)} 
+        data={formData} 
+        onDataChange={(data) => {
+          console.log('Step2 data:', data);
+          setFormData((prev) => ({ ...prev, ...data }));
+        }} 
         onValidationChange={(isValid) => console.log('Step2 validation:', isValid)} 
       />,
       isValid: true
@@ -135,8 +157,18 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
       title: "Изображение и контакты",
       description: "Ссылка на изображение и контактная информация",
       component: <RealEstateStep3 
-        data={{}} 
-        onDataChange={(data) => console.log('Step3 data:', data)} 
+        data={formData} 
+        onDataChange={(data) => {
+          console.log('Step3 data:', data);
+          setFormData((prev) => ({ 
+            ...prev, 
+            imageUrl: data.imageUrl,
+            metadata: {
+              ...prev.metadata,
+              contacts: data.metadata?.contacts
+            }
+          }));
+        }} 
         onValidationChange={(isValid) => console.log('Step3 validation:', isValid)} 
       />,
       isValid: true
@@ -151,6 +183,7 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
           onComplete={handleComplete}
           onCancel={() => onOpenChange(false)}
           category="realestate"
+          defaultValues={formData}
         />
       </DialogContent>
     </Dialog>

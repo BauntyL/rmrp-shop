@@ -1055,6 +1055,7 @@ export class DatabaseStorage implements IStorage {
         conversationId: messages.conversationId,
         readAt: messages.readAt,
         user: {
+          id: users.id,
           firstName: users.firstName,
           lastName: users.lastName,
           profileImageUrl: users.profileImageUrl,
@@ -1067,6 +1068,7 @@ export class DatabaseStorage implements IStorage {
           productId: conversations.productId,
           product: sql<any>`(
             select json_build_object(
+              'id', p.id,
               'title', p.title,
               'description', p.description,
               'price', p.price,

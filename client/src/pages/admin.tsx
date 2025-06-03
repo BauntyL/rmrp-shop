@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { 
   Users, Eye, MessageSquare, BarChart3, CheckCircle, XCircle, Ban, Edit, Shield,
   DollarSign, Calendar, TrendingUp, UserPlus, AlertTriangle, Search, Filter,
-  ArrowUpRight, ArrowDownRight, Activity, Package, ShoppingCart
+  ArrowUpRight, ArrowDownRight, Activity, Package, ShoppingCart, Loader2
 } from "lucide-react";
 import { motion, type Variants, type AnimationProps } from "framer-motion";
 import { Line, Bar } from "react-chartjs-2";
@@ -379,7 +379,8 @@ export default function Admin() {
         title: "Сообщение промодерировано",
         description: "Сообщение помечено как проверенное",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/messages/pending"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/analytics"] });
     },
     onError: () => {
       toast({
@@ -860,44 +861,55 @@ export default function Admin() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
-                    {pendingMessages.map((message) => (
-                      <Card key={message.id} className="bg-slate-700/50 border-slate-600/50">
-                        <CardContent className="p-6">
-                          <div className="flex items-center gap-3 mb-4">
-                            <Avatar>
-                              <AvatarImage src={message.user.profileImageUrl} />
-                              <AvatarFallback>
-                                {getUserInitials(message.user.firstName, message.user.lastName)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium text-white">
-                                {message.user.firstName} {message.user.lastName}
-                              </p>
-                              <p className="text-sm text-slate-400">
-                                {new Date(message.createdAt).toLocaleString()}
-                              </p>
+                    {messagesLoading ? (
+                      <div className="flex items-center justify-center p-8">
+                        <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                      </div>
+                    ) : pendingMessages.length === 0 ? (
+                      <div className="text-center p-8">
+                        <MessageSquare className="h-12 w-12 text-slate-400 mx-auto mb-3" />
+                        <p className="text-slate-300">Нет сообщений для модерации</p>
+                      </div>
+                    ) : (
+                      pendingMessages.map((message) => (
+                        <Card key={message.id} className="bg-slate-700/50 border-slate-600/50">
+                          <CardContent className="p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                              <Avatar>
+                                <AvatarImage src={message.user?.profileImageUrl} />
+                                <AvatarFallback>
+                                  {getUserInitials(message.user?.firstName || '', message.user?.lastName || '')}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium text-white">
+                                  {message.user?.firstName} {message.user?.lastName}
+                                </p>
+                                <p className="text-sm text-slate-400">
+                                  {new Date(message.createdAt).toLocaleString()}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                          <p className="text-slate-300 mb-4">{message.content}</p>
-                          {message.conversation.product && (
-                            <div className="flex items-center gap-2 mb-4">
-                              <Package className="h-4 w-4 text-slate-400" />
-                              <span className="text-sm text-slate-400">
-                                В обсуждении объявления "{message.conversation.product.title}"
-                              </span>
-                            </div>
-                          )}
-                          <Button
-                            onClick={() => moderateMessageMutation.mutate(message.id)}
-                            className="w-full bg-blue-500 hover:bg-blue-600"
-                          >
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Пометить как проверенное
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    ))}
+                            <p className="text-slate-300 mb-4">{message.content}</p>
+                            {message.conversation?.product && (
+                              <div className="flex items-center gap-2 mb-4">
+                                <Package className="h-4 w-4 text-slate-400" />
+                                <span className="text-sm text-slate-400">
+                                  В обсуждении объявления "{message.conversation.product.title}"
+                                </span>
+                              </div>
+                            )}
+                            <Button
+                              onClick={() => moderateMessageMutation.mutate(message.id)}
+                              className="w-full bg-blue-500 hover:bg-blue-600"
+                            >
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Пометить как проверенное
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      ))
+                    )}
                   </div>
                 </CardContent>
               </Card>

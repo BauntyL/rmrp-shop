@@ -1150,7 +1150,7 @@ export class DatabaseStorage implements IStorage {
       // Преобразуем данные для безопасной обработки null значений
       const safeResult = result.map(message => ({
         ...message,
-        readAt: message.readAt || null,
+        readAt: null, // Временно устанавливаем readAt в null
         user: message.user || null,
         conversation: message.conversation ? {
           ...message.conversation,

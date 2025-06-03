@@ -185,19 +185,7 @@ router.get("/messages/pending", async (req, res) => {
   try {
     console.log('🔍 Fetching pending messages...');
     
-    // Сначала получим только сообщения без связей для проверки
-    const baseMessages = await prisma.message.findMany({
-      where: {
-        isModerated: false,
-      },
-      select: {
-        id: true,
-      },
-    });
-    
-    console.log(`📝 Found ${baseMessages.length} base messages`);
-
-    // Теперь получим полные данные
+    // Получаем сообщения без модерации
     const messages = await prisma.message.findMany({
       where: {
         isModerated: false,
@@ -246,7 +234,7 @@ router.get("/messages/pending", async (req, res) => {
       orderBy: { createdAt: "asc" },
     });
 
-    console.log('📊 Full messages data structure:', JSON.stringify(messages[0], null, 2));
+    console.log(`📝 Found ${messages.length} pending messages`);
 
     // Преобразуем данные для безопасной обработки null значений
     const safeMessages = messages.map(message => ({
@@ -260,8 +248,6 @@ router.get("/messages/pending", async (req, res) => {
         product: message.conversation.product || null,
       } : null,
     }));
-
-    console.log('✅ Transformed messages:', JSON.stringify(safeMessages[0], null, 2));
 
     res.json(safeMessages);
   } catch (error) {

@@ -14,8 +14,8 @@ export async function apiRequest(
 ): Promise<Response> {
   const token = localStorage.getItem("token");
   
-  // Добавляем базовый URL для API запросов
-  const baseUrl = "https://autocatalog-production.up.railway.app";
+  // Используем переменную окружения для API URL или localhost как fallback
+  const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
   const apiUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
   
   console.log('Making API request to:', apiUrl, 'with data:', data);
@@ -43,8 +43,8 @@ export const getQueryFn: <T>(options: {
     
     let url = queryKey[0] as string;
     
-    // Добавляем базовый URL для API запросов
-    const baseUrl = "https://autocatalog-production.up.railway.app";
+    // Используем переменную окружения для API URL или localhost как fallback
+    const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
     const apiUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
     
     // Добавляем параметры запроса, если они есть

@@ -11,6 +11,7 @@ router.use(isAuthenticated, isAdmin);
 // Получение списка пользователей с фильтрами
 router.get("/users", async (req, res) => {
   const { search, role, status } = req.query;
+  console.log('Query params:', { search, role, status });
 
   const where: any = {};
 
@@ -33,35 +34,46 @@ router.get("/users", async (req, res) => {
     where.isBanned = false;
   }
 
-  const users = await prisma.user.findMany({
-    where,
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      username: true,
-      role: true,
-      isBanned: true,
-      banReason: true,
-      createdAt: true,
-      lastLoginAt: true,
-      profileImageUrl: true,
-      _count: {
-        select: {
-          products: true,
-          messages: true,
+  console.log('Prisma where clause:', where);
+
+  try {
+    const users = await prisma.user.findMany({
+      where,
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        username: true,
+        role: true,
+        isBanned: true,
+        banReason: true,
+        createdAt: true,
+        lastLoginAt: true,
+        profileImageUrl: true,
+        _count: {
+          select: {
+            products: true,
+            messages: true,
+          },
         },
       },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+      orderBy: { createdAt: "desc" },
+    });
 
-  res.json(users.map(user => ({
-    ...user,
-    productsCount: user._count.products,
-    messagesCount: user._count.messages,
-  })));
+    console.log('Found users:', users.length);
+
+    const response = users.map(user => ({
+      ...user,
+      productsCount: user._count.products,
+      messagesCount: user._count.messages,
+    }));
+
+    res.json(response);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
 });
 
 // Обновление роли пользователя

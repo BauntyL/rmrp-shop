@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Eye, Edit, Trash2, Package } from "lucide-react";
 import { motion, type Variants, type AnimationProps } from "framer-motion";
+import type { ProductWithDetails } from "@/lib/types";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -62,7 +63,7 @@ export default function MyProducts() {
   const queryClient = useQueryClient();
   const [showCreateListing, setShowCreateListing] = useState(false);
   
-  const { data: products = [], isLoading } = useQuery({
+  const { data: products = [], isLoading } = useQuery<ProductWithDetails[]>({
     queryKey: ["/api/my-products"],
     enabled: isAuthenticated,
   });
@@ -162,7 +163,7 @@ export default function MyProducts() {
 
   const filterProductsByStatus = (status?: string) => {
     if (!status) return products;
-    return products.filter((product: any) => product.status === status);
+    return products.filter((product: ProductWithDetails) => product.status === status);
   };
 
   const formatPrice = (price: number) => {
@@ -178,7 +179,7 @@ export default function MyProducts() {
   const approvedProducts = filterProductsByStatus("approved");
   const rejectedProducts = filterProductsByStatus("rejected");
 
-  const ProductCard = ({ product }: { product: any }) => (
+  const ProductCard = ({ product }: { product: ProductWithDetails }) => (
     <Card className="overflow-hidden bg-slate-800/50 backdrop-blur-lg border-slate-700/50 shadow-xl group">
       <div className="relative overflow-hidden">
         <motion.img 
@@ -245,14 +246,14 @@ export default function MyProducts() {
           </motion.div>
         </div>
 
-        {product.status === "rejected" && product.moderatorNote && (
+        {product.status === "rejected" && (product as any).moderatorNote && (
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="mt-3 p-2 bg-red-900/20 backdrop-blur-sm border border-red-700/50 rounded-lg"
           >
             <p className="text-sm text-red-200">
-              <strong>Причина отклонения:</strong> {product.moderatorNote}
+              <strong>Причина отклонения:</strong> {(product as any).moderatorNote}
             </p>
           </motion.div>
         )}
@@ -291,25 +292,8 @@ export default function MyProducts() {
             Управляйте вашими объявлениями
           </motion.p>
         </motion.div>
-        
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="mb-8"
-        >
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button 
-              onClick={() => setShowCreateListing(true)} 
-              className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-green-600 hover:to-emerald-500 text-white px-6 py-3 rounded-xl"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Добавить товар
-            </Button>
-          </motion.div>
-        </motion.div>
 
-        <motion.div
+        <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.3 }}
@@ -367,25 +351,9 @@ export default function MyProducts() {
                   <h3 className="text-2xl font-semibold text-white mb-2">
                     У вас еще нет товаров
                   </h3>
-                  <p className="text-slate-300 text-lg mb-8">
+                  <p className="text-slate-300 text-lg">
                     Перейдите в нужную категорию для создания объявления
                   </p>
-                  <motion.div 
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="flex flex-wrap justify-center gap-4"
-                  >
-                    <motion.div variants={itemVariants} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                      <Button 
-                        onClick={() => setShowCreateListing(true)} 
-                        className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-green-600 hover:to-emerald-500 text-white px-6 py-3 rounded-xl"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Добавить товар
-                      </Button>
-                    </motion.div>
-                  </motion.div>
                 </motion.div>
               ) : (
                 <motion.div 
@@ -394,7 +362,7 @@ export default function MyProducts() {
                   animate="visible"
                   className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
                 >
-                  {products.map((product: any) => (
+                  {products.map((product: ProductWithDetails) => (
                     <motion.div
                       key={product.id}
                       variants={itemVariants}
@@ -414,7 +382,7 @@ export default function MyProducts() {
                 animate="visible"
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
               >
-                {pendingProducts.map((product: any) => (
+                {pendingProducts.map((product: ProductWithDetails) => (
                   <motion.div
                     key={product.id}
                     variants={itemVariants}
@@ -433,7 +401,7 @@ export default function MyProducts() {
                 animate="visible"
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
               >
-                {approvedProducts.map((product: any) => (
+                {approvedProducts.map((product: ProductWithDetails) => (
                   <motion.div
                     key={product.id}
                     variants={itemVariants}
@@ -452,7 +420,7 @@ export default function MyProducts() {
                 animate="visible"
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
               >
-                {rejectedProducts.map((product: any) => (
+                {rejectedProducts.map((product: ProductWithDetails) => (
                   <motion.div
                     key={product.id}
                     variants={itemVariants}
@@ -468,13 +436,6 @@ export default function MyProducts() {
       </div>
 
       <Footer />
-
-      {showCreateListing && (
-        <CreateListingModal
-          open={showCreateListing}
-          onOpenChange={setShowCreateListing}
-        />
-      )}
     </div>
   );
 }

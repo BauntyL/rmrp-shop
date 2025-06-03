@@ -39,31 +39,23 @@ export default function TreasureStep1({ data, onDataChange, onValidationChange, 
   };
 
   return (
-    <div className="space-y-4"> {/* Уменьшил с space-y-6 до space-y-4 */}
-      <div className="text-center mb-4"> {/* Уменьшил с mb-6 до mb-4 */}
+    <div className="space-y-4">
+      <div className="text-center mb-4">
         <h3 className="text-lg font-semibold text-amber-400 mb-2">Основная информация</h3>
         <p className="text-slate-400">Расскажите о вашем сокровище</p>
       </div>
 
-      <div className="space-y-3"> {/* Уменьшил с space-y-4 до space-y-3 */}
+      <div className="space-y-3">
         <div className="space-y-2">
           <Label htmlFor="treasureType" className="text-slate-300">Тип сокровища *</Label>
-          <Select value={formData.treasureType} onValueChange={(value) => updateData('treasureType', value)}>
-            <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-              <SelectValue placeholder="Выберите тип сокровища" />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-slate-600">
-              <SelectItem value="weapon" className="text-white hover:bg-slate-700">Оружие</SelectItem>
-              <SelectItem value="armor" className="text-white hover:bg-slate-700">Броня</SelectItem>
-              <SelectItem value="jewelry" className="text-white hover:bg-slate-700">Украшения</SelectItem>
-              <SelectItem value="artifact" className="text-white hover:bg-slate-700">Артефакт</SelectItem>
-              <SelectItem value="scroll" className="text-white hover:bg-slate-700">Свиток</SelectItem>
-              <SelectItem value="potion" className="text-white hover:bg-slate-700">Зелье</SelectItem>
-              <SelectItem value="gem" className="text-white hover:bg-slate-700">Драгоценный камень</SelectItem>
-              <SelectItem value="relic" className="text-white hover:bg-slate-700">Реликвия</SelectItem>
-              <SelectItem value="other" className="text-white hover:bg-slate-700">Другое</SelectItem>
-            </SelectContent>
-          </Select>
+          <Input
+            id="treasureType"
+            type="text"
+            value={formData.treasureType}
+            onChange={(e) => updateData('treasureType', e.target.value)}
+            placeholder="Например: Оружие, Броня, Украшения, Артефакт и т.д."
+            className="bg-slate-800 border-slate-600 text-white"
+          />
         </div>
 
         <div className="space-y-2">
@@ -125,4 +117,4 @@ export default function TreasureStep1({ data, onDataChange, onValidationChange, 
       </div>
     </div>
   );
-}
+} 

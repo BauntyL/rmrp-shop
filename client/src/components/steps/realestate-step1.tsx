@@ -18,7 +18,7 @@ export const RealEstateStep1: React.FC<RealEstateStep1Props> = ({
   servers = []
 }) => {
   const [formData, setFormData] = useState({
-    serverId: data.serverId || 0,
+    serverId: data.serverId || '',
     title: data.title || '',
     price: data.price || ''
   });
@@ -28,14 +28,16 @@ export const RealEstateStep1: React.FC<RealEstateStep1Props> = ({
     setFormData(newData);
     onDataChange({
       ...newData,
-      subcategoryId: 1 // Устанавливаем фиксированное значение для subcategoryId
+      subcategoryId: 1, // Устанавливаем фиксированное значение для subcategoryId
+      price: field === 'price' ? Number(value) || 0 : newData.price // Преобразуем цену в число
     });
     
     // Валидация: все поля обязательны
-    const isValid = newData.serverId > 0 && 
-                   newData.title.trim() !== '' && 
-                   newData.price.trim() !== '' && 
-                   parseFloat(newData.price) > 0;
+    const isValid = 
+      Boolean(newData.serverId) && 
+      newData.title.trim().length > 0 && 
+      Number(newData.price) > 0;
+    
     onValidationChange(isValid);
   };
 
@@ -91,8 +93,9 @@ export const RealEstateStep1: React.FC<RealEstateStep1Props> = ({
             type="number"
             min="0"
             value={formData.price}
-            onChange={(e) => updateData('price', parseInt(e.target.value) || 0)}
+            onChange={(e) => updateData('price', e.target.value)}
             className="bg-slate-800 border-slate-600 text-white"
+            placeholder="Введите цену"
           />
         </div>
       </div>

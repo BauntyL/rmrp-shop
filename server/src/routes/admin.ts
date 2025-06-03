@@ -185,11 +185,28 @@ router.get("/messages/pending", async (req, res) => {
   try {
     console.log('🔍 Fetching pending messages...');
     
+    // Сначала получим только сообщения без связей для проверки
+    const baseMessages = await prisma.message.findMany({
+      where: {
+        isModerated: false,
+      },
+      select: {
+        id: true,
+      },
+    });
+    
+    console.log(`📝 Found ${baseMessages.length} base messages`);
+
+    // Теперь получим полные данные
     const messages = await prisma.message.findMany({
       where: {
         isModerated: false,
       },
-      include: {
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        isModerated: true,
         user: {
           select: {
             id: true,
@@ -200,11 +217,27 @@ router.get("/messages/pending", async (req, res) => {
           },
         },
         conversation: {
-          include: {
+          select: {
+            id: true,
             product: {
-              include: {
-                category: true,
-                server: true,
+              select: {
+                id: true,
+                title: true,
+                description: true,
+                category: {
+                  select: {
+                    id: true,
+                    name: true,
+                    displayName: true,
+                  },
+                },
+                server: {
+                  select: {
+                    id: true,
+                    name: true,
+                    displayName: true,
+                  },
+                },
               },
             },
           },
@@ -213,21 +246,30 @@ router.get("/messages/pending", async (req, res) => {
       orderBy: { createdAt: "asc" },
     });
 
-    console.log(`✅ Found ${messages.length} pending messages`);
-    
+    console.log('📊 Full messages data structure:', JSON.stringify(messages[0], null, 2));
+
     // Преобразуем данные для безопасной обработки null значений
     const safeMessages = messages.map(message => ({
-      ...message,
+      id: message.id,
+      content: message.content,
+      createdAt: message.createdAt,
+      isModerated: message.isModerated,
+      user: message.user || null,
       conversation: message.conversation ? {
-        ...message.conversation,
-        product: message.conversation.product || null
-      } : null
+        id: message.conversation.id,
+        product: message.conversation.product || null,
+      } : null,
     }));
+
+    console.log('✅ Transformed messages:', JSON.stringify(safeMessages[0], null, 2));
 
     res.json(safeMessages);
   } catch (error) {
-    console.error('❌ Error fetching pending messages:', error);
-    res.status(500).json({ error: 'Failed to fetch pending messages' });
+    console.error('❌ Error in /messages/pending:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch pending messages',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 

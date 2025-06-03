@@ -9,38 +9,30 @@ interface RealEstateStep1Props {
   onDataChange: (data: any) => void;
   onValidationChange: (isValid: boolean) => void;
   servers?: any[];
-  subcategories?: any[];
 }
 
 export const RealEstateStep1: React.FC<RealEstateStep1Props> = ({ 
   data, 
   onDataChange, 
   onValidationChange, 
-  servers = [],
-  subcategories = []
+  servers = []
 }) => {
   const [formData, setFormData] = useState({
-    subcategoryId: data.subcategoryId || 0,
     serverId: data.serverId || 0,
     title: data.title || '',
     price: data.price || ''
   });
 
-  const realEstateSubcategories = [
-    { id: 1, name: "Квартира" },
-    { id: 2, name: "Дом" },
-    { id: 3, name: "Бизнес" },
-    { id: 4, name: "Склад" }
-  ];
-
   const updateData = (field: string, value: any) => {
     const newData = { ...formData, [field]: value };
     setFormData(newData);
-    onDataChange(newData);
+    onDataChange({
+      ...newData,
+      subcategoryId: 1 // Устанавливаем фиксированное значение для subcategoryId
+    });
     
     // Валидация: все поля обязательны
-    const isValid = newData.subcategoryId > 0 && 
-                   newData.serverId > 0 && 
+    const isValid = newData.serverId > 0 && 
                    newData.title.trim() !== '' && 
                    newData.price.trim() !== '' && 
                    parseFloat(newData.price) > 0;
@@ -52,33 +44,21 @@ export const RealEstateStep1: React.FC<RealEstateStep1Props> = ({
       <div className="text-center mb-6">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Home className="w-5 h-5 text-blue-400" />
-          <h3 className="text-lg font-semibold text-white">Тип и характеристики</h3>
+          <h3 className="text-lg font-semibold text-white">Основная информация</h3>
         </div>
-        <p className="text-white/80 text-sm">Основная информация о недвижимости</p>
+        <p className="text-white/80 text-sm">Укажите основные параметры объявления</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="subcategory" className="text-slate-300">Тип недвижимости *</Label>
-          <Select
-            value={formData.subcategoryId?.toString()}
-            onValueChange={(value) => updateData('subcategoryId', parseInt(value))}
-          >
-            <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-              <SelectValue placeholder="Выберите тип" />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-slate-600">
-              {subcategories?.map((subcategory) => (
-                <SelectItem 
-                  key={subcategory.id} 
-                  value={subcategory.id.toString()}
-                  className="text-white hover:bg-slate-700"
-                >
-                  {subcategory.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Label htmlFor="title" className="text-slate-300">Название *</Label>
+          <Input
+            id="title"
+            value={formData.title}
+            onChange={(e) => updateData('title', e.target.value)}
+            className="bg-slate-800 border-slate-600 text-white"
+            placeholder="Например: 3-комнатная квартира в центре города"
+          />
         </div>
 
         <div className="space-y-2">
@@ -104,18 +84,7 @@ export const RealEstateStep1: React.FC<RealEstateStep1Props> = ({
           </Select>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="title" className="text-slate-300">Название *</Label>
-          <Input
-            id="title"
-            value={formData.title}
-            onChange={(e) => updateData('title', e.target.value)}
-            className="bg-slate-800 border-slate-600 text-white"
-            placeholder="Введите название"
-          />
-        </div>
-
-        <div className="space-y-2">
+        <div className="space-y-2 md:col-span-2">
           <Label htmlFor="price" className="text-slate-300">Цена *</Label>
           <Input
             id="price"

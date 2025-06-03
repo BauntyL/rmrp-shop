@@ -15,7 +15,7 @@ const createRealEstateSchema = z.object({
   description: z.string().optional(),
   price: z.coerce.number().min(1, "Цена должна быть больше 0"),
   categoryId: z.literal(2),
-  subcategoryId: z.coerce.number().min(1, "Выберите тип недвижимости"),
+  subcategoryId: z.coerce.number().min(1, "Тип недвижимости не определен"),
   serverId: z.coerce.number().min(1, "Выберите сервер"),
   imageUrl: z.string().url("Введите корректную ссылку на изображение").optional().or(z.literal("")),
   metadata: z.object({
@@ -41,16 +41,17 @@ interface CreateRealEstateModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+interface Server {
+  id: number;
+  name: string;
+}
+
 export default function CreateRealEstateModal({ open, onOpenChange }: CreateRealEstateModalProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: subcategories = [] } = useQuery({
-    queryKey: ["/api/categories", { parentId: 2 }],
-  });
-
-  const { data: servers = [] } = useQuery({
+  const { data: servers = [] } = useQuery<Server[]>({
     queryKey: ["/api/servers"],
   });
 
@@ -59,6 +60,7 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
       const productData = {
         ...data,
         categoryId: 2,
+        subcategoryId: 1, // Устанавливаем фиксированное значение для subcategoryId
         images: data.imageUrl ? [data.imageUrl] : [],
       };
       
@@ -84,9 +86,9 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
   const steps = [
     {
       id: "step1",
-      title: "Тип и характеристики",
-      description: "Тип недвижимости, сервер, название и цена",
-      component: <RealEstateStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} subcategories={subcategories} />,
+      title: "Основная информация",
+      description: "Название, сервер и цена",
+      component: <RealEstateStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
       isValid: true
     },
     {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, UseQueryOptions } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import Header from "@/components/layout/header";
@@ -32,6 +32,7 @@ import {
   Legend,
   Filler
 } from "chart.js";
+import { Message, Analytics, Category, Server } from "@/types";
 
 ChartJS.register(
   CategoryScale,
@@ -269,29 +270,79 @@ export default function Admin() {
   const { data: pendingMessages = [], isLoading: messagesLoading } = useQuery<Message[]>({
     queryKey: ["/api/admin/messages/pending"],
     enabled: isAuthenticated && hasPermission,
-  });
+    retry: false,
+    onError: (error: Error) => {
+      console.error('Error fetching pending messages:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось загрузить сообщения для модерации",
+        variant: "destructive",
+      });
+    },
+  } as UseQueryOptions<Message[]>);
 
-  const { data: allMessages = [] } = useQuery<Message[]>({
+  const { data: allMessages = [], isLoading: allMessagesLoading } = useQuery<Message[]>({
     queryKey: ["/api/admin/messages"],
     enabled: isAuthenticated && hasPermission,
-  });
+    retry: false,
+    onError: (error: Error) => {
+      console.error('Error fetching all messages:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось загрузить все сообщения",
+        variant: "destructive",
+      });
+    },
+  } as UseQueryOptions<Message[]>);
 
   // Analytics query
-  const { data: analytics, isLoading: analyticsLoading } = useQuery<Analytics>({
+  const { data: analytics = {
+    users: { total: 0, active: 0, banned: 0, newToday: 0, newThisWeek: 0, newThisMonth: 0, roleDistribution: { admin: 0, moderator: 0, user: 0 } },
+    products: { total: 0, pending: 0, approved: 0, rejected: 0, newToday: 0, byCategory: {}, byServer: {} },
+    messages: { total: 0, pending: 0, moderated: 0, newToday: 0 },
+    activity: { dates: [], newUsers: [], newProducts: [], newMessages: [] }
+  }, isLoading: analyticsLoading } = useQuery<Analytics>({
     queryKey: ["/api/admin/analytics", { range: analyticsRange }],
     enabled: isAuthenticated && hasPermission,
-  });
+    retry: false,
+    onError: (error: Error) => {
+      console.error('Error fetching analytics:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось загрузить аналитику",
+        variant: "destructive",
+      });
+    },
+  } as UseQueryOptions<Analytics>);
 
   // Categories and servers queries
-  const { data: categories = [] } = useQuery<Category[]>({
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
     enabled: isAuthenticated && hasPermission,
-  });
+    retry: false,
+    onError: (error: Error) => {
+      console.error('Error fetching categories:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось загрузить категории",
+        variant: "destructive",
+      });
+    },
+  } as UseQueryOptions<Category[]>);
 
-  const { data: servers = [] } = useQuery<Server[]>({
+  const { data: servers = [], isLoading: serversLoading } = useQuery<Server[]>({
     queryKey: ["/api/servers"],
     enabled: isAuthenticated && hasPermission,
-  });
+    retry: false,
+    onError: (error: Error) => {
+      console.error('Error fetching servers:', error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось загрузить серверы",
+        variant: "destructive",
+      });
+    },
+  } as UseQueryOptions<Server[]>);
 
   // User mutations
   const updateUserRoleMutation = useMutation({
@@ -887,36 +938,36 @@ export default function Admin() {
                       <div className="flex items-center justify-center p-8">
                         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
                       </div>
-                    ) : !pendingMessages || pendingMessages.length === 0 ? (
+                    ) : !Array.isArray(pendingMessages) || pendingMessages.length === 0 ? (
                       <div className="text-center p-8">
                         <MessageSquare className="h-12 w-12 text-slate-400 mx-auto mb-3" />
                         <p className="text-slate-300">Нет сообщений для модерации</p>
                       </div>
                     ) : (
                       pendingMessages.map((message) => (
-                        <Card key={message.id} className="bg-slate-700/50 border-slate-600/50">
+                        <Card key={message?.id || 'unknown'} className="bg-slate-700/50 border-slate-600/50">
                           <CardContent className="p-6">
                             <div className="flex items-center gap-3 mb-4">
                               <Avatar>
-                                <AvatarImage src={message.user?.profileImageUrl} />
+                                <AvatarImage src={message?.user?.profileImageUrl} />
                                 <AvatarFallback>
-                                  {message.user ? getUserInitials(message.user.firstName, message.user.lastName) : '?'}
+                                  {message?.user ? getUserInitials(message.user.firstName || '', message.user.lastName || '') : '?'}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
                                 <p className="font-medium text-white">
-                                  {message.user 
-                                    ? `${message.user.firstName} ${message.user.lastName}`
+                                  {message?.user 
+                                    ? `${message.user.firstName || ''} ${message.user.lastName || ''}`
                                     : 'Неизвестный пользователь'
                                   }
                                 </p>
                                 <p className="text-sm text-slate-400">
-                                  {new Date(message.createdAt).toLocaleString()}
+                                  {message?.createdAt ? new Date(message.createdAt).toLocaleString() : 'Дата неизвестна'}
                                 </p>
                               </div>
                             </div>
-                            <p className="text-slate-300 mb-4">{message.content}</p>
-                            {message.conversation?.product && (
+                            <p className="text-slate-300 mb-4">{message?.content || 'Нет содержимого'}</p>
+                            {message?.conversation?.product && (
                               <div className="flex items-center gap-2 mb-4 bg-slate-800/50 p-2 rounded">
                                 <Package className="h-4 w-4 text-slate-400" />
                                 <span className="text-sm text-slate-400">
@@ -925,8 +976,9 @@ export default function Admin() {
                               </div>
                             )}
                             <Button
-                              onClick={() => moderateMessageMutation.mutate(message.id)}
+                              onClick={() => message?.id && moderateMessageMutation.mutate(message.id)}
                               className="w-full bg-blue-500 hover:bg-blue-600"
+                              disabled={!message?.id}
                             >
                               <CheckCircle className="h-4 w-4 mr-1" />
                               Пометить как проверенное

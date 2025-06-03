@@ -20,7 +20,7 @@ import {
   type InsertMessage,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, desc, asc, like, sql, ne, isNull } from "drizzle-orm";
+import { eq, and, or, desc, asc, like, sql, ne, is, isNotNull } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -1066,9 +1066,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   // @ts-ignore
-  async getPendingMessages(): Promise<Message[]> {
+  async getPendingMessages() {
     try {
-      console.log('🔍 Fetching pending messages...');
+      console.log('🔍 Начинаем получение непроверенных сообщений...');
+      
       const result = await db
         .select({
           id: messages.id,
@@ -1079,97 +1080,70 @@ export class DatabaseStorage implements IStorage {
           senderId: messages.senderId,
           conversationId: messages.conversationId,
           readAt: messages.readAt,
-          user: {
-            id: users.id,
-            firstName: users.firstName,
-            lastName: users.lastName,
-            profileImageUrl: users.profileImageUrl,
-            username: users.username,
-          },
-          conversation: {
-            id: conversations.id,
-            user1Id: conversations.user1Id,
-            user2Id: conversations.user2Id,
-            productId: conversations.productId,
-            product: sql<any>`(
-              with product_data as (
-                select 
-                  p.id,
-                  p.title,
-                  p.description,
-                  p.price,
-                  p.images,
-                  p.status,
-                  c.display_name as category_display_name,
-                  c.color as category_color,
-                  c.name as category_name,
-                  s.display_name as server_display_name,
-                  s.name as server_name
-                from ${products} p
-                left join ${categories} c on c.id = p.category_id
-                left join ${servers} s on s.id = p.server_id
-                where p.id = ${conversations.productId}
-              )
-              select 
-                case 
-                  when exists (select 1 from product_data) then
-                    json_build_object(
-                      'id', pd.id,
-                      'title', pd.title,
-                      'description', pd.description,
-                      'price', pd.price,
-                      'images', pd.images,
-                      'status', pd.status,
-                      'category', json_build_object(
-                        'displayName', pd.category_display_name,
-                        'color', pd.category_color,
-                        'name', pd.category_name
-                      ),
-                      'server', json_build_object(
-                        'displayName', pd.server_display_name,
-                        'name', pd.server_name
-                      )
-                    )
-                  else null
-                end
-              from product_data pd
-            )`
-          },
         })
         .from(messages)
-        .leftJoin(users, eq(messages.senderId, users.id))
-        .leftJoin(conversations, eq(messages.conversationId, conversations.id))
         .where(eq(messages.isModerated, false))
-        .orderBy(asc(messages.createdAt));
+        .orderBy(desc(messages.createdAt));
 
-      console.log('✅ Found pending messages:', result.length);
-      if (result.length > 0) {
-        console.log('📝 Sample message:', JSON.stringify(result[0], null, 2));
+      const messagesWithData = await Promise.all(
+        result.map(async (message) => {
+          const userData = await db
+            .select({
+              id: users.id,
+              firstName: users.firstName,
+              lastName: users.lastName,
+              email: users.email,
+              profileImageUrl: users.profileImageUrl,
+              username: users.username,
+            })
+            .from(users)
+            .where(eq(users.id, message.senderId))
+            .limit(1);
+
+          const conversationWithProduct = await db
+            .select({
+              id: conversations.id,
+              user1Id: conversations.user1Id,
+              user2Id: conversations.user2Id,
+              productId: conversations.productId,
+              createdAt: conversations.createdAt,
+              product: sql<any>`
+                CASE 
+                  WHEN ${conversations.productId} IS NOT NULL THEN
+                    (SELECT json_build_object(
+                      'id', p.id,
+                      'title', p.title
+                    )
+                    FROM ${products} p
+                    WHERE p.id = ${conversations.productId}
+                    LIMIT 1)
+                  ELSE NULL
+                END
+              `,
+            })
+            .from(conversations)
+            .where(eq(conversations.id, message.conversationId))
+            .limit(1);
+
+          return {
+            ...message,
+            user: userData[0] || null,
+            conversation: conversationWithProduct[0] ? {
+              ...conversationWithProduct[0],
+              product: conversationWithProduct[0].product || null,
+            } : null,
+          };
+        })
+      );
+
+      console.log(`✅ Найдено ${messagesWithData.length} непроверенных сообщений`);
+      if (messagesWithData.length > 0) {
+        console.log('📝 Пример первого сообщения:', JSON.stringify(messagesWithData[0], null, 2));
       }
 
-      // Преобразуем данные для безопасной обработки null значений
-      const safeResult = result.map(message => ({
-        ...message,
-        readAt: null, // Временно устанавливаем readAt в null
-        user: message.user ? {
-          id: message.user.id,
-          firstName: message.user.firstName || '',
-          lastName: message.user.lastName || '',
-          profileImageUrl: message.user.profileImageUrl || null,
-          username: message.user.username || '',
-        } : null,
-        conversation: message.conversation ? {
-          id: message.conversation.id,
-          user1Id: message.conversation.user1Id,
-          user2Id: message.conversation.user2Id,
-          productId: message.conversation.productId,
-          product: message.conversation.product || null
-        } : null
-      }));
-
-      return safeResult;
+      return messagesWithData;
     } catch (error) {
-      console.error('❌ Error in getPendingMessages:', error);
+      console.error('❌ Ошибка при получении непроверенных сообщений:', error);
       throw error;
     }
   }

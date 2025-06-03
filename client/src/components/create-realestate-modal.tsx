@@ -12,7 +12,7 @@ import { RealEstateStep1, RealEstateStep2, RealEstateStep3 } from "@/components/
 
 const createRealEstateSchema = z.object({
   title: z.string().min(1, "Название обязательно"),
-  description: z.string().optional(),
+  description: z.string().min(1, "Описание обязательно"),
   price: z.coerce.number().min(1, "Цена должна быть больше 0"),
   categoryId: z.literal(2),
   subcategoryId: z.coerce.number().min(1, "Тип недвижимости не определен"),
@@ -57,12 +57,34 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
 
   const handleComplete = async (data: any) => {
     try {
+      // Объединяем данные со всех шагов
       const productData = {
         ...data,
         categoryId: 2,
-        subcategoryId: 1, // Устанавливаем фиксированное значение для subcategoryId
+        subcategoryId: 1,
+        // Убедимся, что все обязательные поля присутствуют
+        title: data.title?.trim(),
+        description: data.description?.trim(),
+        price: Number(data.price),
+        serverId: Number(data.serverId),
+        // Преобразуем imageUrl в массив images
         images: data.imageUrl ? [data.imageUrl] : [],
+        // Убедимся, что metadata имеет правильную структуру
+        metadata: {
+          ...data.metadata,
+          garageSpaces: Number(data.metadata?.garageSpaces) || 0,
+          warehouses: Number(data.metadata?.warehouses) || 0,
+          helipads: Number(data.metadata?.helipads) || 0,
+          income: Number(data.metadata?.income) || 0,
+          contacts: {
+            discord: data.metadata?.contacts?.discord || "",
+            telegram: data.metadata?.contacts?.telegram || "",
+            phone: data.metadata?.contacts?.phone || "",
+          },
+        },
       };
+
+      console.log('Отправляемые данные:', productData);
       
       const response = await apiRequest("POST", "/api/products", productData);
       await response.json();
@@ -74,6 +96,7 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
       onOpenChange(false);
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
     } catch (error: any) {
+      console.error('Ошибка при создании объявления:', error);
       toast({
         title: "Ошибка",
         description: error.message || "Не удалось создать объявление",
@@ -88,21 +111,34 @@ export default function CreateRealEstateModal({ open, onOpenChange }: CreateReal
       id: "step1",
       title: "Основная информация",
       description: "Название, сервер и цена",
-      component: <RealEstateStep1 data={{}} onDataChange={() => {}} onValidationChange={() => {}} servers={servers} />,
+      component: <RealEstateStep1 
+        data={{}} 
+        onDataChange={(data) => console.log('Step1 data:', data)} 
+        onValidationChange={(isValid) => console.log('Step1 validation:', isValid)} 
+        servers={servers} 
+      />,
       isValid: true
     },
     {
       id: "step2",
       title: "Дополнительная информация",
       description: "Гаражные места, склады, вертолетные площадки, доход и описание",
-      component: <RealEstateStep2 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
+      component: <RealEstateStep2 
+        data={{}} 
+        onDataChange={(data) => console.log('Step2 data:', data)} 
+        onValidationChange={(isValid) => console.log('Step2 validation:', isValid)} 
+      />,
       isValid: true
     },
     {
       id: "step3",
       title: "Изображение и контакты",
       description: "Ссылка на изображение и контактная информация",
-      component: <RealEstateStep3 data={{}} onDataChange={() => {}} onValidationChange={() => {}} />,
+      component: <RealEstateStep3 
+        data={{}} 
+        onDataChange={(data) => console.log('Step3 data:', data)} 
+        onValidationChange={(isValid) => console.log('Step3 validation:', isValid)} 
+      />,
       isValid: true
     }
   ];

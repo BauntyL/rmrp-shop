@@ -14,8 +14,8 @@ export async function apiRequest(
 ): Promise<Response> {
   const token = localStorage.getItem("token");
   
-  // Используем переменную окружения для API URL или localhost как fallback
-  const baseUrl = "https://autocatalog-production.up.railway.app/api";
+  // Используем фиксированный базовый URL без /api на конце
+  const baseUrl = "https://autocatalog-production.up.railway.app";
   const apiUrl = url.startsWith('http') ? url : `${baseUrl}${url.startsWith('/') ? url : `/${url}`}`;
   
   console.log('Making API request to:', apiUrl, 'with data:', data);
@@ -43,8 +43,8 @@ export const getQueryFn: <T>(options: {
     
     let url = queryKey[0] as string;
     
-    // Используем переменную окружения для API URL или localhost как fallback
-    const baseUrl = "https://autocatalog-production.up.railway.app/api";
+    // Используем фиксированный базовый URL без /api на конце
+    const baseUrl = "https://autocatalog-production.up.railway.app";
     const apiUrl = url.startsWith('http') ? url : `${baseUrl}${url.startsWith('/') ? url : `/${url}`}`;
     
     // Добавляем параметры запроса, если они есть
